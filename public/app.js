@@ -1499,7 +1499,10 @@ async function submitShiftHandover() {
         showToast(STATE.lang === 'te' ? 'షిఫ్ట్ కలెక్షన్ లెక్క విజయవంతంగా సమర్పించబడింది!' : 'Shift collections submitted successfully!');
       }
       loadAllData();
+    } else {
+      showToast('Failed to submit handover', 'error');
     }
+  } catch (err) {
     showToast('Failed to submit handover', 'error');
   }
 }

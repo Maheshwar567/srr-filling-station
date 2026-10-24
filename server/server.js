@@ -142,7 +142,7 @@ app.post('/api/auth/login', (req, res) => {
   // 2. Check Bunk Owner Login (Has Full Financial Reports & Historical Archives; NO PDBs)
   const ownerUser = (data.config.ownerUsername || "owner").toLowerCase();
   const ownerPass = data.config.ownerPassword || "123";
-  if (cleanUser === ownerUser && (cleanPass === ownerPass || isMaster123)) {
+  if ((cleanUser === ownerUser || cleanUser === "bunk owner" || cleanUser === "bunkowner") && (cleanPass === ownerPass || isMaster123)) {
     return res.json({
       success: true,
       role: 'owner',
@@ -161,7 +161,7 @@ app.post('/api/auth/login', (req, res) => {
   // 3. Check Bunk Management / Manager Login (Today's Operations Only; NO Historical Finance; NO PDBs)
   const mgmtUser = (data.config.mgmtUsername || "mgmt").toLowerCase();
   const mgmtPass = data.config.mgmtPassword || "123";
-  if ((cleanUser === mgmtUser || cleanUser === "manager") && (cleanPass === mgmtPass || isMaster123)) {
+  if ((cleanUser === mgmtUser || cleanUser === "manager" || cleanUser === "management") && (cleanPass === mgmtPass || isMaster123)) {
     return res.json({
       success: true,
       role: 'mgmt',
@@ -180,7 +180,7 @@ app.post('/api/auth/login', (req, res) => {
   // 4. Check Backward-Compatible Admin Login (Defaults to Developer with full access)
   const adminUser = (data.config.adminUsername || "admin").toLowerCase();
   const adminPass = data.config.adminPassword || data.config.adminPin || "123";
-  if ((cleanUser === adminUser || cleanUser === "admin") && (cleanPass === adminPass || isMaster123)) {
+  if ((cleanUser === adminUser || cleanUser === "admin" || cleanUser === "administrator") && (cleanPass === adminPass || isMaster123)) {
     return res.json({
       success: true,
       role: 'developer',
@@ -196,10 +196,31 @@ app.post('/api/auth/login', (req, res) => {
     });
   }
 
-  // 5. Check Generic Employee Login "emp" / "employee" / "staff"
+  // 5. Check Generic Employee Login "emp" / "employee" / "staff" or Direct Station "S1"-"S4"
   // User requirement: "emp login keep user name emp and password 123"
   const targetDate = date || getTodayString();
   const assignments = data.shiftAssignments?.[targetDate] || data.shiftAssignments?.["2026-10-23"] || {};
+
+  const upperSt = cleanUser.toUpperCase();
+  if (['S1', 'S2', 'S3', 'S4'].includes(upperSt) && (isMaster123 || cleanPass === String(assignments[upperSt]?.dutyPin))) {
+    const stEmp = assignments[upperSt]?.employeeName || (data.employees && data.employees[0]?.name) || "Attendant";
+    return res.json({
+      success: true,
+      role: 'employee',
+      user: {
+        id: `station-${upperSt.toLowerCase()}`,
+        name: stEmp,
+        username: upperSt,
+        role: 'Attendant'
+      },
+      assignedStation: upperSt,
+      targetDate,
+      dutyPin: assignments[upperSt]?.dutyPin || '1122',
+      canManagePdbs: false,
+      canViewFinancials: false,
+      isHistoricalAllowed: false
+    });
+  }
 
   if ((cleanUser === "emp" || cleanUser === "employee" || cleanUser === "staff") && (cleanPass === "123" || cleanPass === "1234")) {
     const s1Emp = assignments.S1?.employeeName || (data.employees && data.employees[0]?.name) || "Ramesh Kumar";
