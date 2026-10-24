@@ -1,0 +1,18 @@
+{
+  "name": "SRR Filling Station (Indian Oil)",
+  "short_name": "SRR Fuel",
+  "description": "SRR Filling Station Indian Oil Petrol Bunk Daily Meter & Shift Manager",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f172a",
+  "theme_color": "#ea580c",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

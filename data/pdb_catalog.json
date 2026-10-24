@@ -1,0 +1,20 @@
+[
+  {
+    "id": "srr-filling-station",
+    "name": "SRR FILLING STATION",
+    "brand": "Indian Oil",
+    "oilCompany": "Indian Oil Corporation Ltd. (IOCL)",
+    "location": "Highway Point",
+    "dbFile": "srr-filling-station.json",
+    "createdAt": "2026-10-24T00:00:00.000Z"
+  },
+  {
+    "id": "balaji-iocl-fuel",
+    "name": "BALAJI IOCL FUEL",
+    "brand": "Indian Oil",
+    "oilCompany": "Indian Oil Corporation Ltd. (IOCL)",
+    "location": "NH-44 Bypass",
+    "dbFile": "balaji-iocl-fuel.json",
+    "createdAt": "2026-10-24T07:03:36.667Z"
+  }
+]

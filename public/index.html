@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>SRR FILLING STATION (Indian Oil)</title>
+  
+  <!-- PWA Mobile App Support -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#ea580c">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="SRR Fuel">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Chakra Petch, Outfit, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen antialiased flex flex-col selection:bg-amber-200">
+
+  <!-- Clean Enterprise Navbar (Clutter Removed: No shift timings, no 2 pumps subtitle, no ticker phone url) -->
+  <header class="bg-gradient-to-r from-orange-600 via-amber-600 to-blue-900 text-white shadow-lg sticky top-0 z-40 border-b-4 border-amber-400">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-2.5">
+      
+      <!-- Clean Brand Logo & Station Name -->
+      <div class="flex items-center gap-2.5">
+        <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center p-1 shadow-md border-2 border-amber-300 shrink-0">
+          <div class="w-full h-full rounded-full bg-orange-600 flex flex-col items-center justify-center text-[8px] font-black tracking-tighter text-white leading-none">
+            <span>INDIAN</span>
+            <span class="text-amber-300 font-extrabold text-[9px]">OIL</span>
+          </div>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 id="headerStationTitle" class="text-lg sm:text-2xl font-black tracking-wide uppercase text-white drop-shadow">SRR FILLING STATION</h1>
+            <!-- Oil Pump PDB Selector -->
+            <select id="tenantSelectDropdown" onchange="switchOilPumpTenant(this.value)" class="bg-black/40 text-amber-300 text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full border border-amber-300/40 outline-none cursor-pointer">
+              <!-- Dynamically populated from PDB catalog -->
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- User Status & Actions -->
+      <div class="flex items-center gap-2" id="headerUserActions">
+        <!-- Shift Date Picker -->
+        <div class="flex items-center bg-black/30 backdrop-blur-sm rounded-lg px-2 py-1 text-xs border border-white/20">
+          <span class="text-amber-200 mr-1 text-[11px] font-semibold">📅</span>
+          <input type="date" id="headerShiftDate" class="bg-transparent text-white font-bold outline-none cursor-pointer text-xs">
+        </div>
+
+        <!-- If Logged In: User Profile & Logout -->
+        <div id="navLoggedInBox" class="flex items-center gap-1.5 hidden">
+          <div class="bg-black/30 px-2.5 py-1 rounded-lg border border-white/20 flex items-center gap-1.5 text-xs">
+            <span class="text-emerald-300">●</span>
+            <span class="font-bold text-white text-xs truncate max-w-[130px]" id="navUserName">User</span>
+            <span class="text-[9px] bg-amber-400 text-slate-900 px-1.5 py-0.2 rounded font-black uppercase" id="navUserRole">Staff</span>
+          </div>
+
+          <button onclick="openChangePasswordModal()" title="Change Password" class="bg-white/20 hover:bg-white/30 text-white text-xs px-2 py-1 rounded-lg transition-all flex items-center gap-1">
+            <span>🔑</span>
+            <span class="hidden sm:inline">Password</span>
+          </button>
+
+          <button onclick="logoutUser()" title="Logout" class="bg-rose-600 hover:bg-rose-700 text-white text-xs px-2.5 py-1 rounded-lg shadow transition-all font-bold flex items-center gap-1">
+            <span>🚪</span>
+            <span>Logout</span>
+          </button>
+        </div>
+
+        <!-- If Not Logged In -->
+        <div id="navGuestBox" class="flex items-center gap-1.5">
+          <button onclick="showLoginScreen()" class="bg-amber-400 hover:bg-amber-300 text-slate-900 font-black text-xs px-3 py-1.5 rounded-lg shadow transition-all flex items-center gap-1">
+            <span>🔐</span>
+            <span>Sign In (లాగిన్)</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="max-w-7xl mx-auto px-3 sm:px-6 py-4 flex-1 w-full flex flex-col">
+
+    <!-- ============================================================== -->
+    <!-- VIEW 0: LOGIN SCREEN (SHOWN WHEN NOT LOGGED IN) -->
+    <!-- User requested: "lets create logins for each employee and allow then the password change in case to change, once login show staff or admin only" -->
+    <!-- ============================================================== -->
+    <div id="loginView" class="max-w-md w-full mx-auto my-auto py-8">
+      <div class="bg-white rounded-3xl shadow-2xl border-2 border-slate-200 p-6 sm:p-8 space-y-5 animate-scaleIn">
+        
+        <div class="text-center space-y-2">
+          <div class="w-16 h-16 rounded-full bg-orange-600 text-white flex items-center justify-center mx-auto shadow-md border-2 border-amber-300">
+            <span class="text-3xl">⛽</span>
+          </div>
+          <div>
+            <h2 class="text-xl sm:text-2xl font-black text-slate-900" id="loginStationName">SRR FILLING STATION</h2>
+            <p class="text-xs text-slate-500 font-medium mt-0.5">Indian Oil Corporation Ltd. • Portal Sign In</p>
+          </div>
+        </div>
+
+        <form id="loginForm" onsubmit="handleLoginSubmit(event)" class="space-y-4">
+          <div>
+            <label class="text-xs font-bold text-slate-700 block mb-1">
+              Mobile Number / Username (మొబైల్ నంబర్ లేదా యూజర్‌నేమ్):
+            </label>
+            <div class="relative">
+              <span class="absolute left-3 top-2.5 text-slate-400">👤</span>
+              <input type="text" id="loginUsernameInput" required placeholder="e.g. 9848011223 or admin" class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl pl-9 pr-3 py-2 text-sm font-bold text-slate-900 focus:border-orange-500 focus:outline-none focus:bg-white shadow-sm">
+            </div>
+          </div>
+
+          <div>
+            <label class="text-xs font-bold text-slate-700 block mb-1">
+              Password / PIN (పాస్‌వర్డ్):
+            </label>
+            <div class="relative">
+              <span class="absolute left-3 top-2.5 text-slate-400">🔒</span>
+              <input type="password" id="loginPasswordInput" required placeholder="Enter password (default: 1234)" class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl pl-9 pr-10 py-2 text-sm font-bold text-slate-900 focus:border-orange-500 focus:outline-none focus:bg-white shadow-sm">
+              <button type="button" onclick="togglePasswordVisibility('loginPasswordInput')" class="absolute right-3 top-2.5 text-slate-400 hover:text-slate-700">👁️</button>
+            </div>
+          </div>
+
+          <p id="loginErrorMessage" class="text-xs text-rose-600 font-bold hidden"></p>
+
+          <button type="submit" class="w-full bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-black text-sm py-3 rounded-xl shadow-lg transition-all active:scale-98">
+            Sign In (లాగిన్ చేయండి)
+          </button>
+        </form>
+
+        <div class="pt-3 border-t border-slate-100 text-center text-[11px] text-slate-400">
+          Default Passwords: Staff = <strong class="text-slate-600 font-mono">1234</strong> | Admin = <strong class="text-slate-600 font-mono">1234</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 1: STAFF / EMPLOYEE VIEW (ONLY SHOWN WHEN STAFF LOGS IN) -->
+    <!-- Admin assigned pump is locked in read-only mode -->
+    <!-- ============================================================== -->
+    <div id="employeeView" class="space-y-4 hidden">
+
+      <!-- Attendant Locked Duty Info Banner -->
+      <div class="bg-gradient-to-r from-blue-900 to-slate-900 text-white p-4 rounded-2xl shadow-md flex flex-wrap items-center justify-between gap-3 border border-slate-700">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-xl bg-orange-600 text-white flex items-center justify-center text-2xl font-black shrink-0">
+            👤
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="text-base sm:text-lg font-black text-white" id="empLoggedInName">Attendant</h2>
+              <span class="bg-emerald-500 text-slate-900 text-[10px] font-black px-2 py-0.5 rounded-full uppercase">On Duty</span>
+            </div>
+            <p class="text-xs text-slate-300 font-medium mt-0.5" id="empAssignedPumpDescription">
+              Assigned Pump: Loading assignment...
+            </p>
+          </div>
+        </div>
+
+        <div class="bg-black/40 px-3 py-1.5 rounded-xl border border-white/10 text-right">
+          <span class="text-[10px] text-amber-300 font-bold block uppercase tracking-wider">🔒 Pump Lock Status</span>
+          <span class="text-xs font-mono font-bold text-white" id="empLockStatusBadge">Assigned by Admin (Read-Only)</span>
+        </div>
+      </div>
+
+      <!-- TOP STAFF TABS: Reading, Testing (dedicated tab!), Amount Reminder, Vehicle Account, Cash Handover -->
+      <div class="bg-white rounded-2xl p-1.5 shadow-sm border border-slate-200 flex items-center justify-between gap-1 overflow-x-auto">
+        
+        <!-- Tab 1: Reading (Clean - NO testing field on screen) -->
+        <button onclick="switchEmployeeTab('reading')" id="empTabBtn-reading" class="emp-tab-btn active flex-1 py-2.5 px-2 rounded-xl font-black text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 bg-orange-600 text-white shadow-md shrink-0">
+          <span class="text-base">⛽</span>
+          <div class="text-left">
+            <span class="block leading-tight">రీడింగ్ నమోదు</span>
+            <span class="text-[10px] font-medium opacity-90 hidden sm:block">Meter Reading</span>
+          </div>
+        </button>
+
+        <!-- Tab 2: Testing (Dedicated tab requested by user so testing is NOT shown on reading screen!) -->
+        <button onclick="switchEmployeeTab('testing')" id="empTabBtn-testing" class="emp-tab-btn flex-1 py-2.5 px-2 rounded-xl font-black text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200 shrink-0">
+          <span class="text-base">🧪</span>
+          <div class="text-left">
+            <div class="flex items-center gap-1">
+              <span class="block leading-tight text-purple-700">టెస్టింగ్</span>
+              <span id="empTestingBadgeCount" class="bg-purple-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-bold">0 L</span>
+            </div>
+            <span class="text-[10px] font-medium text-slate-500 hidden sm:block">Pump Testing Litres</span>
+          </div>
+        </button>
+
+        <!-- Tab 3: Amount Reminder -->
+        <button onclick="switchEmployeeTab('reminder')" id="empTabBtn-reminder" class="emp-tab-btn flex-1 py-2.5 px-2 rounded-xl font-black text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200 shrink-0">
+          <span class="text-base">⏰</span>
+          <div class="text-left">
+            <div class="flex items-center gap-1">
+              <span class="block leading-tight text-amber-700">మొత్తం రిమైండర్</span>
+              <span id="empReminderBadgeCount" class="bg-amber-500 text-slate-900 text-[10px] px-1.5 py-0.2 rounded-full font-black">0</span>
+            </div>
+            <span class="text-[10px] font-medium text-slate-500 hidden sm:block">Amount Reminder</span>
+          </div>
+        </button>
+
+        <!-- Tab 4: Vehicle Account -->
+        <button onclick="switchEmployeeTab('vehicle')" id="empTabBtn-vehicle" class="emp-tab-btn flex-1 py-2.5 px-2 rounded-xl font-black text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200 shrink-0">
+          <span class="text-base">🚛</span>
+          <div class="text-left">
+            <div class="flex items-center gap-1">
+              <span class="block leading-tight text-blue-700">వాహనం ఖాతా</span>
+              <span id="empVehicleBadgeCount" class="bg-blue-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-bold">0</span>
+            </div>
+            <span class="text-[10px] font-medium text-slate-500 hidden sm:block">Vehicle Fleet</span>
+          </div>
+        </button>
+
+        <!-- Tab 5: Cash Handover -->
+        <button onclick="switchEmployeeTab('handover')" id="empTabBtn-handover" class="emp-tab-btn flex-1 py-2.5 px-2 rounded-xl font-black text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200 shrink-0">
+          <span class="text-base">💰</span>
+          <div class="text-left">
+            <span class="block leading-tight text-emerald-700">నగదు లెక్క</span>
+            <span class="text-[10px] font-medium text-slate-500 hidden sm:block">Cash Handover</span>
+          </div>
+        </button>
+      </div>
+
+      <!-- ---------------------------------------------------- -->
+      <!-- TAB CONTENT 1: METER READINGS (ULTRA CLEAN - NO TESTING INPUTS ON SCREEN) -->
+      <!-- ---------------------------------------------------- -->
+      <div id="empSection-reading" class="space-y-4">
+        <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
+          <div class="bg-slate-900 text-white px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></span>
+              <h3 class="font-bold text-sm sm:text-base text-white" id="activeStationTitle">రీడింగ్ నమోదు</h3>
+            </div>
+            <span class="text-xs text-amber-300 font-mono font-bold" id="empReadingStationCode">Station S1</span>
+          </div>
+
+          <div class="p-4 sm:p-6 space-y-5">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+              <!-- PETROL CARD (A1 or B1) -->
+              <div class="bg-amber-50/70 rounded-2xl border-2 border-amber-300 p-4 sm:p-5 space-y-3.5 shadow-sm">
+                <div class="flex items-center justify-between border-b border-amber-200 pb-2.5">
+                  <div class="flex items-center gap-2">
+                    <span class="text-2xl sm:text-3xl">⛽</span>
+                    <div>
+                      <h4 class="font-black text-slate-900 text-base sm:text-lg">పెట్రోల్ (Petrol - MS)</h4>
+                      <span class="text-xs text-amber-900 font-semibold">మీటర్ కోడ్: <strong class="font-mono text-sm bg-amber-200 px-2 py-0.5 rounded text-amber-950 font-black" id="petrolMeterCode">A1</strong></span>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-[10px] font-bold text-slate-500 uppercase block">Rate</span>
+                    <span class="text-xs sm:text-sm font-bold text-amber-900 font-mono" id="empPetrolRateDisplay">₹117.07</span>
+                  </div>
+                </div>
+
+                <!-- Digital Meter Inputs (Only Opening and Closing - No testing clutter!) -->
+                <div class="space-y-3">
+                  <div>
+                    <label class="text-xs font-extrabold text-slate-700 flex items-center gap-1.5 mb-1">
+                      <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
+                      <span>ప్రారంభ రీడింగ్ (Opening Reading):</span>
+                    </label>
+                    <input type="number" step="0.01" id="empPetrolOpen" oninput="calculateEmployeeLiveLitres()" placeholder="0.00" class="w-full bg-white border-2 border-slate-300 rounded-xl px-3 py-2.5 text-slate-900 font-mono text-xl sm:text-2xl font-black shadow-sm focus:border-orange-500 focus:outline-none">
+                  </div>
+
+                  <div>
+                    <label class="text-xs font-extrabold text-slate-700 flex items-center gap-1.5 mb-1">
+                      <span class="w-3 h-3 rounded-full bg-rose-500 inline-block"></span>
+                      <span>ముగింపు రీడింగ్ (Closing Reading):</span>
+                    </label>
+                    <input type="number" step="0.01" id="empPetrolClose" oninput="calculateEmployeeLiveLitres()" placeholder="0.00" class="w-full bg-white border-2 border-orange-400 rounded-xl px-3 py-2.5 text-slate-900 font-mono text-xl sm:text-2xl font-black shadow-sm focus:border-orange-500 focus:outline-none">
+                  </div>
+
+                  <div class="flex items-center justify-between pt-2 border-t border-amber-200">
+                    <span class="text-xs text-slate-500 font-bold">టెస్టింగ్ లీటర్లు: <strong id="empPetrolTestingLitresDisplay" class="font-mono text-purple-700">0.00 L</strong> (టెస్టింగ్ ట్యాబ్ లో నమోదు చేయండి)</span>
+                    <div class="text-right">
+                      <span class="text-[11px] text-slate-500 font-bold block">అమ్మిన లీటర్లు (Net Sale):</span>
+                      <span class="text-xl sm:text-2xl font-mono font-black text-orange-600" id="empPetrolSaleResult">0.00 L</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- DIESEL CARD (A2 or B2) -->
+              <div class="bg-blue-50/70 rounded-2xl border-2 border-blue-300 p-4 sm:p-5 space-y-3.5 shadow-sm">
+                <div class="flex items-center justify-between border-b border-blue-200 pb-2.5">
+                  <div class="flex items-center gap-2">
+                    <span class="text-2xl sm:text-3xl">🛢️</span>
+                    <div>
+                      <h4 class="font-black text-slate-900 text-base sm:text-lg">డీజిల్ (Diesel - HSD)</h4>
+                      <span class="text-xs text-blue-900 font-semibold">మీటర్ కోడ్: <strong class="font-mono text-sm bg-blue-200 px-2 py-0.5 rounded text-blue-950 font-black" id="dieselMeterCode">A2</strong></span>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-[10px] font-bold text-slate-500 uppercase block">Rate</span>
+                    <span class="text-xs sm:text-sm font-bold text-blue-900 font-mono" id="empDieselRateDisplay">₹105.23</span>
+                  </div>
+                </div>
+
+                <!-- Digital Meter Inputs -->
+                <div class="space-y-3">
+                  <div>
+                    <label class="text-xs font-extrabold text-slate-700 flex items-center gap-1.5 mb-1">
+                      <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
+                      <span>ప్రారంభ రీడింగ్ (Opening Reading):</span>
+                    </label>
+                    <input type="number" step="0.01" id="empDieselOpen" oninput="calculateEmployeeLiveLitres()" placeholder="0.00" class="w-full bg-white border-2 border-slate-300 rounded-xl px-3 py-2.5 text-slate-900 font-mono text-xl sm:text-2xl font-black shadow-sm focus:border-blue-500 focus:outline-none">
+                  </div>
+
+                  <div>
+                    <label class="text-xs font-extrabold text-slate-700 flex items-center gap-1.5 mb-1">
+                      <span class="w-3 h-3 rounded-full bg-rose-500 inline-block"></span>
+                      <span>ముగింపు రీడింగ్ (Closing Reading):</span>
+                    </label>
+                    <input type="number" step="0.01" id="empDieselClose" oninput="calculateEmployeeLiveLitres()" placeholder="0.00" class="w-full bg-white border-2 border-blue-400 rounded-xl px-3 py-2.5 text-slate-900 font-mono text-xl sm:text-2xl font-black shadow-sm focus:border-blue-500 focus:outline-none">
+                  </div>
+
+                  <div class="flex items-center justify-between pt-2 border-t border-blue-200">
+                    <span class="text-xs text-slate-500 font-bold">టెస్టింగ్ లీటర్లు: <strong id="empDieselTestingLitresDisplay" class="font-mono text-purple-700">0.00 L</strong> (టెస్టింగ్ ట్యాబ్ లో నమోదు చేయండి)</span>
+                    <div class="text-right">
+                      <span class="text-[11px] text-slate-500 font-bold block">అమ్మిన లీటర్లు (Net Sale):</span>
+                      <span class="text-xl sm:text-2xl font-mono font-black text-blue-600" id="empDieselSaleResult">0.00 L</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Big Save Button -->
+            <button onclick="saveStationReadings()" class="w-full bg-gradient-to-r from-emerald-600 to-green-700 hover:from-emerald-700 hover:to-green-800 text-white font-black text-base py-3.5 px-6 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2 active:scale-98">
+              <span>💾 రీడింగ్ భద్రపరచు (SAVE METER READINGS)</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ---------------------------------------------------- -->
+      <!-- TAB CONTENT 2: TESTING TAB (DEDICATED SEPARATE TAB AS REQUESTED) -->
+      <!-- User requested: "dont show testing on screen, add a tab like testing and append it in the sale of that employee" -->
+      <!-- ---------------------------------------------------- -->
+      <div id="empSection-testing" class="space-y-4 hidden">
+        <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
+          <div class="bg-gradient-to-r from-purple-700 to-indigo-800 text-white px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-xl">🧪</span>
+              <div>
+                <h3 class="font-extrabold text-sm sm:text-base">పంప్ టెస్టింగ్ నమోదు (Pump Calibration Testing)</h3>
+                <p class="text-[11px] text-purple-100">Testing fuel poured back to tank is automatically subtracted from your sale</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-4 sm:p-5 space-y-4">
+            <!-- Add Testing Entry Form -->
+            <div class="bg-purple-50/70 p-4 rounded-xl border border-purple-200 space-y-3">
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label class="text-xs font-bold text-slate-700 block mb-1">ఇంధనం రకం (Fuel Type) *:</label>
+                  <select id="testingFuelSelect" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs font-bold text-slate-900">
+                    <option value="Petrol">⛽ పెట్రోల్ (Petrol - MS)</option>
+                    <option value="Diesel">🛢️ డీజిల్ (Diesel - HSD)</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="text-xs font-bold text-slate-700 block mb-1">టెస్టింగ్ లీటర్లు (Litres) *:</label>
+                  <input type="number" step="0.5" id="testingLitresInput" placeholder="e.g. 5.0" class="w-full bg-white border-2 border-purple-400 rounded-lg p-2 text-xs font-mono font-black text-purple-900">
+                </div>
+                <div>
+                  <label class="text-xs font-bold text-slate-700 block mb-1">కారణం / వివరాలు (Reason):</label>
+                  <input type="text" id="testingReasonInput" placeholder="e.g. ఉదయం 5L క్యాన్ టెస్టింగ్" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs">
+                </div>
+              </div>
+
+              <div class="flex justify-end">
+                <button onclick="submitTestingLitres()" class="bg-purple-700 hover:bg-purple-800 text-white font-bold text-xs py-2 px-5 rounded-lg shadow">
+                  టెస్టింగ్ సేవ్ చేయి (Deduct from Sale)
+                </button>
+              </div>
+            </div>
+
+            <!-- Testing Records Table for this station -->
+            <div>
+              <h4 class="font-bold text-slate-800 text-xs mb-2">ఈ షిఫ్ట్ లో చేసిన టెస్టింగ్‌లు (Current Shift Testing Log):</h4>
+              <div id="empTestingLogContainer" class="overflow-x-auto"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ---------------------------------------------------- -->
+      <!-- TAB CONTENT 3: AMOUNT REMINDER -->
+      <!-- ---------------------------------------------------- -->
+      <div id="empSection-reminder" class="space-y-4 hidden">
+        <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
+          <div class="bg-gradient-to-r from-amber-600 to-orange-700 text-white px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-xl">⏰</span>
+              <div>
+                <h3 class="font-extrabold text-sm sm:text-base">తాత్కాలిక అమౌంట్ రిమైండర్ (Amount Reminder)</h3>
+                <p class="text-[11px] text-amber-100">For customers who took fuel & will pay shortly (ATM / PhonePe pending). This is NOT credit.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-4 sm:p-5 space-y-4">
+            <div class="bg-amber-50/70 p-4 rounded-xl border border-amber-200 space-y-3">
+              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5">
+                <div>
+                  <label class="text-[11px] font-bold text-slate-700 block mb-0.5">కస్టమర్ పేరు (Customer Name) *:</label>
+                  <input type="text" id="quickReminderCustomer" placeholder="ఉదా: వెంకట్ రెడ్డి" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-900">
+                </div>
+                <div>
+                  <label class="text-[11px] font-bold text-slate-700 block mb-0.5">వాహనం నంబర్ (Vehicle No):</label>
+                  <input type="text" id="quickReminderVehicle" placeholder="AP 21 TC 4488" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold uppercase text-slate-900">
+                </div>
+                <div>
+                  <label class="text-[11px] font-bold text-slate-700 block mb-0.5">ఇంధనం (Fuel):</label>
+                  <select id="quickReminderFuel" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-900">
+                    <option value="Diesel">🛢️ డీజిల్ (Diesel)</option>
+                    <option value="Petrol">⛽ పెట్రోల్ (Petrol)</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="text-[11px] font-bold text-slate-700 block mb-0.5">ఇవ్వాల్సిన మొత్తం (Amount ₹) *:</label>
+                  <input type="number" id="quickReminderAmount" placeholder="₹ 1500" class="w-full bg-white border-2 border-amber-400 rounded-lg px-2.5 py-1.5 text-xs font-mono font-black text-amber-800">
+                </div>
+              </div>
+              <div class="flex items-center justify-between pt-1">
+                <input type="text" id="quickReminderNotes" placeholder="గమనిక: ఏటీఎంకి వెళ్లారు, 15 నిమిషాల్లో ఇస్తారు" class="w-3/4 bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs text-slate-700">
+                <button onclick="submitQuickReminder()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs px-4 py-1.5 rounded-lg shadow">
+                  సేవ్ చేయి (Save)
+                </button>
+              </div>
+            </div>
+
+            <div id="empReminderListContainer" class="overflow-x-auto"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ---------------------------------------------------- -->
+      <!-- TAB CONTENT 4: VEHICLE ACCOUNT (FLEET FUELING) -->
+      <!-- ---------------------------------------------------- -->
+      <div id="empSection-vehicle" class="space-y-4 hidden">
+        <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
+          <div class="bg-gradient-to-r from-blue-700 to-indigo-800 text-white px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-xl">🚛</span>
+              <div>
+                <h3 class="font-extrabold text-sm sm:text-base">వాహనం ఖాతా నమోదు (Vehicle Fleet Fueling)</h3>
+                <p class="text-[11px] text-blue-100">Only entries from this current shift are visible here</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-4 sm:p-5 space-y-4">
+            <div class="bg-blue-50/70 p-4 rounded-xl border border-blue-200 space-y-3">
+              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5">
+                <div>
+                  <label class="text-[11px] font-bold text-slate-700 block mb-0.5">వాహనం నంబర్ (Vehicle No) *:</label>
+                  <input type="text" id="vlogVehicleNo" placeholder="AP 21 TC 4488" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold uppercase text-slate-900">
+                </div>
+                <div>
+                  <label class="text-[11px] font-bold text-slate-700 block mb-0.5">డ్రైవర్ పేరు (Driver Name):</label>
+                  <input type="text" id="vlogDriverName" placeholder="ఉదా: చంద్ర శేఖర్" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs">
+                </div>
+                <div>
+                  <label class="text-[11px] font-bold text-slate-700 block mb-0.5">ఇంధనం (Fuel Type):</label>
+                  <select id="vlogFuelType" onchange="updateVehicleRateAndAmount()" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-900">
+                    <option value="Diesel">🛢️ డీజిల్ (Diesel)</option>
+                    <option value="Petrol">⛽ పెట్రోల్ (Petrol)</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="text-[11px] font-bold text-slate-700 block mb-0.5">తీసుకున్న లీటర్లు (Litres) *:</label>
+                  <input type="number" step="0.01" id="vlogLitres" oninput="updateVehicleRateAndAmount()" placeholder="45.00" class="w-full bg-white border-2 border-blue-400 rounded-lg px-2.5 py-1.5 text-xs font-mono font-black text-blue-800">
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+                <div>
+                  <label class="text-[11px] font-bold text-slate-700 block mb-0.5">మొత్తం విలువ (Amount ₹):</label>
+                  <input type="number" id="vlogAmount" placeholder="4735" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-mono font-black text-slate-900">
+                </div>
+                <div>
+                  <label class="text-[11px] font-bold text-slate-700 block mb-0.5">స్లిప్ / టోకెన్ నంబర్ (Slip No):</label>
+                  <input type="text" id="vlogSlipNo" placeholder="SL-992" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-mono">
+                </div>
+                <div class="flex items-end">
+                  <button onclick="submitVehicleFuelingEntry()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-2 px-4 rounded-lg shadow">
+                    సేవ్ చేయి (Record Fueling)
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div id="empVehicleListContainer" class="overflow-x-auto"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ---------------------------------------------------- -->
+      <!-- TAB CONTENT 5: CASH HANDOVER -->
+      <!-- ---------------------------------------------------- -->
+      <div id="empSection-handover" class="space-y-4 hidden">
+        <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
+          <div class="bg-slate-800 text-white px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-xl">💰</span>
+              <h3 class="font-extrabold text-sm sm:text-base">నగదు అప్పగింత (Shift Cash & Collection Handover)</h3>
+            </div>
+          </div>
+
+          <div class="p-4 sm:p-6 space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+              <div class="bg-emerald-50/70 p-3.5 rounded-xl border border-emerald-300">
+                <label class="text-xs font-extrabold text-emerald-950 block mb-1">💵 చేతి నగదు (Cash):</label>
+                <input type="number" id="empHandoverCash" placeholder="0" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 font-mono text-lg font-black text-slate-900">
+              </div>
+              <div class="bg-blue-50/70 p-3.5 rounded-xl border border-blue-300">
+                <label class="text-xs font-extrabold text-blue-950 block mb-1">📱 ఫోన్‌పే/గూగుల్‌పే (UPI):</label>
+                <input type="number" id="empHandoverUpi" placeholder="0" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 font-mono text-lg font-black text-slate-900">
+              </div>
+              <div class="bg-purple-50/70 p-3.5 rounded-xl border border-purple-300">
+                <label class="text-xs font-extrabold text-purple-950 block mb-1">💳 కార్డ్ స్వైప్ (Card):</label>
+                <input type="number" id="empHandoverCard" placeholder="0" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 font-mono text-lg font-black text-slate-900">
+              </div>
+              <div class="bg-rose-50/70 p-3.5 rounded-xl border border-rose-300">
+                <label class="text-xs font-extrabold text-rose-950 block mb-1">📉 ఖర్చులు (Expenses):</label>
+                <input type="number" id="empHandoverExpenses" placeholder="0" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 font-mono text-lg font-black text-slate-900">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="text-xs font-bold text-slate-700 block mb-1">ఖర్చుల వివరాలు (Expense Reason):</label>
+                <input type="text" id="empHandoverExpenseReason" placeholder="ఉదా: టీ, వాటర్ క్యాన్లు" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs">
+              </div>
+              <div>
+                <label class="text-xs font-bold text-slate-700 block mb-1">ఇతర వివరాలు (Remarks):</label>
+                <input type="text" id="empHandoverNotes" placeholder="షిఫ్ట్ పూర్తయింది" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs">
+              </div>
+            </div>
+
+            <button onclick="submitShiftHandover()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black text-base py-3 px-6 rounded-xl shadow-lg transition-all">
+              ✅ షిఫ్ట్ కలెక్షన్ లెక్క సమర్పించు (SUBMIT HANDOVER)
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 2: ADMIN VIEW (ONLY SHOWN WHEN ADMIN LOGS IN) -->
+    <!-- ============================================================== -->
+    <div id="adminView" class="space-y-5 hidden">
+      
+      <!-- Admin Navigation Tabs -->
+      <div class="flex flex-wrap items-center justify-between gap-2.5 border-b border-slate-200 pb-2.5">
+        <div class="flex flex-wrap gap-1.5" id="adminTabsNav">
+          <button onclick="switchAdminTab('summary')" id="admTab-summary" class="admin-tab-btn active px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all bg-orange-600 text-white shadow">
+            📄 Daily Sales Slip (రసీదు)
+          </button>
+          <button onclick="switchAdminTab('fleet')" id="admTab-fleet" class="admin-tab-btn px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 flex items-center gap-1">
+            <span>🚛 Vehicle Fleet Ledger (ఖాతా)</span>
+          </button>
+          <button onclick="switchAdminTab('reminders')" id="admTab-reminders" class="admin-tab-btn px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 flex items-center gap-1.5">
+            <span>⏰ Reminders</span>
+            <span id="badgePendingReminderCount" class="bg-amber-500 text-slate-900 text-[10px] font-black px-1.5 py-0.2 rounded-full">0</span>
+          </button>
+          <button onclick="switchAdminTab('employees')" id="admTab-employees" class="admin-tab-btn px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white text-slate-700 hover:bg-slate-100 border border-slate-200">
+            👥 Employee KYC
+          </button>
+          <button onclick="switchAdminTab('roster')" id="admTab-roster" class="admin-tab-btn px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white text-slate-700 hover:bg-slate-100 border border-slate-200">
+            📋 Duty Allocation
+          </button>
+          <button onclick="switchAdminTab('pdbs')" id="admTab-pdbs" class="admin-tab-btn px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white text-slate-700 hover:bg-slate-100 border border-slate-200">
+            🏢 Pluggable DBs (PDBs)
+          </button>
+          <button onclick="switchAdminTab('rates')" id="admTab-rates" class="admin-tab-btn px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white text-slate-700 hover:bg-slate-100 border border-slate-200">
+            🏷️ Rates
+          </button>
+          <button onclick="switchAdminTab('tanks')" id="admTab-tanks" class="admin-tab-btn px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white text-slate-700 hover:bg-slate-100 border border-slate-200">
+            🛢️ Tank Stock
+          </button>
+        </div>
+      </div>
+
+      <!-- SUB-TAB 1: DAILY SALES SLIP -->
+      <div id="admSection-summary" class="space-y-5">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          <!-- Slip Box -->
+          <div class="lg:col-span-6 bg-white rounded-2xl shadow-xl border-2 border-amber-300 p-5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between border-b border-slate-200 pb-2.5 mb-3">
+                <div class="flex items-center gap-2">
+                  <span class="text-2xl">📋</span>
+                  <div>
+                    <h3 class="text-sm sm:text-base font-black text-slate-900 uppercase">Indian Oil Daily Official Sales Slip</h3>
+                    <p class="text-[11px] text-slate-500">24-Hour Shift Automated Calculation</p>
+                  </div>
+                </div>
+                <span class="bg-emerald-100 text-emerald-800 text-[10px] font-black px-2 py-0.5 rounded-full uppercase">Verified</span>
+              </div>
+
+              <div class="bg-slate-900 text-amber-300 rounded-xl p-4 sm:p-5 font-mono shadow-inner border border-slate-800 relative">
+                <pre id="preSlipText" class="text-sm sm:text-base font-semibold leading-relaxed whitespace-pre font-mono selection:bg-amber-400 selection:text-slate-900">
+SRR FILLING STATION 23-10-2026
+      పెట్రోల్ 
+=3039.51 litres
+=3039.51*117.07
+=3,55,835 amount 
+          డీజిల్ 
+=2713.79 litres
+=2713.79*105.23
+=2,85,572 amount 
+P+D=355835+285572
+        =6,41,407 amount
+                </pre>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-slate-200">
+              <button onclick="shareSlipWhatsApp()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2 px-2 rounded-xl shadow transition-all flex items-center justify-center gap-1">
+                <span>📱</span>
+                <span>WhatsApp</span>
+              </button>
+              <button onclick="copySlipToClipboard()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs py-2 px-2 rounded-xl shadow transition-all flex items-center justify-center gap-1">
+                <span id="copyIcon">📋</span>
+                <span id="copyText">Copy Slip</span>
+              </button>
+              <button onclick="printDailySlip()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-2 px-2 rounded-xl shadow transition-all flex items-center justify-center gap-1">
+                <span>🖨️</span>
+                <span>Print Slip</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Financial Summary Cards -->
+          <div class="lg:col-span-6 space-y-3.5">
+            <div class="bg-gradient-to-br from-slate-900 via-slate-800 to-blue-950 text-white rounded-2xl p-5 shadow-xl border border-slate-700">
+              <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
+                <span class="font-bold tracking-wider uppercase">Total Day Revenue (P + D)</span>
+                <span class="text-amber-400 font-mono" id="sumShiftDate">23-10-2026</span>
+              </div>
+              <div class="text-3xl sm:text-4xl font-mono font-black text-amber-300" id="cardGrandTotalAmount">
+                ₹6,41,407
+              </div>
+
+              <div class="grid grid-cols-2 gap-3 mt-4 pt-3 border-t border-slate-700">
+                <div class="bg-slate-800/80 p-3 rounded-xl border border-slate-700">
+                  <span class="text-xs text-amber-400 font-bold block">⛽ Petrol Total</span>
+                  <span class="text-sm sm:text-base font-mono font-black text-white" id="cardPetrolAmt">₹3,55,835</span>
+                  <span class="text-[11px] font-mono text-slate-300 block" id="cardPetrolVol">3039.51 Litres</span>
+                </div>
+                <div class="bg-slate-800/80 p-3 rounded-xl border border-slate-700">
+                  <span class="text-xs text-cyan-400 font-bold block">🛢️ Diesel Total</span>
+                  <span class="text-sm sm:text-base font-mono font-black text-white" id="cardDieselAmt">₹2,85,572</span>
+                  <span class="text-[11px] font-mono text-slate-300 block" id="cardDieselVol">2713.79 Litres</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-4 shadow-md border border-slate-200 space-y-3">
+              <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                <h4 class="font-bold text-slate-800 text-xs sm:text-sm">💵 Collection Reconciliation</h4>
+                <span class="text-xs font-mono font-bold text-emerald-700">Full Tally</span>
+              </div>
+              <div class="grid grid-cols-3 gap-2 text-center">
+                <div class="bg-emerald-50 p-2 rounded-lg border border-emerald-200">
+                  <span class="text-[10px] font-bold text-emerald-800 uppercase block">Cash</span>
+                  <span class="font-mono font-black text-emerald-900 text-xs sm:text-sm" id="recTotalCash">₹4,66,000</span>
+                </div>
+                <div class="bg-blue-50 p-2 rounded-lg border border-blue-200">
+                  <span class="text-[10px] font-bold text-blue-800 uppercase block">UPI / QR</span>
+                  <span class="font-mono font-black text-blue-900 text-xs sm:text-sm" id="recTotalUpi">₹1,47,000</span>
+                </div>
+                <div class="bg-purple-50 p-2 rounded-lg border border-purple-200">
+                  <span class="text-[10px] font-bold text-purple-800 uppercase block">Card Swipe</span>
+                  <span class="font-mono font-black text-purple-900 text-xs sm:text-sm" id="recTotalCard">₹21,000</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Station Table -->
+        <div class="bg-white rounded-2xl shadow-md border border-slate-200 p-4 space-y-3">
+          <h4 class="font-bold text-slate-900 text-sm">⛽ Station-Wise Breakdown (S1, S2, S3, S4)</h4>
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-100 text-slate-700 uppercase font-bold text-[10px] border-b border-slate-200">
+                  <th class="p-2.5">Station</th>
+                  <th class="p-2.5">Pump</th>
+                  <th class="p-2.5">Attendant</th>
+                  <th class="p-2.5">Petrol (Code & Litres)</th>
+                  <th class="p-2.5">Diesel (Code & Litres)</th>
+                  <th class="p-2.5">Petrol ₹</th>
+                  <th class="p-2.5">Diesel ₹</th>
+                  <th class="p-2.5 text-right">Total ₹</th>
+                </tr>
+              </thead>
+              <tbody id="adminSummaryTableBody" class="divide-y divide-slate-100 font-medium"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUB-TAB 2: FLEET VEHICLE LEDGER & SUM CALCULATOR -->
+      <div id="admSection-fleet" class="space-y-4 hidden">
+        <div class="bg-gradient-to-r from-blue-900 to-indigo-950 text-white rounded-2xl p-5 shadow-xl border border-blue-800 space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div class="flex-1 min-w-[240px]">
+              <label class="text-xs text-blue-200 font-bold block mb-1">వాహనం నంబర్ ఎంచుకో (Select Vehicle for Calculation):</label>
+              <input type="text" id="adminFleetVehicleSearch" oninput="calculateVehicleSum()" placeholder="Type vehicle number e.g. AP 21 TC 4488" class="w-full bg-white/10 text-white border border-blue-400/40 rounded-xl px-3 py-2 text-sm font-mono font-bold uppercase focus:outline-none">
+            </div>
+            <button onclick="calculateVehicleSum()" class="bg-amber-400 hover:bg-amber-500 text-slate-900 font-black text-xs py-2.5 px-4 rounded-xl shadow self-end">
+              🔍 Calculate Sum
+            </button>
+          </div>
+
+          <div id="vehicleSumResultBox" class="bg-black/30 rounded-xl p-4 border border-white/10 grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+            <div>
+              <span class="text-[10px] text-blue-200 font-bold block uppercase">Vehicle Number</span>
+              <span class="font-mono text-base font-black text-amber-300" id="fleetResVehicleNo">--</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-blue-200 font-bold block uppercase">Total Litres Dispensed</span>
+              <span class="font-mono text-base font-black text-white" id="fleetResTotalLitres">0.00 L</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-blue-200 font-bold block uppercase">Total Accumulated Sum</span>
+              <span class="font-mono text-base font-black text-amber-400" id="fleetResTotalAmount">₹0</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-rose-300 font-bold block uppercase">Unsettled Due</span>
+              <span class="font-mono text-base font-black text-rose-400" id="fleetResDueAmount">₹0</span>
+            </div>
+          </div>
+
+          <div class="flex justify-end pt-1">
+            <button onclick="settleCurrentVehicleFleet()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs py-2 px-4 rounded-xl shadow">
+              ✓ Settle / Clear Vehicle Balance
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-md border border-slate-200 p-4 space-y-3">
+          <h4 class="font-bold text-slate-900 text-sm">Historical Fueling Log (అన్ని లావాదేవీలు)</h4>
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-100 text-slate-700 uppercase font-bold text-[10px] border-b border-slate-200">
+                  <th class="p-2.5">Date & Time</th>
+                  <th class="p-2.5">Vehicle No</th>
+                  <th class="p-2.5">Driver</th>
+                  <th class="p-2.5">Station</th>
+                  <th class="p-2.5">Fuel</th>
+                  <th class="p-2.5">Litres</th>
+                  <th class="p-2.5">Rate (₹)</th>
+                  <th class="p-2.5">Total Amount (₹)</th>
+                  <th class="p-2.5">Status</th>
+                </tr>
+              </thead>
+              <tbody id="adminFleetTableBody" class="divide-y divide-slate-100 font-medium"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUB-TAB 3: REMINDERS -->
+      <div id="admSection-reminders" class="space-y-4 hidden">
+        <div class="bg-white rounded-2xl shadow-md border border-slate-200 p-4 space-y-3">
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-100 text-slate-700 uppercase font-bold text-[10px] border-b border-slate-200">
+                  <th class="p-2.5">Date & Time</th>
+                  <th class="p-2.5">Customer Name</th>
+                  <th class="p-2.5">Vehicle No</th>
+                  <th class="p-2.5">Phone</th>
+                  <th class="p-2.5">Station</th>
+                  <th class="p-2.5">Amount (₹)</th>
+                  <th class="p-2.5">Notes</th>
+                  <th class="p-2.5">Status</th>
+                  <th class="p-2.5 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody id="adminRemindersTableBody" class="divide-y divide-slate-100 font-medium"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUB-TAB 4: EMPLOYEES KYC -->
+      <div id="admSection-employees" class="space-y-4 hidden">
+        <div class="flex justify-between items-center">
+          <h3 class="font-black text-slate-900 text-base">సిబ్బంది పూర్తి వివరాలు (Employee KYC & Logins)</h3>
+          <button onclick="openAddEmployeeModal()" class="bg-slate-900 hover:bg-black text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow">
+            ➕ Add Employee
+          </button>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-md border border-slate-200 p-4 space-y-3">
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-100 text-slate-700 uppercase font-bold text-[10px] border-b border-slate-200">
+                  <th class="p-3">Employee Name</th>
+                  <th class="p-3">Login Mobile</th>
+                  <th class="p-3">Father Name</th>
+                  <th class="p-3">Village</th>
+                  <th class="p-3">Aadhaar</th>
+                  <th class="p-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="adminEmployeesTableBody" class="divide-y divide-slate-100 font-medium"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUB-TAB 5: DUTY ALLOCATION -->
+      <div id="admSection-roster" class="space-y-4 hidden">
+        <div class="flex justify-between items-center">
+          <h3 class="font-black text-slate-900 text-base">డ్యూటీ కేటాయింపు (Duty & Pump Allocation)</h3>
+          <button onclick="saveDutyRosterAssignments()" class="bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs px-4 py-2 rounded-xl shadow">
+            💾 Save Allocation
+          </button>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="dutyRosterCardsContainer"></div>
+      </div>
+
+      <!-- SUB-TAB 6: PLUGGABLE DBS (PDBS) -->
+      <div id="admSection-pdbs" class="space-y-4 hidden">
+        <div class="flex justify-between items-center">
+          <h3 class="font-black text-slate-900 text-base">ప్లగ్గబుల్ డేటాబేస్‌లు (Oracle PDBs)</h3>
+          <button onclick="openCreatePdbModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-xl shadow">
+            ➕ Provision New Oil Pump PDB
+          </button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="pdbTenantsContainer"></div>
+      </div>
+
+      <!-- SUB-TAB 7: RATES -->
+      <div id="admSection-rates" class="space-y-4 hidden">
+        <div class="max-w-xl mx-auto bg-white rounded-2xl shadow-md border border-slate-200 p-6 space-y-4">
+          <h3 class="text-base font-black text-slate-900">IOCL Daily Rate Setting (ధరల మార్పు)</h3>
+          <div class="space-y-3.5">
+            <div>
+              <label class="text-xs font-bold text-slate-700 block mb-1">Effective Shift Date:</label>
+              <input type="date" id="rateSetDate" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm font-bold text-slate-900">
+            </div>
+            <div class="grid grid-cols-2 gap-3.5">
+              <div class="bg-amber-50 p-3.5 rounded-xl border border-amber-300">
+                <label class="text-xs font-black text-amber-950 block mb-1">⛽ Petrol Rate (₹/L):</label>
+                <input type="number" step="0.01" id="rateSetPetrol" value="117.07" class="w-full bg-white border border-amber-400 rounded-lg px-3 py-2 font-mono text-lg font-black text-amber-950">
+              </div>
+              <div class="bg-blue-50 p-3.5 rounded-xl border border-blue-300">
+                <label class="text-xs font-black text-blue-950 block mb-1">🛢️ Diesel Rate (₹/L):</label>
+                <input type="number" step="0.01" id="rateSetDiesel" value="105.23" class="w-full bg-white border border-blue-400 rounded-lg px-3 py-2 font-mono text-lg font-black text-blue-950">
+              </div>
+            </div>
+            <button onclick="saveDailyRates()" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-black text-sm py-3 rounded-xl shadow">
+              Update Fuel Rates & Recalculate Slip
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUB-TAB 8: TANK STOCK -->
+      <div id="admSection-tanks" class="space-y-4 hidden">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5" id="tanksContainer"></div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: CHANGE PASSWORD (FOR STAFF & ADMIN) -->
+  <!-- User requested: "lets create logins for each employee and allow then the password change in case to change" -->
+  <!-- ============================================================== -->
+  <div id="modalChangePassword" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-sm w-full p-6 space-y-4 animate-scaleIn">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-2.5">
+        <h3 class="font-black text-slate-900 text-base">🔑 పాస్‌వర్డ్ మార్చు (Change Password)</h3>
+        <button onclick="closeChangePasswordModal()" class="text-slate-400 hover:text-slate-700 text-xl font-bold">✕</button>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="text-xs font-bold text-slate-700 block mb-1">ప్రస్తుత పాస్‌వర్డ్ (Current Password):</label>
+          <input type="password" id="cpOldPassword" placeholder="Current Password" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs font-bold text-slate-900">
+        </div>
+        <div>
+          <label class="text-xs font-bold text-slate-700 block mb-1">కొత్త పాస్‌వర్డ్ (New Password):</label>
+          <input type="password" id="cpNewPassword" placeholder="New Password (min 3 chars)" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs font-bold text-slate-900">
+        </div>
+        <div>
+          <label class="text-xs font-bold text-slate-700 block mb-1">కన్ఫర్మ్ పాస్‌వర్డ్ (Confirm Password):</label>
+          <input type="password" id="cpConfirmPassword" placeholder="Confirm New Password" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs font-bold text-slate-900">
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2 border-t border-slate-200">
+        <button onclick="closeChangePasswordModal()" class="text-xs font-bold text-slate-600 px-3 py-1.5 rounded-lg">Cancel</button>
+        <button onclick="submitChangePassword()" class="bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs px-4 py-2 rounded-lg shadow">
+          Update Password
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: EMPLOYEE KYC PERSONAL DETAILS -->
+  <div id="modalEmpProfile" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-md w-full p-6 space-y-4 animate-scaleIn">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-12 h-12 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-2xl font-black">👤</div>
+          <div>
+            <h3 class="font-black text-slate-900 text-base" id="profEmpName">Ramesh Kumar</h3>
+            <span class="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-bold" id="profEmpRole">Attendant</span>
+          </div>
+        </div>
+        <button onclick="closeEmpProfileModal()" class="text-slate-400 hover:text-slate-700 text-xl font-bold">✕</button>
+      </div>
+
+      <div class="space-y-2.5 text-xs">
+        <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 flex justify-between">
+          <span class="text-slate-500 font-bold">Login Mobile / Username:</span>
+          <span class="font-mono font-black text-slate-900" id="profEmpLoginPhone">-</span>
+        </div>
+        <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 flex justify-between">
+          <span class="text-slate-500 font-bold">Father's Name (తండ్రి పేరు):</span>
+          <span class="font-black text-slate-900" id="profEmpFatherName">-</span>
+        </div>
+        <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 flex justify-between">
+          <span class="text-slate-500 font-bold">Village (సొంత గ్రామం):</span>
+          <span class="font-black text-slate-900" id="profEmpVillage">-</span>
+        </div>
+        <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 flex justify-between">
+          <span class="text-slate-500 font-bold">Aadhaar (ఆధార్):</span>
+          <span class="font-mono font-black text-slate-900" id="profEmpAadhaar">-</span>
+        </div>
+        <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 flex justify-between">
+          <span class="text-slate-500 font-bold">Emergency Phone:</span>
+          <span class="font-mono font-bold text-rose-700" id="profEmpEmergency">-</span>
+        </div>
+        <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 flex justify-between">
+          <span class="text-slate-500 font-bold">Address:</span>
+          <span class="font-semibold text-slate-900 text-right max-w-[200px]" id="profEmpAddress">-</span>
+        </div>
+      </div>
+
+      <div class="pt-2 border-t border-slate-200 flex justify-end">
+        <button onclick="closeEmpProfileModal()" class="bg-slate-900 text-white font-bold text-xs px-4 py-2 rounded-xl">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD EMPLOYEE -->
+  <div id="modalAddEmployee" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-md w-full p-5 space-y-3 animate-scaleIn max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+        <h3 class="font-black text-slate-900 text-base">కొత్త ఉద్యోగిని చేర్చండి (Add Employee)</h3>
+        <button onclick="closeAddEmployeeModal()" class="text-slate-400 hover:text-slate-700 text-xl font-bold">✕</button>
+      </div>
+
+      <div class="space-y-2.5 text-xs">
+        <div>
+          <label class="font-bold text-slate-700 block mb-0.5">పూర్తి పేరు (Full Name) *:</label>
+          <input type="text" id="modalEmpName" placeholder="e.g. Ramesh Kumar" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 font-bold text-slate-900">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="font-bold text-slate-700 block mb-0.5">మొబైల్ / లాగిన్ యూజర్ *:</label>
+            <input type="tel" id="modalEmpPhone" placeholder="98480xxxxx" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 font-mono font-bold">
+          </div>
+          <div>
+            <label class="font-bold text-slate-700 block mb-0.5">పాస్‌వర్డ్ (Default: 1234):</label>
+            <input type="text" id="modalEmpPassword" value="1234" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 font-mono font-bold">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="font-bold text-slate-700 block mb-0.5">తండ్రి పేరు (Father's Name):</label>
+            <input type="text" id="modalEmpFatherName" placeholder="Father's name" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5">
+          </div>
+          <div>
+            <label class="font-bold text-slate-700 block mb-0.5">సొంత గ్రామం (Village):</label>
+            <input type="text" id="modalEmpVillage" placeholder="Native village" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5">
+          </div>
+        </div>
+        <div>
+          <label class="font-bold text-slate-700 block mb-0.5">ఆధార్ నంబర్ (Aadhaar No):</label>
+          <input type="text" id="modalEmpAadhaar" placeholder="1234 5678 9012" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 font-mono">
+        </div>
+        <div>
+          <label class="font-bold text-slate-700 block mb-0.5">అత్యవసర ఫోన్ (Emergency Contact):</label>
+          <input type="text" id="modalEmpEmergency" placeholder="9440123999 (Brother Siva)" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5">
+        </div>
+        <div>
+          <label class="font-bold text-slate-700 block mb-0.5">ప్రస్తుత చిరునామా (Address):</label>
+          <input type="text" id="modalEmpAddress" placeholder="Local address" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5">
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2 border-t border-slate-200">
+        <button onclick="closeAddEmployeeModal()" class="text-xs font-bold text-slate-600 px-3 py-1.5 rounded-lg">Cancel</button>
+        <button onclick="saveNewEmployee()" class="bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs px-4 py-1.5 rounded-lg shadow">Save Employee</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: PROVISION NEW PDB -->
+  <div id="modalCreatePdb" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-md w-full p-5 space-y-3.5 animate-scaleIn">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-2.5">
+        <h3 class="font-black text-slate-900 text-base">Provision New Oil Pump Database</h3>
+        <button onclick="closeCreatePdbModal()" class="text-slate-400 hover:text-slate-700 text-xl font-bold">✕</button>
+      </div>
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="font-bold text-slate-700 block mb-0.5">Oil Pump Name *:</label>
+          <input type="text" id="modalPdbName" placeholder="e.g. Sri Lakshmi Filling Station" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 font-bold text-slate-900">
+        </div>
+        <div>
+          <label class="font-bold text-slate-700 block mb-0.5">Brand:</label>
+          <select id="modalPdbBrand" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 font-bold text-slate-900">
+            <option value="Indian Oil">Indian Oil (IOCL)</option>
+            <option value="Bharat Petroleum">Bharat Petroleum (BPCL)</option>
+            <option value="Hindustan Petroleum">Hindustan Petroleum (HPCL)</option>
+            <option value="Nayara Energy">Nayara Energy</option>
+            <option value="Shell">Shell Petroleum</option>
+          </select>
+        </div>
+        <div>
+          <label class="font-bold text-slate-700 block mb-0.5">Admin Security PIN:</label>
+          <input type="password" id="modalPdbPin" value="1234" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 font-mono font-bold text-slate-900">
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 pt-2.5 border-t border-slate-200">
+        <button onclick="closeCreatePdbModal()" class="text-xs font-bold text-slate-600 px-3 py-1.5 rounded-lg">Cancel</button>
+        <button onclick="provisionNewOilPumpPdb()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-1.5 rounded-lg shadow">Provision Database</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-slate-900 text-slate-400 text-xs py-3 px-4 border-t border-slate-800 mt-auto">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+      <div class="flex items-center gap-2">
+        <span class="text-amber-400 font-bold" id="footerStationName">SRR FILLING STATION</span>
+        <span>•</span>
+        <span>IOCL Bunk Manager</span>
+      </div>
+      <div class="text-[11px] text-slate-500 font-mono">
+        Multi-Tenant PDB Architecture
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

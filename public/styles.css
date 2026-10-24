@@ -1,0 +1,69 @@
+/* SRR Filling Station Custom Styles */
+
+body {
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.font-mono {
+  font-family: 'JetBrains Mono', 'Chakra Petch', monospace;
+}
+
+/* Digital Pump LCD Display styling */
+.lcd-display {
+  background-color: #0d131f;
+  border: 2px solid #334155;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.8);
+  color: #fbbf24;
+  font-family: 'Chakra Petch', 'JetBrains Mono', monospace;
+  letter-spacing: 1px;
+}
+
+/* Active tab styling */
+.station-tab-btn.active {
+  border-color: #f97316 !important;
+  background-color: #fff7ed !important;
+  box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.2);
+}
+
+.admin-tab-btn.active {
+  background-color: #ea580c !important;
+  color: #ffffff !important;
+  border-color: #ea580c !important;
+}
+
+/* Smooth modal animation */
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-scaleIn {
+  animation: scaleIn 0.15s ease-out forwards;
+}
+
+/* Print Styling for Daily Slip */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #preSlipText, #preSlipText * {
+    visibility: visible;
+  }
+  #preSlipText {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    color: black !important;
+    background: white !important;
+    font-size: 14pt !important;
+    line-height: 1.6;
+    padding: 20px;
+  }
+}
