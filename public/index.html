@@ -120,21 +120,21 @@
         <form id="loginForm" onsubmit="handleLoginSubmit(event)" class="space-y-4">
           <div>
             <label class="text-xs font-bold text-slate-700 block mb-1" id="lblLoginUser">
-              First Name / Username (సిబ్బంది మొదటి పేరు లేదా యూజర్‌నేమ్):
+              Username / First Name (యూజర్‌నేమ్ లేదా మొదటి పేరు):
             </label>
             <div class="relative">
               <span class="absolute left-3 top-2.5 text-slate-400">👤</span>
-              <input type="text" id="loginUsernameInput" required placeholder="e.g. Ramesh, Suresh or admin" class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl pl-9 pr-3 py-2 text-sm font-bold text-slate-900 focus:border-orange-500 focus:outline-none focus:bg-white shadow-sm">
+              <input type="text" id="loginUsernameInput" required placeholder="e.g. emp, ramesh, or admin" class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl pl-9 pr-3 py-2 text-sm font-bold text-slate-900 focus:border-orange-500 focus:outline-none focus:bg-white shadow-sm">
             </div>
           </div>
 
           <div>
             <label class="text-xs font-bold text-slate-700 block mb-1" id="lblLoginPass">
-              Duty PIN / Password (డ్యూటీ పిన్ లేదా పాస్‌వర్డ్):
+              Password (పాస్‌వర్డ్):
             </label>
             <div class="relative">
-              <span class="absolute left-3 top-2.5 text-slate-400">🔑</span>
-              <input type="password" id="loginPasswordInput" required placeholder="Enter Duty PIN (e.g. 1122) or Password" class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl pl-9 pr-10 py-2 text-sm font-bold text-slate-900 focus:border-orange-500 focus:outline-none focus:bg-white shadow-sm">
+              <span class="absolute left-3 top-2.5 text-slate-400">🔒</span>
+              <input type="password" id="loginPasswordInput" required placeholder="Enter password (default: 123)" class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl pl-9 pr-10 py-2 text-sm font-bold text-slate-900 focus:border-orange-500 focus:outline-none focus:bg-white shadow-sm">
               <button type="button" onclick="togglePasswordVisibility('loginPasswordInput')" class="absolute right-3 top-2.5 text-slate-400 hover:text-slate-700">👁️</button>
             </div>
           </div>
@@ -146,9 +146,9 @@
           </button>
         </form>
 
-        <div class="pt-3 border-t border-slate-100 text-center text-[11px] text-slate-500 font-medium">
-          Staff: <strong class="text-slate-800 font-mono">First Name</strong> (e.g. Ramesh) + <strong class="text-slate-800 font-mono">Duty PIN</strong> (e.g. 1122)<br>
-          Admin: <strong class="text-slate-800 font-mono">admin</strong> / <strong class="text-slate-800 font-mono">1234</strong>
+        <div class="pt-3 border-t border-slate-100 text-center text-[11px] text-slate-600 font-medium space-y-0.5">
+          <div>Staff Login: <strong class="text-slate-900 font-mono font-bold">emp</strong> (or First Name) • Password: <strong class="text-amber-700 font-mono font-black">123</strong></div>
+          <div class="text-[10px] text-slate-500">Admin / Mgmt / Owner: <strong class="font-mono">admin</strong> / <strong class="font-mono">mgmt</strong> / <strong class="font-mono">owner</strong> • Password: <strong class="text-amber-700 font-mono font-black">123</strong></div>
         </div>
       </div>
     </div>

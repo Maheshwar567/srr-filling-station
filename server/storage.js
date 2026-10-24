@@ -15,7 +15,7 @@ function slugify(text) {
 }
 
 // Initial template for a brand new Oil Pump Pluggable Database (PDB)
-function createPdbTemplate(stationName, brand = "Indian Oil", adminPin = "1234", location = "Highway Bunk") {
+function createPdbTemplate(stationName, brand = "Indian Oil", adminPin = "123", location = "Highway Bunk") {
   return {
     config: {
       stationId: slugify(stationName),
@@ -24,6 +24,13 @@ function createPdbTemplate(stationName, brand = "Indian Oil", adminPin = "1234",
       oilCompany: brand === "Indian Oil" ? "Indian Oil Corporation Ltd. (IOCL)" : (brand === "Bharat Petroleum" ? "Bharat Petroleum Corporation Ltd. (BPCL)" : brand),
       location: location,
       adminPin: adminPin,
+      adminUsername: "admin",
+      adminPassword: "123",
+      mgmtUsername: "mgmt",
+      mgmtPassword: "123",
+      ownerUsername: "owner",
+      ownerPassword: "123",
+      developerPassword: "123",
       pumps: [
         {
           id: "Pump1",

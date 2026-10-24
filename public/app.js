@@ -2306,7 +2306,7 @@ function openAddEmployeeModal() {
   document.getElementById('modalEmpFatherName').value = '';
   document.getElementById('modalEmpVillage').value = '';
   document.getElementById('modalEmpPhone').value = '';
-  document.getElementById('modalEmpPassword').value = '1234';
+  document.getElementById('modalEmpPassword').value = '123';
   document.getElementById('modalEmpAadhaar').value = '';
   document.getElementById('modalEmpEmergency').value = '';
   document.getElementById('modalEmpAddress').value = '';
@@ -2322,7 +2322,7 @@ async function saveNewEmployee() {
   const fatherName = document.getElementById('modalEmpFatherName').value.trim();
   const villageName = document.getElementById('modalEmpVillage').value.trim();
   const phone = document.getElementById('modalEmpPhone').value.trim();
-  const password = document.getElementById('modalEmpPassword').value.trim() || '1234';
+  const password = document.getElementById('modalEmpPassword').value.trim() || '123';
   const aadhaarNumber = document.getElementById('modalEmpAadhaar').value.trim();
   const emergencyContact = document.getElementById('modalEmpEmergency').value.trim();
   const address = document.getElementById('modalEmpAddress').value.trim();

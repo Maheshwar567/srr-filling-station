@@ -5,7 +5,14 @@
     "brand": "Indian Oil",
     "oilCompany": "Indian Oil Corporation Ltd. (IOCL)",
     "location": "Highway Point",
-    "adminPin": "1234",
+    "adminPin": "123",
+    "adminUsername": "admin",
+    "adminPassword": "123",
+    "mgmtUsername": "mgmt",
+    "mgmtPassword": "123",
+    "ownerUsername": "owner",
+    "ownerPassword": "123",
+    "developerPassword": "123",
     "pumps": [
       {
         "id": "Pump1",
@@ -87,9 +94,7 @@
           }
         ]
       }
-    ],
-    "adminUsername": "admin",
-    "adminPassword": "1234"
+    ]
   },
   "rates": [
     {
@@ -119,7 +124,7 @@
       "joiningDate": "2024-01-10",
       "active": true,
       "username": "9848011223",
-      "password": "1234"
+      "password": "123"
     },
     {
       "id": "emp2",
@@ -134,7 +139,7 @@
       "joiningDate": "2024-03-15",
       "active": true,
       "username": "9848022334",
-      "password": "1234"
+      "password": "123"
     },
     {
       "id": "emp3",
@@ -149,7 +154,7 @@
       "joiningDate": "2024-05-20",
       "active": true,
       "username": "9848033445",
-      "password": "1234"
+      "password": "123"
     },
     {
       "id": "emp4",
@@ -164,7 +169,7 @@
       "joiningDate": "2024-08-01",
       "active": true,
       "username": "9848044556",
-      "password": "1234"
+      "password": "123"
     },
     {
       "id": "emp5",
@@ -179,7 +184,7 @@
       "joiningDate": "2025-01-05",
       "active": true,
       "username": "9848055667",
-      "password": "1234"
+      "password": "123"
     },
     {
       "id": "emp6",
@@ -194,7 +199,7 @@
       "joiningDate": "2025-03-12",
       "active": true,
       "username": "9848066778",
-      "password": "1234"
+      "password": "123"
     }
   ],
   "shiftAssignments": {
