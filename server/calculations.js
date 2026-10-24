@@ -167,6 +167,7 @@ P+D=${totalPetrolAmount}+${totalDieselAmount}
       netCollected: totalCash + totalUpi + totalCard - totalExpenses
     },
     stations: stationBreakdown,
+    stationBreakdown: stationBreakdown,
     slipText
   };
 }

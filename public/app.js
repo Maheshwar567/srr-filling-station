@@ -1476,12 +1476,140 @@ function renderStationBreakdownCards() {
         </div>
 
         <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
-          <span class="text-slate-500 font-bold">Station Total:</span>
-          <span class="font-mono font-black text-slate-900 text-sm">₹${info.totalAmount.toLocaleString('en-IN')}</span>
+          <div>
+            <span class="text-slate-500 font-bold block text-[10px]">Station Total:</span>
+            <span class="font-mono font-black text-slate-900 text-sm">₹${info.totalAmount.toLocaleString('en-IN')}</span>
+          </div>
+          <button onclick="openAdminEditStationModal('${stKey}')" class="bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold text-[11px] px-2.5 py-1 rounded-lg border border-amber-300 shadow-sm flex items-center gap-1 transition-all active:scale-95">
+            <span>✏️</span>
+            <span>సవరణ (Edit)</span>
+          </button>
         </div>
       </div>
     `;
   }).join('');
+}
+
+// Admin Station Readings Override Modal
+function openAdminEditStationModal(stKey) {
+  const modal = document.getElementById('modalAdminEditStationReading');
+  if (!modal) return;
+
+  const cfg = STATION_CONFIG[stKey] || STATION_CONFIG.S1;
+  const shiftSt = STATE.shift?.stations?.[stKey] || {};
+  const sumSt = STATE.summary?.stationBreakdown?.[stKey] || {};
+
+  document.getElementById('admEditStationId').value = stKey;
+  document.getElementById('admModalStationTitle').innerText = `స్టేషన్ ${stKey} రీడింగ్ సవరణ (Edit Station ${stKey})`;
+  document.getElementById('admModalStationSubtitle').innerText = `${cfg.pump} (${cfg.side}) • Nozzles ${cfg.petrolCode} & ${cfg.dieselCode}`;
+  document.getElementById('admEditEmployeeName').value = shiftSt.employeeName || sumSt.employeeName || '';
+
+  document.getElementById('admEditPetrolMeterCode').innerText = `పెట్రోల్ (Petrol - ${cfg.petrolCode})`;
+  document.getElementById('admEditDieselMeterCode').innerText = `డీజిల్ (Diesel - ${cfg.dieselCode})`;
+
+  const pOpen = shiftSt.meters?.petrol?.open ?? sumSt.petrol?.open ?? 0;
+  const pClose = shiftSt.meters?.petrol?.close ?? sumSt.petrol?.close ?? 0;
+  const pTest = shiftSt.meters?.petrol?.testing ?? sumSt.petrol?.testing ?? 0;
+
+  const dOpen = shiftSt.meters?.diesel?.open ?? sumSt.diesel?.open ?? 0;
+  const dClose = shiftSt.meters?.diesel?.close ?? sumSt.diesel?.close ?? 0;
+  const dTest = shiftSt.meters?.diesel?.testing ?? sumSt.diesel?.testing ?? 0;
+
+  document.getElementById('admEditPetrolOpen').value = pOpen;
+  document.getElementById('admEditPetrolClose').value = pClose || '';
+  document.getElementById('admEditPetrolTesting').value = pTest || 0;
+
+  document.getElementById('admEditDieselOpen').value = dOpen;
+  document.getElementById('admEditDieselClose').value = dClose || '';
+  document.getElementById('admEditDieselTesting').value = dTest || 0;
+
+  calculateAdminLiveEditLitres();
+  modal.classList.remove('hidden');
+}
+
+function closeAdminEditStationModal() {
+  const modal = document.getElementById('modalAdminEditStationReading');
+  if (modal) modal.classList.add('hidden');
+}
+
+function calculateAdminLiveEditLitres() {
+  const pOpen = parseFloat(document.getElementById('admEditPetrolOpen')?.value) || 0;
+  const pClose = parseFloat(document.getElementById('admEditPetrolClose')?.value) || 0;
+  const pTest = parseFloat(document.getElementById('admEditPetrolTesting')?.value) || 0;
+  const pLitres = pClose > pOpen ? Math.max(0, pClose - pOpen - pTest) : 0;
+  const pRate = STATE.rates?.petrol || 117.07;
+  const pAmt = Math.round(pLitres * pRate);
+
+  const dOpen = parseFloat(document.getElementById('admEditDieselOpen')?.value) || 0;
+  const dClose = parseFloat(document.getElementById('admEditDieselClose')?.value) || 0;
+  const dTest = parseFloat(document.getElementById('admEditDieselTesting')?.value) || 0;
+  const dLitres = dClose > dOpen ? Math.max(0, dClose - dOpen - dTest) : 0;
+  const dRate = STATE.rates?.diesel || 105.23;
+  const dAmt = Math.round(dLitres * dRate);
+
+  const totAmt = pAmt + dAmt;
+
+  const pPrev = document.getElementById('admEditPetrolPreview');
+  const dPrev = document.getElementById('admEditDieselPreview');
+  const totPrev = document.getElementById('admEditStationTotalPreview');
+
+  if (pPrev) pPrev.innerText = `${pLitres.toFixed(2)} L • ₹${pAmt.toLocaleString('en-IN')}`;
+  if (dPrev) dPrev.innerText = `${dLitres.toFixed(2)} L • ₹${dAmt.toLocaleString('en-IN')}`;
+  if (totPrev) totPrev.innerText = `₹${totAmt.toLocaleString('en-IN')}`;
+}
+
+async function saveAdminStationReading() {
+  const stationId = document.getElementById('admEditStationId').value;
+  const employeeName = document.getElementById('admEditEmployeeName').value.trim();
+  const pOpen = parseFloat(document.getElementById('admEditPetrolOpen').value) || 0;
+  const pClose = parseFloat(document.getElementById('admEditPetrolClose').value) || 0;
+  const pTest = parseFloat(document.getElementById('admEditPetrolTesting').value) || 0;
+
+  const dOpen = parseFloat(document.getElementById('admEditDieselOpen').value) || 0;
+  const dClose = parseFloat(document.getElementById('admEditDieselClose').value) || 0;
+  const dTest = parseFloat(document.getElementById('admEditDieselTesting').value) || 0;
+
+  if (pClose > 0 && pClose < pOpen) {
+    showToast('Petrol closing reading cannot be less than opening reading', 'error');
+    return;
+  }
+  if (dClose > 0 && dClose < dOpen) {
+    showToast('Diesel closing reading cannot be less than opening reading', 'error');
+    return;
+  }
+
+  const payload = {
+    date: STATE.selectedDate,
+    stationId,
+    employeeName,
+    meters: {
+      petrol: { open: pOpen, close: pClose, testing: pTest },
+      diesel: { open: dOpen, close: dClose, testing: dTest }
+    }
+  };
+
+  try {
+    const res = await fetch(`/api/shifts/station-readings?pump=${STATE.activeTenant}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const result = await res.json();
+    if (result.success) {
+      showToast(`Station ${stationId} readings saved! Daily slip auto-recalculated.`);
+      closeAdminEditStationModal();
+      await loadAllData();
+    } else {
+      showToast(result.error || 'Failed to save readings', 'error');
+    }
+  } catch (err) {
+    showToast('Server error while saving station readings', 'error');
+  }
+}
+
+async function refreshAdminNozzles() {
+  await loadAllData();
+  showToast('🔄 Nozzles auto-synced! Daily sales slip refreshed.');
 }
 
 // --- ADMIN FLEET VEHICLE LEDGER & SUM CALCULATOR ---
