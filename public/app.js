@@ -98,11 +98,12 @@ function showToast(message, type = 'success') {
 }
 
 // --- LANGUAGE SWITCHER CONTROLLER (ENGLISH | TELUGU) ---
+// User requirement: "when i choose english give english, telugu mean give telugu only"
 function setAppLanguage(lang) {
   STATE.lang = lang;
   localStorage.setItem('srr_lang', lang);
   applyLanguageUI();
-  showToast(lang === 'te' ? 'భాష: తెలుగు అమర్చబడింది' : 'Language set to English');
+  showToast(lang === 'te' ? 'భాష తెలుగులోకి మార్చబడింది' : 'Language set to English');
 }
 
 function applyLanguageUI() {
@@ -120,7 +121,7 @@ function applyLanguageUI() {
     }
   }
 
-  // Update tabs text
+  // 1. Employee / Attendant Navigation Tabs
   const tReading = document.getElementById('tabText-reading');
   const tTesting = document.getElementById('tabText-testing');
   const tCard = document.getElementById('tabText-card');
@@ -129,26 +130,80 @@ function applyLanguageUI() {
   const tHandover = document.getElementById('tabText-handover');
 
   if (tReading) tReading.innerText = isTe ? 'రీడింగ్ నమోదు' : 'Meter Reading';
-  if (tTesting) tTesting.innerText = isTe ? 'టెస్టింగ్' : 'Testing Litres';
-  if (tCard) tCard.innerText = isTe ? 'కార్డ్ స్వైప్' : 'Card Swipes';
-  if (tReminder) tReminder.innerText = isTe ? 'రిమైండర్' : 'Reminder';
-  if (tVehicle) tVehicle.innerText = isTe ? 'వాహనం ఖాతా' : 'Vehicle Fleet';
+  if (tTesting) tTesting.innerText = isTe ? 'టెస్టింగ్ లీటర్లు' : 'Testing Litres';
+  if (tCard) tCard.innerText = isTe ? 'కార్డ్ స్వైపులు' : 'Card Swipes';
+  if (tReminder) tReminder.innerText = isTe ? 'రిమైండర్లు' : 'Reminders';
+  if (tVehicle) tVehicle.innerText = isTe ? 'వాహనాల ఖాతా' : 'Vehicle Fleet';
   if (tHandover) tHandover.innerText = isTe ? 'నగదు లెక్క' : 'Cash Handover';
 
-  // Update login labels
+  // 2. Top Bar & Login Form
   const lblUser = document.getElementById('lblLoginUser');
   const lblPass = document.getElementById('lblLoginPass');
   const btnLogin = document.getElementById('btnLoginSubmit');
   const navSignIn = document.getElementById('navSignInLabel');
   const navLogout = document.getElementById('navLogoutLabel');
+  const navPassword = document.getElementById('navPasswordLabel');
 
-  if (lblUser) lblUser.innerText = isTe ? 'మొబైల్ నంబర్ / యూజర్‌నేమ్:' : 'Mobile Number / Username:';
+  if (lblUser) lblUser.innerText = isTe ? 'మొబైల్ నంబర్ లేదా యూజర్‌నేమ్:' : 'Mobile Number or Username:';
   if (lblPass) lblPass.innerText = isTe ? 'పాస్‌వర్డ్ / పిన్:' : 'Password / PIN:';
-  if (btnLogin) btnLogin.innerText = isTe ? 'లాగిన్ చేయండి (Sign In)' : 'Sign In';
-  if (navSignIn) navSignIn.innerText = isTe ? 'Sign In (లాగిన్)' : 'Sign In';
-  if (navLogout) navLogout.innerText = isTe ? 'Logout (నిష్క్రమించు)' : 'Logout';
+  if (btnLogin) btnLogin.innerText = isTe ? 'లాగిన్ చేయండి' : 'Sign In';
+  if (navSignIn) navSignIn.innerText = isTe ? 'లాగిన్' : 'Sign In';
+  if (navLogout) navLogout.innerText = isTe ? 'నిష్క్రమించు' : 'Logout';
+  if (navPassword) navPassword.innerText = isTe ? 'పాస్‌వర్డ్' : 'Password';
 
-  // Recalculate Live Handover Tally
+  // 3. Admin / Owner / Management Tabs
+  const tabSum = document.getElementById('admTab-summary');
+  const tabFin = document.getElementById('tabLabel-financials');
+  const tabFlt = document.getElementById('tabLabel-fleet');
+  const tabRem = document.getElementById('tabLabel-reminders');
+  const tabEmp = document.getElementById('admTab-employees');
+  const tabRos = document.getElementById('admTab-roster');
+  const tabRat = document.getElementById('admTab-rates');
+  const tabTnk = document.getElementById('admTab-tanks');
+  const tabPdb = document.getElementById('admTab-pdbs');
+
+  if (tabSum) tabSum.innerHTML = isTe ? '📄 రోజువారీ రసీదు' : '📄 Daily Sales Slip';
+  if (tabFin) tabFin.innerText = isTe ? 'ఆర్థిక నివేదికలు' : 'Financial Reports';
+  if (tabFlt) tabFlt.innerText = isTe ? 'వాహనాల లేడ్జర్' : 'Vehicle Fleet Ledger';
+  if (tabRem) tabRem.innerText = isTe ? 'రిమైండర్లు' : 'Reminders';
+  if (tabEmp) tabEmp.innerHTML = isTe ? '👥 ఉద్యోగుల వివరాలు' : '👥 Employee KYC';
+  if (tabRos) tabRos.innerHTML = isTe ? '📋 డ్యూటీ కేటాయింపు' : '📋 Duty Allocation';
+  if (tabRat) tabRat.innerHTML = isTe ? '🏷️ ఇంధనం ధరలు' : '🏷️ Rates';
+  if (tabTnk) tabTnk.innerHTML = isTe ? '🛢️ ట్యాంక్ స్టాక్' : '🛢️ Tank Stock';
+  if (tabPdb) tabPdb.innerHTML = isTe ? '🏢 ప్లగ్గబుల్ DBs' : '🏢 Pluggable DBs (PDBs)';
+
+  // 4. Update Active Daily Sales Slip text
+  if (STATE.summary) {
+    const preSlip = document.getElementById('preSlipText');
+    if (preSlip) {
+      preSlip.innerText = isTe ? (STATE.summary.slipTextTe || STATE.summary.slipText) : (STATE.summary.slipTextEn || STATE.summary.slipText);
+    }
+  }
+
+  // 5. Update Financial Reports Section (Owner only)
+  const finTitle = document.getElementById('finHeaderTitle');
+  const finSubtitle = document.getElementById('finHeaderSubtitle');
+  const finRefreshBtn = document.getElementById('finRefreshBtn');
+  const finTotalSalesLbl = document.getElementById('finLblTotalSales');
+  const finPetrolSoldLbl = document.getElementById('finLblPetrolSold');
+  const finDieselSoldLbl = document.getElementById('finLblDieselSold');
+  const finFleetDuesLbl = document.getElementById('finLblFleetDues');
+  const finHistSlipHeading = document.getElementById('finHistSlipHeading');
+  const finCopySlipBtn = document.getElementById('finCopySlipBtn');
+  const finPastShiftsHeading = document.getElementById('finPastShiftsHeading');
+
+  if (finTitle) finTitle.innerText = isTe ? 'బంక్ సమగ్ర ఆర్థిక నివేదికలు & రికార్డులు' : 'Bunk Financial Reports & Archive';
+  if (finSubtitle) finSubtitle.innerText = isTe ? 'బంక్ ఓనర్ ప్రత్యేకం • గత షిఫ్టుల రికార్డులు, రెవెన్యూ & వాహనాల బాకీల ఆడిట్' : 'Exclusive to Bunk Owner • Historical Shift Archives, Revenue & Fleet Debt Audit';
+  if (finRefreshBtn) finRefreshBtn.innerText = isTe ? 'తాజా వివరాలు' : 'Refresh Reports';
+  if (finTotalSalesLbl) finTotalSalesLbl.innerText = isTe ? 'మొత్తం అమ్మకాలు' : 'Accumulated Sales';
+  if (finPetrolSoldLbl) finPetrolSoldLbl.innerText = isTe ? 'అమ్మిన మొత్తం పెట్రోల్' : 'Total Petrol Sold';
+  if (finDieselSoldLbl) finDieselSoldLbl.innerText = isTe ? 'అమ్మిన మొత్తం డీజిల్' : 'Total Diesel Sold';
+  if (finFleetDuesLbl) finFleetDuesLbl.innerText = isTe ? 'రావలసిన వాహనాల బాకీలు' : 'Unsettled Fleet Dues';
+  if (finHistSlipHeading) finHistSlipHeading.innerText = isTe ? 'గత షిఫ్ట్ రసీదు' : 'Historical Daily Slip';
+  if (finCopySlipBtn) finCopySlipBtn.innerText = isTe ? 'రసీదు కాపీ చేయి' : 'Copy Slip';
+  if (finPastShiftsHeading) finPastShiftsHeading.innerText = isTe ? 'గత షిఫ్టుల పూర్తి రికార్డు' : 'Historical Shifts Archive';
+
+  // 6. Recalculate Live Handover Tally
   calculateLiveHandoverTally();
 }
 
@@ -248,7 +303,8 @@ function updateTicker() {
   if (rDiesel) rDiesel.value = STATE.rates.diesel;
 }
 
-// --- VIEW ROUTING (STAFF ONLY OR ADMIN ONLY UPON LOGIN) ---
+// --- VIEW ROUTING (ATTENDANT / MANAGEMENT / BUNK OWNER / DEVELOPER) ---
+// User requirement: "in bunk owner (lets keep mgmt) and lets create one more login with bunk owner(or only owner) to see all the financial report. Note : mgmt user will not be allowed to see the historical finance/sale/ whatever the old cannot viewed where as only owner can see it. bunk owner cannot know the PDB and all which developer can see"
 function routeUserView() {
   const loginView = document.getElementById('loginView');
   const empView = document.getElementById('employeeView');
@@ -257,6 +313,11 @@ function routeUserView() {
   const navGuest = document.getElementById('navGuestBox');
   const navUser = document.getElementById('navUserName');
   const navRole = document.getElementById('navUserRole');
+  const headerDateInput = document.getElementById('headerShiftDate');
+  const pdbDropdown = document.getElementById('headerTenantSelectorBox');
+  const pdbTab = document.getElementById('admTab-pdbs');
+  const finTab = document.getElementById('admTab-financials');
+  const isTe = STATE.lang === 'te';
 
   // Case 1: NOT LOGGED IN -> Show Login Box ONLY
   if (!STATE.currentUser) {
@@ -265,6 +326,7 @@ function routeUserView() {
     if (admView) admView.classList.add('hidden');
     if (navLogged) navLogged.classList.add('hidden');
     if (navGuest) navGuest.classList.remove('hidden');
+    if (pdbDropdown) pdbDropdown.classList.add('hidden');
     return;
   }
 
@@ -272,26 +334,60 @@ function routeUserView() {
   if (navGuest) navGuest.classList.add('hidden');
   if (navLogged) navLogged.classList.remove('hidden');
   if (navUser) navUser.innerText = STATE.currentUser.name || 'User';
-  if (navRole) navRole.innerText = STATE.currentUser.role === 'admin' ? 'Admin' : 'Staff';
 
-  // Case 2: ADMIN LOGGED IN -> Show Admin Dashboard ONLY
-  if (STATE.currentUser.role === 'admin') {
-    STATE.role = 'admin';
+  const userRole = STATE.currentUser.role;
+  let roleLabel = 'Staff';
+  if (userRole === 'owner') roleLabel = isTe ? 'ఓనర్' : 'Bunk Owner';
+  else if (userRole === 'mgmt') roleLabel = isTe ? 'మేనేజ్‌మెంట్' : 'Management';
+  else if (userRole === 'developer' || userRole === 'admin') roleLabel = isTe ? 'డెవలపర్' : 'Developer';
+  else roleLabel = isTe ? 'అటెండెంట్' : 'Attendant';
+  if (navRole) navRole.innerText = roleLabel;
+
+  // Case 2: MANAGEMENT / BUNK OWNER / DEVELOPER LOGGED IN
+  if (userRole === 'mgmt' || userRole === 'owner' || userRole === 'developer' || userRole === 'admin') {
+    STATE.role = userRole;
     STATE.adminUnlocked = true;
     if (loginView) loginView.classList.add('hidden');
     if (empView) empView.classList.add('hidden');
     if (admView) admView.classList.remove('hidden');
 
+    // --- ROLE RESTRICTION 1: PLUGGABLE DATABASES (DEVELOPER ONLY) ---
+    // User requirement: "bunk owner cannot know the PDB and all which developer can see (only developer related stuff)"
+    if (userRole === 'developer' || userRole === 'admin') {
+      if (pdbTab) pdbTab.classList.remove('hidden');
+      if (pdbDropdown) pdbDropdown.classList.remove('hidden');
+    } else {
+      if (pdbTab) pdbTab.classList.add('hidden');
+      if (pdbDropdown) pdbDropdown.classList.add('hidden');
+    }
+
+    // --- ROLE RESTRICTION 2: HISTORICAL FINANCIAL REPORTS (OWNER & DEVELOPER ONLY) ---
+    // User requirement: "mgmt user will not be allowed to see the historical finance/sale/ whatever the old cannot viewed where as only owner can see it"
+    if (userRole === 'owner' || userRole === 'developer' || userRole === 'admin') {
+      if (finTab) finTab.classList.remove('hidden');
+      if (headerDateInput) headerDateInput.disabled = false;
+    } else {
+      // Management (mgmt): strictly blocked from historical finance
+      if (finTab) finTab.classList.add('hidden');
+      if (STATE.adminTab === 'financials') STATE.adminTab = 'summary';
+      // Lock shift date to active shift for mgmt
+      if (headerDateInput) {
+        headerDateInput.value = STATE.shift?.date || STATE.selectedDate || "2026-10-23";
+        headerDateInput.disabled = true;
+      }
+    }
+
     renderAdminDashboard();
     return;
   }
 
-  // Case 3: EMPLOYEE LOGGED IN -> Show Staff View ONLY
-  if (STATE.currentUser.role === 'employee') {
+  // Case 3: EMPLOYEE / ATTENDANT LOGGED IN -> Show Staff View ONLY
+  if (userRole === 'employee') {
     STATE.role = 'employee';
     if (loginView) loginView.classList.add('hidden');
     if (admView) admView.classList.add('hidden');
     if (empView) empView.classList.remove('hidden');
+    if (pdbDropdown) pdbDropdown.classList.add('hidden');
 
     // Resolve assigned pump for this employee from Admin Duty Roster
     resolveEmployeePumpLock();
@@ -1373,10 +1469,21 @@ async function clearReminder(id) {
   }
 }
 
-// --- ADMIN DASHBOARD CONTROLLER ---
+// --- ADMIN / OWNER / MANAGEMENT DASHBOARD CONTROLLER ---
 function switchAdminTab(tabKey) {
+  // If mgmt user tries to open financials, restrict and redirect
+  if (tabKey === 'financials' && STATE.currentUser?.role === 'mgmt') {
+    showToast(STATE.lang === 'te' ? 'ఆర్థిక నివేదికలు కేవలం ఓనర్ కు మాత్రమే అందుబాటులో ఉంటాయి' : 'Financial reports are restricted to Bunk Owner only', 'error');
+    tabKey = 'summary';
+  }
+
+  // If non-developer tries to open PDBs, restrict
+  if (tabKey === 'pdbs' && STATE.currentUser?.role !== 'developer' && STATE.currentUser?.role !== 'admin') {
+    tabKey = 'summary';
+  }
+
   STATE.adminTab = tabKey;
-  const tabs = ['summary', 'fleet', 'reminders', 'employees', 'roster', 'pdbs', 'rates', 'tanks'];
+  const tabs = ['summary', 'financials', 'fleet', 'reminders', 'employees', 'roster', 'rates', 'tanks', 'pdbs'];
   
   tabs.forEach(t => {
     const btn = document.getElementById(`admTab-${t}`);
@@ -1393,14 +1500,21 @@ function switchAdminTab(tabKey) {
   });
 
   renderAdminDashboard();
+  if (tabKey === 'financials') {
+    loadFinancialReports();
+  }
 }
 
 function renderAdminDashboard() {
   if (!STATE.summary) return;
 
-  // 1. Slip & Financials
+  const isTe = STATE.lang === 'te';
+
+  // 1. Slip & Financials (Language-Aware Slip Text)
   const preSlip = document.getElementById('preSlipText');
-  if (preSlip) preSlip.innerText = STATE.summary.slipText;
+  if (preSlip) {
+    preSlip.innerText = isTe ? (STATE.summary.slipTextTe || STATE.summary.slipText) : (STATE.summary.slipTextEn || STATE.summary.slipText);
+  }
 
   const sumDateEl = document.getElementById('sumShiftDate');
   if (sumDateEl) sumDateEl.innerText = STATE.summary.dateFormatted;
@@ -1411,12 +1525,12 @@ function renderAdminDashboard() {
   const pAmtEl = document.getElementById('cardPetrolAmt');
   const pVolEl = document.getElementById('cardPetrolVol');
   if (pAmtEl) pAmtEl.innerText = `₹${STATE.summary.petrol.formattedAmount}`;
-  if (pVolEl) pVolEl.innerText = `${STATE.summary.petrol.formattedLitres} Litres`;
+  if (pVolEl) pVolEl.innerText = `${STATE.summary.petrol.formattedLitres} ${isTe ? 'లీటర్లు' : 'Litres'}`;
 
   const dAmtEl = document.getElementById('cardDieselAmt');
   const dVolEl = document.getElementById('cardDieselVol');
   if (dAmtEl) dAmtEl.innerText = `₹${STATE.summary.diesel.formattedAmount}`;
-  if (dVolEl) dVolEl.innerText = `${STATE.summary.diesel.formattedLitres} Litres`;
+  if (dVolEl) dVolEl.innerText = `${STATE.summary.diesel.formattedLitres} ${isTe ? 'లీటర్లు' : 'Litres'}`;
 
   // Reconciliation
   const totalCash = document.getElementById('recTotalCash');
@@ -1437,12 +1551,131 @@ function renderAdminDashboard() {
   renderStationBreakdownCards();
 
   // Active admin tab rendering
+  if (STATE.adminTab === 'financials') loadFinancialReports();
   if (STATE.adminTab === 'fleet') renderAdminFleetLedger();
   if (STATE.adminTab === 'reminders') renderAdminRemindersTable();
   if (STATE.adminTab === 'employees') renderAdminEmployeesTable();
   if (STATE.adminTab === 'roster') renderAdminDutyRoster();
   if (STATE.adminTab === 'pdbs') renderAdminPdbs();
   if (STATE.adminTab === 'tanks') renderTanksView();
+}
+
+// --- BUNK OWNER FINANCIAL REPORTS & HISTORICAL ARCHIVE ---
+// User requirement: "in bunk owner (lets keep mgmt) and lets create one more login with bunk owner(or only owner) to see all the financial report. Note : mgmt user will not be allowed to see the historical finance/sale/ whatever the old cannot viewed where as only owner can see it"
+async function loadFinancialReports() {
+  if (STATE.currentUser?.role === 'mgmt') return;
+
+  try {
+    const headers = {};
+    if (STATE.currentUser?.role) headers['x-user-role'] = STATE.currentUser.role;
+
+    const res = await fetch(`/api/financial-reports?pump=${STATE.activeTenant}`, { headers });
+    if (!res.ok) {
+      const err = await res.json();
+      showToast(err.error || 'Failed to load financial reports', 'error');
+      return;
+    }
+
+    const data = await res.json();
+    STATE.financialReports = data;
+    renderFinancialReports();
+  } catch (err) {
+    console.error('Error loading financial reports:', err);
+  }
+}
+
+function renderFinancialReports() {
+  const data = STATE.financialReports;
+  if (!data) return;
+
+  const m = data.metrics || {};
+  const isTe = STATE.lang === 'te';
+
+  // 1. Metric Cards
+  const elTotSales = document.getElementById('finMetricTotalSales');
+  const elTotShifts = document.getElementById('finMetricTotalShifts');
+  const elPetrolAmt = document.getElementById('finMetricPetrolAmount');
+  const elPetrolVol = document.getElementById('finMetricPetrolLitres');
+  const elDieselAmt = document.getElementById('finMetricDieselAmount');
+  const elDieselVol = document.getElementById('finMetricDieselLitres');
+  const elFleetDues = document.getElementById('finMetricFleetDues');
+  const elFleetVol = document.getElementById('finMetricFleetLitres');
+  const elShiftsCount = document.getElementById('finShiftsCountBadge');
+
+  if (elTotSales) elTotSales.innerText = `₹${(m.totalAccumulatedSales || 0).toLocaleString('en-IN')}`;
+  if (elTotShifts) elTotShifts.innerText = isTe ? `${m.totalShifts || 0} షిఫ్టులు రికార్డయ్యాయి` : `${m.totalShifts || 0} Shifts Recorded`;
+  if (elPetrolAmt) elPetrolAmt.innerText = `₹${(m.totalPetrolAmount || 0).toLocaleString('en-IN')}`;
+  if (elPetrolVol) elPetrolVol.innerText = `${(m.totalPetrolLitres || 0).toFixed(2)} ${isTe ? 'లీటర్లు' : 'Litres'}`;
+  if (elDieselAmt) elDieselAmt.innerText = `₹${(m.totalDieselAmount || 0).toLocaleString('en-IN')}`;
+  if (elDieselVol) elDieselVol.innerText = `${(m.totalDieselLitres || 0).toFixed(2)} ${isTe ? 'లీటర్లు' : 'Litres'}`;
+  if (elFleetDues) elFleetDues.innerText = `₹${(m.unsettledFleetDues || 0).toLocaleString('en-IN')}`;
+  if (elFleetVol) elFleetVol.innerText = `${(m.unsettledFleetLitres || 0).toFixed(2)} L ${isTe ? 'బాకీ' : 'Pending'}`;
+  if (elShiftsCount) elShiftsCount.innerText = `${m.totalShifts || 0} ${isTe ? 'షిఫ్టులు' : 'shifts'}`;
+
+  // 2. Table of Past Shifts
+  const tbody = document.getElementById('finShiftsTableBody');
+  if (tbody) {
+    if (!data.history || data.history.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400 text-xs">${isTe ? 'గత షిఫ్టుల రికార్డులు లేవు' : 'No historical shifts found.'}</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = data.history.map(h => `
+      <tr class="hover:bg-amber-50/50 transition-all">
+        <td class="p-2.5 font-mono font-bold text-slate-900">${h.dateFormatted || h.date}</td>
+        <td class="p-2.5 font-mono text-orange-700 font-bold">${h.petrolLitres.toFixed(2)} L<span class="block text-[10px] text-slate-500 font-normal">₹${h.petrolAmount.toLocaleString('en-IN')}</span></td>
+        <td class="p-2.5 font-mono text-blue-700 font-bold">${h.dieselLitres.toFixed(2)} L<span class="block text-[10px] text-slate-500 font-normal">₹${h.dieselAmount.toLocaleString('en-IN')}</span></td>
+        <td class="p-2.5 font-mono font-black text-slate-900">₹${h.grandTotalAmount.toLocaleString('en-IN')}</td>
+        <td class="p-2.5 font-mono text-emerald-700 font-bold">₹${(h.cash || 0).toLocaleString('en-IN')}</td>
+        <td class="p-2.5">
+          <button onclick="loadHistoricalSlipForDate('${h.date}')" class="bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold text-[11px] px-2.5 py-1 rounded-lg border border-amber-300 shadow-sm flex items-center gap-1 transition-all active:scale-95">
+            <span>📄</span>
+            <span>${isTe ? 'రసీదు' : 'View Slip'}</span>
+          </button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  // Set picker default and load first available historical slip
+  if (data.history && data.history.length > 0) {
+    const firstDate = data.history[0].date;
+    loadHistoricalSlipForDate(firstDate);
+  }
+}
+
+async function loadHistoricalSlipForDate(date) {
+  if (!date) return;
+  const isTe = STATE.lang === 'te';
+  const pre = document.getElementById('finHistoricalSlipText');
+  const dateLbl = document.getElementById('finSlipDateLabel');
+  const picker = document.getElementById('finHistoricalShiftDatePicker');
+
+  if (dateLbl) dateLbl.innerText = date;
+  if (picker) picker.value = date;
+
+  try {
+    const res = await fetch(`/api/daily-summary?pump=${STATE.activeTenant}&date=${date}&lang=${STATE.lang}`);
+    const summary = await res.json();
+    const slip = isTe ? (summary.slipTextTe || summary.slipText) : (summary.slipTextEn || summary.slipText);
+    if (pre) pre.innerText = slip;
+    STATE.currentHistoricalSlip = slip;
+  } catch (err) {
+    if (pre) pre.innerText = isTe ? 'రసీదు లోడ్ చేయడంలో విఫలమైంది.' : 'Failed to load slip for selected date.';
+  }
+}
+
+function copyHistoricalSlip() {
+  const text = STATE.currentHistoricalSlip || document.getElementById('finHistoricalSlipText')?.innerText;
+  if (!text) return;
+  navigator.clipboard.writeText(text);
+  showToast(STATE.lang === 'te' ? 'రసీదు క్లిప్‌బోర్డుకు కాపీ చేయబడింది!' : 'Historical slip copied to clipboard!');
+}
+
+function shareHistoricalSlipWhatsApp() {
+  const text = STATE.currentHistoricalSlip || document.getElementById('finHistoricalSlipText')?.innerText;
+  if (!text) return;
+  window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
 }
 
 function renderStationBreakdownCards() {

@@ -119,24 +119,82 @@ app.post('/api/auth/login', (req, res) => {
   const cleanUser = username.trim().toLowerCase();
   const cleanPass = password.trim();
 
-  // 1. Check Admin Login
-  const adminUser = (data.config.adminUsername || "admin").toLowerCase();
-  const adminPass = data.config.adminPassword || data.config.adminPin || "1234";
-
-  if (cleanUser === adminUser && cleanPass === adminPass) {
+  // 1. Check Developer / Superadmin Login (Has PDB management)
+  const devPass = data.config.developerPassword || data.config.devPassword || "1234";
+  if ((cleanUser === "developer" || cleanUser === "dev") && cleanPass === devPass) {
     return res.json({
       success: true,
-      role: 'admin',
+      role: 'developer',
       user: {
-        id: 'admin',
-        name: 'Bunk Owner / Admin',
-        username: 'admin',
-        role: 'Admin'
-      }
+        id: 'developer',
+        name: 'System Developer',
+        username: 'developer',
+        role: 'Developer'
+      },
+      canManagePdbs: true,
+      canViewFinancials: true,
+      isHistoricalAllowed: true
     });
   }
 
-  // 2. Check Employee Login
+  // 2. Check Bunk Owner Login (Has Full Financial Reports & Historical Archives; NO PDBs)
+  const ownerUser = (data.config.ownerUsername || "owner").toLowerCase();
+  const ownerPass = data.config.ownerPassword || "1234";
+  if (cleanUser === ownerUser && cleanPass === ownerPass) {
+    return res.json({
+      success: true,
+      role: 'owner',
+      user: {
+        id: 'owner',
+        name: 'Bunk Owner (యజమాని)',
+        username: 'owner',
+        role: 'Owner'
+      },
+      canManagePdbs: false,
+      canViewFinancials: true,
+      isHistoricalAllowed: true
+    });
+  }
+
+  // 3. Check Bunk Management / Manager Login (Today's Operations Only; NO Historical Finance; NO PDBs)
+  const mgmtUser = (data.config.mgmtUsername || "mgmt").toLowerCase();
+  const mgmtPass = data.config.mgmtPassword || "1234";
+  if ((cleanUser === mgmtUser || cleanUser === "manager") && cleanPass === mgmtPass) {
+    return res.json({
+      success: true,
+      role: 'mgmt',
+      user: {
+        id: 'mgmt',
+        name: 'Bunk Management (మేనేజ్‌మెంట్)',
+        username: 'mgmt',
+        role: 'Management'
+      },
+      canManagePdbs: false,
+      canViewFinancials: false,
+      isHistoricalAllowed: false
+    });
+  }
+
+  // 4. Check Backward-Compatible Admin Login (Defaults to Developer with full access)
+  const adminUser = (data.config.adminUsername || "admin").toLowerCase();
+  const adminPass = data.config.adminPassword || data.config.adminPin || "1234";
+  if (cleanUser === adminUser && cleanPass === adminPass) {
+    return res.json({
+      success: true,
+      role: 'developer',
+      user: {
+        id: 'admin',
+        name: 'Administrator (Developer)',
+        username: 'admin',
+        role: 'Developer'
+      },
+      canManagePdbs: true,
+      canViewFinancials: true,
+      isHistoricalAllowed: true
+    });
+  }
+
+  // 5. Check Employee / Station Attendant Login (Duty Assignment Read-Only, Station Operations Only)
   const emp = (data.employees || []).find(e => 
     (e.username && e.username.toLowerCase() === cleanUser) ||
     (e.phone && e.phone === cleanUser) ||
@@ -182,7 +240,10 @@ app.post('/api/auth/login', (req, res) => {
           role: emp.role || 'Attendant'
         },
         assignedStation,
-        targetDate
+        targetDate,
+        canManagePdbs: false,
+        canViewFinancials: false,
+        isHistoricalAllowed: false
       });
     }
   }
@@ -190,7 +251,7 @@ app.post('/api/auth/login', (req, res) => {
   return res.status(401).json({ error: "Invalid username / mobile number or password" });
 });
 
-// Change Password for Employee or Admin
+// Change Password for Employee, Mgmt, Owner, Developer or Admin
 app.post('/api/auth/change-password', (req, res) => {
   const tenantId = getTenantId(req);
   const { role, userId, oldPassword, newPassword } = req.body;
@@ -200,6 +261,41 @@ app.post('/api/auth/change-password', (req, res) => {
 
   const data = storage.load(tenantId);
 
+  // Owner Password Change
+  if (role === 'owner' || userId === 'owner') {
+    const currentPass = data.config.ownerPassword || "1234";
+    if (oldPassword !== currentPass) {
+      return res.status(400).json({ error: "Current Owner password is incorrect" });
+    }
+    data.config.ownerPassword = newPassword;
+    storage.save(tenantId, data);
+    return res.json({ success: true, message: "Owner password changed successfully" });
+  }
+
+  // Mgmt Password Change
+  if (role === 'mgmt' || userId === 'mgmt' || userId === 'manager') {
+    const currentPass = data.config.mgmtPassword || "1234";
+    if (oldPassword !== currentPass) {
+      return res.status(400).json({ error: "Current Management password is incorrect" });
+    }
+    data.config.mgmtPassword = newPassword;
+    storage.save(tenantId, data);
+    return res.json({ success: true, message: "Management password changed successfully" });
+  }
+
+  // Developer Password Change
+  if (role === 'developer' || userId === 'developer' || userId === 'dev') {
+    const currentPass = data.config.developerPassword || data.config.devPassword || "1234";
+    if (oldPassword !== currentPass) {
+      return res.status(400).json({ error: "Current Developer password is incorrect" });
+    }
+    data.config.developerPassword = newPassword;
+    data.config.devPassword = newPassword;
+    storage.save(tenantId, data);
+    return res.json({ success: true, message: "Developer password changed successfully" });
+  }
+
+  // Admin Password Change
   if (role === 'admin' || userId === 'admin') {
     const currentPass = data.config.adminPassword || data.config.adminPin || "1234";
     if (oldPassword !== currentPass) {
@@ -875,12 +971,14 @@ app.post('/api/vehicle-ledger/settle', (req, res) => {
 });
 
 // ----------------------------------------------------
-// DAILY SUMMARY & OFFICIAL SLIP
+// DAILY SUMMARY & OFFICIAL SLIP (Bilingual Support: Telugu / English)
 // ----------------------------------------------------
 app.get('/api/daily-summary', (req, res) => {
   const tenantId = getTenantId(req);
   const data = storage.load(tenantId);
   const targetDate = req.query.date || "2026-10-23";
+  const lang = req.query.lang || "te";
+
   let shift = data.shifts.find(s => s.date === targetDate);
 
   if (!shift) {
@@ -890,6 +988,13 @@ app.get('/api/daily-summary', (req, res) => {
 
   const rate = data.rates.find(r => r.date === targetDate) || { petrol: 117.07, diesel: 105.23 };
   const summary = calculateShiftSummary(shift, rate);
+
+  // Set slipText based on selected language
+  if (lang === 'en') {
+    summary.slipText = summary.slipTextEn;
+  } else {
+    summary.slipText = summary.slipTextTe;
+  }
 
   // Attach pending reminders
   const dayReminders = (data.reminders || []).filter(r => r.date === targetDate);
@@ -902,6 +1007,73 @@ app.get('/api/daily-summary', (req, res) => {
   summary.pendingRemindersCount = dayReminders.filter(r => r.status === 'pending').length;
 
   res.json(summary);
+});
+
+// ----------------------------------------------------
+// BUNK OWNER FINANCIAL REPORTS & HISTORICAL ARCHIVE
+// User Requirement: "Note : mgmt user will not be allowed to see the historical finance/sale/ whatever the old cannot viewed where as only owner can see it"
+// ----------------------------------------------------
+app.get('/api/financial-reports', (req, res) => {
+  const tenantId = getTenantId(req);
+  const userRole = req.headers['x-user-role'] || req.query.role;
+  if (userRole === 'mgmt') {
+    return res.status(403).json({ error: "Access Denied: Historical financial reports are restricted to Bunk Owner only." });
+  }
+
+  const data = storage.load(tenantId);
+  const shifts = data.shifts || [];
+
+  const history = shifts.map(s => {
+    const rate = data.rates.find(r => r.date === s.date) || data.rates[data.rates.length - 1] || { petrol: 117.07, diesel: 105.23 };
+    const summ = calculateShiftSummary(s, rate);
+    return {
+      date: s.date,
+      dateFormatted: summ.dateFormatted,
+      petrolLitres: summ.petrol.litres,
+      petrolAmount: summ.petrol.amount,
+      dieselLitres: summ.diesel.litres,
+      dieselAmount: summ.diesel.amount,
+      grandTotalAmount: summ.grandTotal.amount,
+      cash: summ.reconciliation.totalCash,
+      upi: summ.reconciliation.totalUpi,
+      card: summ.reconciliation.totalCard,
+      expenses: summ.reconciliation.totalExpenses,
+      slipTextTe: summ.slipTextTe,
+      slipTextEn: summ.slipTextEn
+    };
+  });
+
+  const totalAccumulatedSales = history.reduce((sum, h) => sum + h.grandTotalAmount, 0);
+  const totalPetrolLitres = Number(history.reduce((sum, h) => sum + h.petrolLitres, 0).toFixed(2));
+  const totalDieselLitres = Number(history.reduce((sum, h) => sum + h.dieselLitres, 0).toFixed(2));
+  const totalPetrolAmount = history.reduce((sum, h) => sum + h.petrolAmount, 0);
+  const totalDieselAmount = history.reduce((sum, h) => sum + h.dieselAmount, 0);
+  const totalCash = history.reduce((sum, h) => sum + h.cash, 0);
+  const totalUpi = history.reduce((sum, h) => sum + h.upi, 0);
+  const totalCard = history.reduce((sum, h) => sum + h.card, 0);
+  const totalExpenses = history.reduce((sum, h) => sum + h.expenses, 0);
+
+  const vehicleLedger = data.vehicleLedger || [];
+  const unsettledFleetDues = vehicleLedger.filter(v => v.status !== 'settled').reduce((sum, v) => sum + (v.amount || 0), 0);
+  const unsettledFleetLitres = Number(vehicleLedger.filter(v => v.status !== 'settled').reduce((sum, v) => sum + (v.litres || 0), 0).toFixed(2));
+
+  res.json({
+    history,
+    metrics: {
+      totalShifts: history.length,
+      totalAccumulatedSales,
+      totalPetrolLitres,
+      totalDieselLitres,
+      totalPetrolAmount,
+      totalDieselAmount,
+      totalCash,
+      totalUpi,
+      totalCard,
+      totalExpenses,
+      unsettledFleetDues,
+      unsettledFleetLitres
+    }
+  });
 });
 
 // ----------------------------------------------------

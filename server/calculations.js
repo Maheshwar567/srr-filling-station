@@ -121,19 +121,35 @@ function calculateShiftSummary(shift, rates) {
     dateFormatted = `${parts[2]}-${parts[1]}-${parts[0]}`;
   }
 
-  // Exact slip text formatting required by user in Telugu & English
-  const slipText = 
+  // Pure Telugu Daily Sales Slip (తేట తెలుగు రసీదు)
+  const slipTextTe = 
 `SRR FILLING STATION ${dateFormatted}
       పెట్రోల్ 
+=${totalPetrolLitres} లీటర్లు
+=${totalPetrolLitres}*${petrolRate}
+=${formatIndianNumber(totalPetrolAmount)} మొత్తం 
+          డీజిల్ 
+=${totalDieselLitres} లీటర్లు
+=${totalDieselLitres}*${dieselRate}
+=${formatIndianNumber(totalDieselAmount)} మొత్తం 
+P+D=${totalPetrolAmount}+${totalDieselAmount}
+        =${formatIndianNumber(grandTotalAmount)} మొత్తం`;
+
+  // Pure English Daily Sales Slip
+  const slipTextEn = 
+`SRR FILLING STATION ${dateFormatted}
+      PETROL 
 =${totalPetrolLitres} litres
 =${totalPetrolLitres}*${petrolRate}
 =${formatIndianNumber(totalPetrolAmount)} amount 
-          డీజిల్ 
+          DIESEL 
 =${totalDieselLitres} litres
 =${totalDieselLitres}*${dieselRate}
 =${formatIndianNumber(totalDieselAmount)} amount 
 P+D=${totalPetrolAmount}+${totalDieselAmount}
         =${formatIndianNumber(grandTotalAmount)} amount`;
+
+  const slipText = slipTextTe;
 
   return {
     date: shift.date,
@@ -168,7 +184,9 @@ P+D=${totalPetrolAmount}+${totalDieselAmount}
     },
     stations: stationBreakdown,
     stationBreakdown: stationBreakdown,
-    slipText
+    slipText,
+    slipTextTe,
+    slipTextEn
   };
 }
 
