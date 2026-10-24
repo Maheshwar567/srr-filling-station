@@ -160,6 +160,7 @@ function applyLanguageUI() {
   const tabRem = document.getElementById('tabLabel-reminders');
   const tabEmp = document.getElementById('tabLabel-employees');
   const tabRos = document.getElementById('tabLabel-roster');
+  const tabAtt = document.getElementById('tabLabel-attendance');
   const tabRat = document.getElementById('admTab-rates');
   const tabTnk = document.getElementById('admTab-tanks');
   const tabDue = document.getElementById('tabLabel-dues');
@@ -167,13 +168,14 @@ function applyLanguageUI() {
 
   if (tabSum) tabSum.innerHTML = isTe ? '📄 రోజువారీ రసీదు' : '📄 Daily Sales Slip';
   if (tabRos) tabRos.innerText = isTe ? 'పంపుల కేటాయింపు' : 'Pump Assignment';
-  if (tabEmp) tabEmp.innerText = isTe ? 'ఉద్యోగుల జాబితా (KYC)' : 'Employee List & KYC';
-  if (tabDue) tabDue.innerText = isTe ? 'సిబ్బంది బాకీలు' : 'Due';
+  if (tabEmp) tabEmp.innerText = isTe ? 'సిబ్బంది జాబితా' : 'Employee List';
+  if (tabDue) tabDue.innerText = isTe ? 'బాకీలు' : 'Due';
+  if (tabAtt) tabAtt.innerText = isTe ? 'డ్యూటీ & జీతాలు' : 'Duty & Salary Days';
+  if (tabFlt) tabFlt.innerText = isTe ? 'వాహనాల బిల్లులు' : 'Vehicle Bills';
   if (tabFin) tabFin.innerText = isTe ? 'ఆర్థిక నివేదికలు' : 'Financial Reports';
-  if (tabFlt) tabFlt.innerText = isTe ? 'వాహనాల లేడ్జర్' : 'Vehicle Fleet Ledger';
   if (tabRem) tabRem.innerText = isTe ? 'రిమైండర్లు' : 'Reminders';
-  if (tabRat) tabRat.innerHTML = isTe ? '🏷️ ఇంధనం ధరలు' : '🏷️ Rates';
-  if (tabTnk) tabTnk.innerHTML = isTe ? '🛢️ ట్యాంక్ స్టాక్' : '🛢️ Tank Stock';
+  if (tabRat) tabRat.innerHTML = isTe ? '🏷️ ధరలు' : '🏷️ Rates';
+  if (tabTnk) tabTnk.innerHTML = isTe ? '🛢️ ట్యాంక్ నిల్వ' : '🛢️ Tank Stock';
   if (tabPdb) tabPdb.innerHTML = isTe ? '🏢 ప్లగ్గబుల్ DBs' : '🏢 Pluggable DBs (PDBs)';
 
   // 4. Update Active Daily Sales Slip text
@@ -299,6 +301,10 @@ async function loadAllData() {
       }
     } catch (e) {}
 
+    // Synchronize employees table and duty roster
+    renderAdminEmployeesTable();
+    renderAdminDutyRoster();
+
     // Determine and enforce active view routing
     routeUserView();
 
@@ -360,6 +366,7 @@ function routeUserView() {
   if (navRole) navRole.innerText = roleLabel;
 
   // Case 2: MANAGEMENT / BUNK OWNER / DEVELOPER LOGGED IN
+  // User requirement: "in management login: show only daily sales slip, pump assigment, emp list (remove kyc), Due (...), and when month end comes to give salary how many days that emp has done work in station, remove Finance report from mgmt login (show only owner login), Vehicle bills (replace vehicle fleet ledger with it), remove pluggable DBs every where except dev login. for owner: mgmt options along with finance"
   if (userRole === 'mgmt' || userRole === 'owner' || userRole === 'developer' || userRole === 'admin') {
     STATE.role = userRole;
     STATE.adminUnlocked = true;
@@ -367,33 +374,66 @@ function routeUserView() {
     if (empView) empView.classList.add('hidden');
     if (admView) admView.classList.remove('hidden');
 
-    // --- ROLE RESTRICTION 1: PLUGGABLE DATABASES (DEVELOPER ONLY) ---
-    // User requirement: "bunk owner cannot know the PDB and all which developer can see (only developer related stuff)"
-    if (userRole === 'developer' || userRole === 'admin') {
-      if (pdbTab) pdbTab.classList.remove('hidden');
-      if (pdbDropdown) pdbDropdown.classList.remove('hidden');
-    } else {
+    const tabRoster = document.getElementById('admTab-roster');
+    const tabEmployees = document.getElementById('admTab-employees');
+    const tabDues = document.getElementById('admTab-dues');
+    const tabAttendance = document.getElementById('admTab-attendance');
+    const tabFleet = document.getElementById('admTab-fleet');
+    const tabRates = document.getElementById('admTab-rates');
+    const tabTanks = document.getElementById('admTab-tanks');
+    const tabReminders = document.getElementById('admTab-reminders');
+
+    // Management visible core tabs: Daily Sales Slip, Pump Assignment, Employee List, Due, Duty & Salary, Vehicle Bills
+    if (tabRoster) tabRoster.classList.remove('hidden');
+    if (tabEmployees) tabEmployees.classList.remove('hidden');
+    if (tabDues) tabDues.classList.remove('hidden');
+    if (tabAttendance) tabAttendance.classList.remove('hidden');
+    if (tabFleet) tabFleet.classList.remove('hidden');
+
+    // Role-Specific Restrictions:
+    if (userRole === 'mgmt') {
+      // Management: strictly blocked from Financial Reports, PDBs, Rates & Tanks tabs
+      if (finTab) finTab.classList.add('hidden');
       if (pdbTab) pdbTab.classList.add('hidden');
       if (pdbDropdown) pdbDropdown.classList.add('hidden');
-    }
+      if (tabRates) tabRates.classList.add('hidden');
+      if (tabTanks) tabTanks.classList.add('hidden');
+      if (tabReminders) tabReminders.classList.add('hidden');
 
-    // --- ROLE RESTRICTION 2: HISTORICAL FINANCIAL REPORTS (OWNER & DEVELOPER ONLY) ---
-    // User requirement: "mgmt user will not be allowed to see the historical finance/sale/ whatever the old cannot viewed where as only owner can see it"
-    if (userRole === 'owner' || userRole === 'developer' || userRole === 'admin') {
-      if (finTab) finTab.classList.remove('hidden');
-      if (headerDateInput) headerDateInput.disabled = false;
-    } else {
-      // Management (mgmt): strictly blocked from historical finance
-      if (finTab) finTab.classList.add('hidden');
-      if (STATE.adminTab === 'financials') STATE.adminTab = 'summary';
+      const mgmtAllowedTabs = ['summary', 'roster', 'employees', 'dues', 'attendance', 'fleet'];
+      if (!mgmtAllowedTabs.includes(STATE.adminTab)) {
+        STATE.adminTab = 'summary';
+      }
+
       // Lock shift date to active shift for mgmt
       if (headerDateInput) {
         headerDateInput.value = STATE.shift?.date || STATE.selectedDate || "2026-10-23";
         headerDateInput.disabled = true;
       }
+    } else if (userRole === 'owner') {
+      // Owner: sees all Management options + Financial Reports, Rates & Tanks. NO PDBs
+      if (finTab) finTab.classList.remove('hidden');
+      if (pdbTab) pdbTab.classList.add('hidden');
+      if (pdbDropdown) pdbDropdown.classList.add('hidden');
+      if (tabRates) tabRates.classList.remove('hidden');
+      if (tabTanks) tabTanks.classList.remove('hidden');
+      if (tabReminders) tabReminders.classList.remove('hidden');
+      if (headerDateInput) headerDateInput.disabled = false;
+      if (STATE.adminTab === 'pdbs') STATE.adminTab = 'summary';
+    } else {
+      // Developer / Superadmin: All tabs + PDBs
+      if (finTab) finTab.classList.remove('hidden');
+      if (pdbTab) pdbTab.classList.remove('hidden');
+      if (pdbDropdown) pdbDropdown.classList.remove('hidden');
+      if (tabRates) tabRates.classList.remove('hidden');
+      if (tabTanks) tabTanks.classList.remove('hidden');
+      if (tabReminders) tabReminders.classList.remove('hidden');
+      if (headerDateInput) headerDateInput.disabled = false;
     }
 
     renderAdminDashboard();
+    renderAdminEmployeesTable();
+    renderAdminDutyRoster();
     return;
   }
 
@@ -452,6 +492,62 @@ function resolveEmployeePumpLock() {
   if (hoBadge) hoBadge.innerText = assignedStation || 'S1';
 }
 
+// --- LOGIN MODE CONTROLLER (STAFF DUTY-PIN ONLY vs MGMT/OWNER PASSWORD ONLY) ---
+// User requirement: "when even admin owner mgmt username entered thn remove pin. pin only for emp log (remove password option for emp keep only pin/otp given by mgmt/owner)"
+let currentLoginMode = 'staff';
+
+function setLoginMode(mode) {
+  currentLoginMode = mode;
+  const btnStaff = document.getElementById('loginModeBtnStaff');
+  const btnMgmt = document.getElementById('loginModeBtnMgmt');
+  const passContainer = document.getElementById('loginPasswordContainer');
+  const pinContainer = document.getElementById('loginDutyPinContainer');
+  const lblUser = document.getElementById('lblLoginUser');
+  const userInput = document.getElementById('loginUsernameInput');
+  const passInput = document.getElementById('loginPasswordInput');
+  const pinInput = document.getElementById('loginDutyPinInput');
+  const errEl = document.getElementById('loginErrorMessage');
+  if (errEl) errEl.classList.add('hidden');
+
+  const isTe = STATE.lang === 'te';
+
+  if (mode === 'staff') {
+    if (btnStaff) btnStaff.className = "flex-1 py-2 rounded-xl text-xs font-black transition-all bg-orange-600 text-white shadow-sm flex items-center justify-center gap-1.5";
+    if (btnMgmt) btnMgmt.className = "flex-1 py-2 rounded-xl text-xs font-bold transition-all text-slate-700 hover:text-black flex items-center justify-center gap-1.5";
+    
+    // Staff: Show PIN, HIDE Password
+    if (pinContainer) pinContainer.classList.remove('hidden');
+    if (passContainer) passContainer.classList.add('hidden');
+    if (passInput) passInput.required = false;
+    if (pinInput) pinInput.required = true;
+
+    if (lblUser) lblUser.innerText = isTe ? 'ఉద్యోగి పేరు / యూజర్‌నేమ్ (Employee Username):' : 'Employee Username / First Name:';
+    if (userInput) userInput.placeholder = 'e.g. emp, ramesh, or suresh';
+  } else {
+    // Management / Owner: Show Password, HIDE PIN
+    if (btnMgmt) btnMgmt.className = "flex-1 py-2 rounded-xl text-xs font-black transition-all bg-orange-600 text-white shadow-sm flex items-center justify-center gap-1.5";
+    if (btnStaff) btnStaff.className = "flex-1 py-2 rounded-xl text-xs font-bold transition-all text-slate-700 hover:text-black flex items-center justify-center gap-1.5";
+
+    if (pinContainer) pinContainer.classList.add('hidden');
+    if (passContainer) passContainer.classList.remove('hidden');
+    if (passInput) passInput.required = true;
+    if (pinInput) pinInput.required = false;
+
+    if (lblUser) lblUser.innerText = isTe ? 'యూజర్‌నేమ్ (మేనేజ్‌మెంట్ / ఓనర్):' : 'Management / Owner Username:';
+    if (userInput) userInput.placeholder = 'mgmt, owner, admin, or dev';
+  }
+}
+
+function onLoginUsernameChange(val) {
+  const clean = (val || '').trim().toLowerCase();
+  const mgmtKeywords = ['admin', 'mgmt', 'owner', 'manager', 'developer', 'dev', 'bunkowner', 'administrator'];
+  if (mgmtKeywords.includes(clean)) {
+    if (currentLoginMode !== 'mgmt') setLoginMode('mgmt');
+  } else if (clean === 'emp' || clean.startsWith('s1') || clean.startsWith('s2') || clean.startsWith('s3') || clean.startsWith('s4')) {
+    if (currentLoginMode !== 'staff') setLoginMode('staff');
+  }
+}
+
 // --- AUTHENTICATION (SIGN IN, LOGOUT, CHANGE PASSWORD) ---
 async function handleLoginSubmit(event) {
   event.preventDefault();
@@ -465,26 +561,52 @@ async function handleLoginSubmit(event) {
   const password = passField ? passField.value.trim() : '';
   const dutyPin = pinField ? pinField.value.trim() : '';
 
-  if (!username || !password) {
+  if (!username) {
     if (errEl) {
-      errEl.innerText = 'Please enter mobile number/username and password';
+      errEl.innerText = STATE.lang === 'te' ? 'దయచేసి యూజర్‌నేమ్ నమోదు చేయండి' : 'Please enter username';
       errEl.classList.remove('hidden');
     }
     return;
+  }
+
+  const isMgmt = currentLoginMode === 'mgmt';
+
+  if (isMgmt) {
+    if (!password) {
+      if (errEl) {
+        errEl.innerText = STATE.lang === 'te' ? 'దయచేసి పాస్‌వర్డ్ నమోదు చేయండి (default: 123)' : 'Please enter password (default: 123)';
+        errEl.classList.remove('hidden');
+      }
+      return;
+    }
+  } else {
+    // Staff mode: PIN is required, password is NOT required
+    if (!dutyPin) {
+      if (errEl) {
+        errEl.innerText = STATE.lang === 'te' ? 'డ్యూటీ పిన్ నమోదు చేయండి (Duty PIN / OTP required)' : 'Please enter Duty PIN assigned by Manager/Owner';
+        errEl.classList.remove('hidden');
+      }
+      return;
+    }
   }
 
   try {
     const res = await fetch(`/api/auth/login?pump=${STATE.activeTenant}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password, dutyPin, date: STATE.selectedDate })
+      body: JSON.stringify({
+        username,
+        password: isMgmt ? password : '',
+        dutyPin: !isMgmt ? dutyPin : '',
+        date: STATE.selectedDate
+      })
     });
 
     const data = await res.json();
 
     if (!res.ok || !data.success) {
       if (errEl) {
-        errEl.innerText = data.error || 'Invalid mobile number or password';
+        errEl.innerText = data.error || (STATE.lang === 'te' ? 'లాగిన్ విఫలమైంది. సరైన వివరాలు నమోదు చేయండి.' : 'Invalid credentials');
         errEl.classList.remove('hidden');
       }
       return;
@@ -1633,7 +1755,7 @@ function switchAdminTab(tabKey) {
   }
 
   STATE.adminTab = tabKey;
-  const tabs = ['summary', 'financials', 'dues', 'fleet', 'reminders', 'employees', 'roster', 'rates', 'tanks', 'pdbs'];
+  const tabs = ['summary', 'financials', 'dues', 'attendance', 'fleet', 'reminders', 'employees', 'roster', 'rates', 'tanks', 'pdbs'];
   
   tabs.forEach(t => {
     const btn = document.getElementById(`admTab-${t}`);
@@ -1661,6 +1783,12 @@ function switchAdminTab(tabKey) {
   }
   if (tabKey === 'dues') {
     loadEmployeeDues();
+  }
+  if (tabKey === 'attendance') {
+    loadDutyAttendanceData();
+  }
+  if (tabKey === 'fleet') {
+    renderAdminFleetLedger();
   }
 }
 
@@ -2016,6 +2144,7 @@ async function loadEmployeeDues() {
     if (!res.ok) return;
     const data = await res.json();
     STATE.employeeDues = data.dues || [];
+    STATE.employeeDuesSummaries = data.employeeSummaries || [];
     STATE.duesMetrics = data.metrics || {};
     renderEmployeeDues();
   } catch (err) {
@@ -2037,7 +2166,179 @@ function renderEmployeeDues() {
   if (elSettledCount) elSettledCount.innerText = `${m.settledCount || 0} Dues Cleared`;
   if (elTotalInc) elTotalInc.innerText = `${STATE.employeeDues?.length || 0}`;
 
+  // Render Employee-Wise Dues Summary Table
+  renderEmployeeDuesSummaryTable(STATE.employeeDuesSummaries);
+
+  // Render Detailed Shift Shortage History Table
   filterEmployeeDuesTable();
+}
+
+function renderEmployeeDuesSummaryTable(summaries) {
+  const tbody = document.getElementById('adminEmployeeDuesSummaryTableBody');
+  if (!tbody) return;
+
+  const list = summaries || STATE.employeeDuesSummaries || [];
+  if (list.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400 text-xs">సిబ్బంది వద్ద ఎలాంటి పెండింగ్ బాకీలు లేవు (No pending dues on any staff)</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = list.map(item => {
+    const datesStr = item.dates && item.dates.length > 0
+      ? (item.dates.length > 3 ? `${item.dates.slice(0, 3).join(', ')} (+${item.dates.length - 3} more)` : item.dates.join(', '))
+      : '-';
+
+    const hasPending = item.totalDue > 0;
+
+    return `
+      <tr class="hover:bg-rose-50/50 transition-colors">
+        <td class="p-3 font-bold text-slate-900 flex items-center gap-2">
+          <span class="text-base">👤</span>
+          <div>
+            <div class="font-black text-slate-900">${item.employeeName}</div>
+            <div class="text-[10px] text-slate-500">${item.records?.length || 0} Total Incidents recorded</div>
+          </div>
+        </td>
+        <td class="p-3 font-mono font-black text-sm ${hasPending ? 'text-rose-600' : 'text-emerald-600'}">
+          ₹${Number(item.totalDue || 0).toLocaleString('en-IN')}
+        </td>
+        <td class="p-3 text-slate-700 font-bold font-mono">
+          <span class="px-2 py-0.5 rounded text-xs ${hasPending ? 'bg-rose-100 text-rose-800' : 'bg-slate-100 text-slate-600'}">
+            ${item.pendingCount || 0} Shifts
+          </span>
+        </td>
+        <td class="p-3 font-mono text-[11px] text-slate-700 font-semibold" title="${(item.dates || []).join(', ')}">
+          ${datesStr}
+        </td>
+        <td class="p-3 font-mono text-slate-600 text-xs">
+          ${item.latestDate || '-'}
+        </td>
+        <td class="p-3 text-right">
+          ${hasPending ? `
+            <button onclick="settleAllEmployeeDues('${item.employeeName.replace(/'/g, "\\'")}')" class="bg-rose-600 hover:bg-rose-700 text-white font-bold text-[11px] px-3 py-1.5 rounded-xl shadow active:scale-95 transition-all">
+              Settle All (మొత్తం క్లియర్)
+            </button>
+          ` : `
+            <span class="text-xs font-bold text-emerald-600 flex items-center justify-end gap-1">
+              <span>✓</span><span>All Clear (బాకీ లేదు)</span>
+            </span>
+          `}
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+async function settleAllEmployeeDues(empName) {
+  if (!confirm(`Settle all pending dues for employee "${empName}"?`)) return;
+
+  try {
+    const res = await fetch(`/api/employee-dues/settle-all?pump=${STATE.activeTenant}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ employeeName: empName, settledMode: 'Management Cash Recovery' })
+    });
+    const result = await res.json();
+    if (result.success) {
+      showToast(STATE.lang === 'te' 
+        ? `${empName} యొక్క మొత్తం ${result.settledCount} బాకీలు సెటిల్ చేయబడ్డాయి!` 
+        : `Settled ${result.settledCount} dues (₹${result.settledAmount}) for ${empName}!`);
+      await loadEmployeeDues();
+    } else {
+      showToast(result.error || 'Failed to settle employee dues', 'error');
+    }
+  } catch (err) {
+    showToast('Failed to settle employee dues', 'error');
+  }
+}
+
+// --- MONTH-END DUTY ATTENDANCE & SALARY DAYS CONTROLLER ---
+// User requirement: "and when month end comes to give salary how many days that emp has done work in station"
+async function loadDutyAttendanceData() {
+  const monthInput = document.getElementById('attMonthSelector');
+  const month = monthInput ? monthInput.value : (STATE.selectedDate || '2026-10').slice(0, 7);
+
+  try {
+    const res = await fetch(`/api/duty-attendance?month=${month}&pump=${STATE.activeTenant}`);
+    if (!res.ok) return;
+    const data = await res.json();
+    STATE.dutyAttendance = data;
+
+    const elStaff = document.getElementById('attMetricStaffCount');
+    const elDays = document.getElementById('attMetricTotalDays');
+    const elActive = document.getElementById('attMetricActiveDates');
+
+    if (elStaff) elStaff.innerText = data.summary?.totalEmployees || 0;
+    if (elDays) elDays.innerText = `${data.summary?.totalDutyDays || 0} Days`;
+    if (elActive) elActive.innerText = `${data.summary?.activeDatesCount || 0} Days`;
+
+    renderDutyAttendanceTable();
+  } catch (err) {
+    console.error('Error loading duty attendance:', err);
+  }
+}
+
+function renderDutyAttendanceTable() {
+  const tbody = document.getElementById('adminAttendanceSalaryTableBody');
+  if (!tbody) return;
+
+  const list = STATE.dutyAttendance?.attendanceList || [];
+  const search = (document.getElementById('attSearchInput')?.value || '').toLowerCase().trim();
+
+  const filtered = list.filter(a => {
+    return !search || a.name.toLowerCase().includes(search) || (a.phone && a.phone.includes(search));
+  });
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-400 text-xs font-semibold">హాజరు రికార్డులు ఏవీ లేవు (No attendance records found)</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(a => {
+    const stationsStr = Object.entries(a.stationCounts || {})
+      .filter(([k, v]) => v > 0)
+      .map(([k, v]) => `<span class="bg-slate-100 text-slate-800 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold">${k}: ${v}d</span>`)
+      .join(' ') || '<span class="text-slate-400">-</span>';
+
+    const datesTooltip = (a.datesWorked || []).join(', ') || 'None';
+
+    return `
+      <tr class="hover:bg-slate-50 transition-colors">
+        <td class="p-3 font-bold text-slate-900">
+          <div class="flex items-center gap-2">
+            <span class="text-base">👤</span>
+            <div>
+              <div class="font-black text-blue-900">${a.name}</div>
+              <div class="text-[10px] text-slate-500 font-normal">${a.role} • ${a.villageName || ''}</div>
+            </div>
+          </div>
+        </td>
+        <td class="p-3 font-mono text-slate-600 font-bold">${a.phone || '-'}</td>
+        <td class="p-3 text-center">
+          <span class="bg-emerald-100 text-emerald-950 text-xs font-black font-mono px-3 py-1 rounded-full border border-emerald-300 shadow-xs">
+            ${a.daysWorked} Days (${a.daysWorked} రోజులు)
+          </span>
+        </td>
+        <td class="p-3">
+          <span class="text-[11px] text-slate-700 font-mono font-semibold" title="${datesTooltip}">
+            ${a.datesWorked && a.datesWorked.length > 0 ? (a.datesWorked.length > 3 ? `${a.datesWorked.slice(0, 3).join(', ')} +${a.datesWorked.length - 3} more` : a.datesWorked.join(', ')) : '-'}
+          </span>
+        </td>
+        <td class="p-3">${stationsStr}</td>
+        <td class="p-3 font-mono font-black ${a.pendingDue > 0 ? 'text-rose-600' : 'text-slate-400'}">
+          ${a.pendingDue > 0 ? `₹${a.pendingDue.toLocaleString('en-IN')}` : '₹0'}
+        </td>
+        <td class="p-3 text-right">
+          <div class="font-mono font-black text-slate-900 text-sm">₹${a.netPayable.toLocaleString('en-IN')}</div>
+          <div class="text-[10px] text-slate-500">Gross: ₹${a.totalEarnings.toLocaleString('en-IN')}</div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function filterDutyAttendanceTable() {
+  renderDutyAttendanceTable();
 }
 
 function filterEmployeeDuesTable() {
@@ -2381,9 +2682,17 @@ async function saveNewEmployee() {
     });
     const result = await res.json();
     if (result.success) {
-      showToast(`Employee "${name}" added successfully!`);
+      if (result.employee) {
+        const exists = STATE.employees.find(e => e.id === result.employee.id);
+        if (!exists) STATE.employees.push(result.employee);
+      }
       closeAddEmployeeModal();
-      loadAllData();
+      renderAdminEmployeesTable();
+      renderAdminDutyRoster();
+      await loadAllData();
+      renderAdminEmployeesTable();
+      renderAdminDutyRoster();
+      showToast(STATE.lang === 'te' ? `సిబ్బంది "${name}" విజయవంతంగా చేర్చబడింది!` : `Employee "${name}" added successfully!`);
     } else {
       showToast(result.error || 'Failed to add employee', 'error');
     }
@@ -2398,8 +2707,13 @@ async function deleteEmployee(id, name) {
     const res = await fetch(`/api/employees/${id}?pump=${STATE.activeTenant}`, { method: 'DELETE' });
     const result = await res.json();
     if (result.success) {
-      showToast(`Employee "${name}" removed`);
-      loadAllData();
+      STATE.employees = STATE.employees.filter(e => e.id !== id);
+      renderAdminEmployeesTable();
+      renderAdminDutyRoster();
+      await loadAllData();
+      renderAdminEmployeesTable();
+      renderAdminDutyRoster();
+      showToast(STATE.lang === 'te' ? `సిబ్బంది "${name}" తొలగించబడింది` : `Employee "${name}" removed`);
     }
   } catch (err) {
     showToast('Failed to remove employee', 'error');
@@ -2408,9 +2722,6 @@ async function deleteEmployee(id, name) {
 
 // --- ADMIN / MGMT / OWNER DUTY ROSTER & PUMP ALLOCATION ---
 // User requirement: "as said, mgmt and owner need to assign the pumps to emp"
-// --- ADMIN / MGMT / OWNER DUTY ROSTER & PUMP ALLOCATION ---
-// User requirement: "as said, mgmt and owner need to assign the pumps to emp"
-// User requirement: "and step4 pin needed even after the password also"
 function renderAdminDutyRoster() {
   const container = document.getElementById('dutyRosterCardsContainer');
   if (!container) return;
@@ -2460,8 +2771,8 @@ function renderAdminDutyRoster() {
             <input type="text" maxlength="6" id="rosterPin-${stKey}" value="${dutyPin}" class="w-full bg-white border-2 border-amber-400 rounded-lg px-2.5 py-1.5 font-mono text-base font-black text-amber-950 tracking-widest text-center shadow-inner focus:outline-none focus:border-amber-600">
           </div>
           <p class="text-[10px] text-amber-900 font-semibold leading-tight">
-            * సిబ్బంది లాగిన్: యూజర్‌నేమ్ + పాస్‌వర్డ్ <strong>123</strong> + <strong>ఈ PIN (${dutyPin})</strong><br>
-            (Staff needs Password 123 + this Duty PIN to log in)
+            * సిబ్బంది లాగిన్: యూజర్‌నేమ్ + <strong>ఈ డ్యూటీ PIN (${dutyPin})</strong> మాత్రమే (పాస్‌వర్డ్ అవసరం లేదు)<br>
+            (Staff logs in with Username + this Duty PIN only; no password needed)
           </p>
         </div>
       </div>

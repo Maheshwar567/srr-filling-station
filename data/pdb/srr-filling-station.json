@@ -230,6 +230,36 @@
       "role": "Attendant",
       "joiningDate": "2026-10-24",
       "active": true
+    },
+    {
+      "id": "emp-1792840783873",
+      "name": "Mahesh reddy",
+      "username": "7795628848",
+      "password": "123",
+      "phone": "7795628848",
+      "fatherName": "Raghav reddy",
+      "villageName": "Ieeja",
+      "aadhaarNumber": "",
+      "emergencyContact": "",
+      "address": "",
+      "role": "Attendant",
+      "joiningDate": "2026-10-24",
+      "active": true
+    },
+    {
+      "id": "emp-1792842606451",
+      "name": "Siva Shankar",
+      "username": "9900409848",
+      "password": "123",
+      "phone": "9900409848",
+      "fatherName": "Ramanaiah",
+      "villageName": "Rayadurg",
+      "aadhaarNumber": "",
+      "emergencyContact": "",
+      "address": "",
+      "role": "Attendant",
+      "joiningDate": "2026-10-24",
+      "active": true
     }
   ],
   "shiftAssignments": {

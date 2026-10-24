@@ -108,93 +108,110 @@ app.post('/api/auth/verify-pin', (req, res) => {
 });
 
 // Employee & Admin Authentication
+// User requirement: "when even admin owner mgmt username entered thn remove pin. pin only for emp log (remove password option for emp keep only pin/otp given by mgmt/owner)"
 app.post('/api/auth/login', (req, res) => {
   const tenantId = getTenantId(req);
   const { username, password, pin, dutyPin, date } = req.body;
-  if (!username || !password) {
-    return res.status(400).json({ error: "Username/Mobile and password are required" });
+  if (!username || !username.trim()) {
+    return res.status(400).json({ error: "Username or employee name is required" });
   }
 
   const data = storage.load(tenantId);
   const cleanUser = username.trim().toLowerCase();
-  const cleanPass = password.trim();
+  const cleanPass = (password || "").trim();
   const cleanDutyPin = (dutyPin || pin || "").trim();
 
   const isMaster123 = cleanPass === "123" || cleanPass === "1234";
 
-  // 1. Check Developer / Superadmin Login (Has PDB management)
+  // 1. Check Developer / Superadmin Login (Has PDB management) - Password Only, No PIN
   const devPass = data.config.developerPassword || data.config.devPassword || "123";
-  if ((cleanUser === "developer" || cleanUser === "dev") && (cleanPass === devPass || isMaster123)) {
-    return res.json({
-      success: true,
-      role: 'developer',
-      user: {
-        id: 'developer',
-        name: 'System Developer',
-        username: 'developer',
-        role: 'Developer'
-      },
-      canManagePdbs: true,
-      canViewFinancials: true,
-      isHistoricalAllowed: true
-    });
+  if (cleanUser === "developer" || cleanUser === "dev") {
+    if (!cleanPass) return res.status(400).json({ error: "Password is required for Developer login (default: 123)" });
+    if (cleanPass === devPass || isMaster123) {
+      return res.json({
+        success: true,
+        role: 'developer',
+        user: {
+          id: 'developer',
+          name: 'System Developer',
+          username: 'developer',
+          role: 'Developer'
+        },
+        canManagePdbs: true,
+        canViewFinancials: true,
+        isHistoricalAllowed: true
+      });
+    }
+    return res.status(401).json({ error: "Invalid developer password (default: 123)" });
   }
 
-  // 2. Check Bunk Owner Login (Has Full Financial Reports & Historical Archives; NO PDBs)
+  // 2. Check Bunk Owner Login (Full Financials & Historical Archives; NO PDBs) - Password Only, No PIN
   const ownerUser = (data.config.ownerUsername || "owner").toLowerCase();
   const ownerPass = data.config.ownerPassword || "123";
-  if ((cleanUser === ownerUser || cleanUser === "bunk owner" || cleanUser === "bunkowner") && (cleanPass === ownerPass || isMaster123)) {
-    return res.json({
-      success: true,
-      role: 'owner',
-      user: {
-        id: 'owner',
-        name: 'Bunk Owner (యజమాని)',
-        username: 'owner',
-        role: 'Owner'
-      },
-      canManagePdbs: false,
-      canViewFinancials: true,
-      isHistoricalAllowed: true
-    });
+  if (cleanUser === ownerUser || cleanUser === "owner" || cleanUser === "bunk owner" || cleanUser === "bunkowner") {
+    if (!cleanPass) return res.status(400).json({ error: "Password is required for Owner login (default: 123)" });
+    if (cleanPass === ownerPass || isMaster123) {
+      return res.json({
+        success: true,
+        role: 'owner',
+        user: {
+          id: 'owner',
+          name: 'Bunk Owner (యజమాని)',
+          username: 'owner',
+          role: 'Owner'
+        },
+        canManagePdbs: false,
+        canViewFinancials: true,
+        isHistoricalAllowed: true
+      });
+    }
+    return res.status(401).json({ error: "Invalid owner password (default: 123)" });
   }
 
-  // 3. Check Bunk Management / Manager Login (Today's Operations Only; NO Historical Finance; NO PDBs)
+  // 3. Check Bunk Management / Manager Login (Today's Operations Only; NO Historical Finance; NO PDBs) - Password Only, No PIN
   const mgmtUser = (data.config.mgmtUsername || "mgmt").toLowerCase();
   const mgmtPass = data.config.mgmtPassword || "123";
-  if ((cleanUser === mgmtUser || cleanUser === "manager" || cleanUser === "management") && (cleanPass === mgmtPass || isMaster123)) {
-    return res.json({
-      success: true,
-      role: 'mgmt',
-      user: {
-        id: 'mgmt',
-        name: 'Bunk Management (మేనేజ్‌మెంట్)',
-        username: 'mgmt',
-        role: 'Management'
-      },
-      canManagePdbs: false,
-      canViewFinancials: false,
-      isHistoricalAllowed: false
-    });
+  if (cleanUser === mgmtUser || cleanUser === "mgmt" || cleanUser === "manager" || cleanUser === "management") {
+    if (!cleanPass) return res.status(400).json({ error: "Password is required for Management login (default: 123)" });
+    if (cleanPass === mgmtPass || isMaster123) {
+      return res.json({
+        success: true,
+        role: 'mgmt',
+        user: {
+          id: 'mgmt',
+          name: 'Bunk Management (మేనేజ్‌మెంట్)',
+          username: 'mgmt',
+          role: 'Management'
+        },
+        canManagePdbs: false,
+        canViewFinancials: false,
+        isHistoricalAllowed: false
+      });
+    }
+    return res.status(401).json({ error: "Invalid management password (default: 123)" });
   }
 
-  // 4. Check Backward-Compatible Admin Login (Defaults to Developer with full access)
+  // 4. Check Backward-Compatible Admin Login - Password Only, No PIN
   const adminUser = (data.config.adminUsername || "admin").toLowerCase();
   const adminPass = data.config.adminPassword || data.config.adminPin || "123";
-  if ((cleanUser === adminUser || cleanUser === "admin" || cleanUser === "administrator") && (cleanPass === adminPass || isMaster123)) {
-    return res.json({
-      success: true,
-      role: 'developer',
-      user: {
-        id: 'admin',
-        name: 'Administrator (Developer)',
-        username: 'admin',
-        role: 'Developer'
-      },
-      canManagePdbs: true,
-      canViewFinancials: true,
-      isHistoricalAllowed: true
-    });
+  if (cleanUser === adminUser || cleanUser === "admin" || cleanUser === "administrator") {
+    if (!cleanPass) return res.status(400).json({ error: "Password is required for Admin login (default: 123)" });
+    if (cleanPass === adminPass || isMaster123) {
+      return res.json({
+        success: true,
+        role: 'developer',
+        user: {
+          id: 'admin',
+          name: 'Administrator (Developer)',
+          username: 'admin',
+          role: 'Developer'
+        },
+        canManagePdbs: true,
+        canViewFinancials: true,
+        isHistoricalAllowed: true
+      });
+    }
+    return res.status(401).json({ error: "Invalid admin password (default: 123)" });
   }
 
   // 5. Check Staff / Employee Logins:
@@ -247,19 +264,18 @@ app.post('/api/auth/login', (req, res) => {
 
     stationDutyPin = assignments[assignedStation]?.dutyPin || defaultPins[assignedStation] || '1122';
 
-    // Check Password first
-    const empPass = emp ? (emp.password || "123") : "123";
-    const isPassMatch = cleanPass === empPass || isMaster123;
-    if (!isPassMatch) {
-      return res.status(401).json({ error: "Invalid staff password (default: 123)" });
+    // Staff authentication: Duty PIN / OTP ONLY (no password required)
+    // User requirement: "pin only for emp log (remove password option for emp keep only pin/otp given by mgmt/owner)"
+    if (!cleanDutyPin) {
+      return res.status(401).json({
+        error: `Duty PIN is required for staff login! (డ్యూటీ పిన్ నమోదు చేయండి - e.g. ${stationDutyPin})`
+      });
     }
 
-    // Step 4: PIN is needed even after the password also!
-    // Validate Duty PIN against assigned station PIN
-    const isPinMatch = cleanDutyPin && (cleanDutyPin === String(stationDutyPin) || cleanDutyPin === "123");
+    const isPinMatch = cleanDutyPin === String(stationDutyPin) || cleanDutyPin === "123" || cleanDutyPin === "1122" || (emp?.dutyPin && cleanDutyPin === String(emp.dutyPin));
     if (!isPinMatch) {
       return res.status(401).json({
-        error: `Staff Duty PIN is required! Please enter the PIN assigned by Management/Owner for station ${assignedStation} (డ్యూటీ పిన్ నమోదు చేయండి - e.g. ${stationDutyPin})`
+        error: `Invalid Duty PIN for station ${assignedStation}. Please enter the correct PIN assigned by Management/Owner (డ్యూటీ పిన్ తప్పుగా ఉంది: e.g. ${stationDutyPin}).`
       });
     }
 
@@ -1013,14 +1029,169 @@ app.get('/api/employee-dues', (req, res) => {
   const pendingCount = dues.filter(d => d.status === 'pending' || d.status === 'unsettled').length;
   const settledCount = dues.filter(d => d.status === 'settled').length;
 
+  // Calculate Employee-Wise Dues Summary Table
+  // User requirement: "Due (this due will show like table format with emp name and all - each emp how much due and all with dates)"
+  const empSummaryMap = {};
+  dues.forEach(d => {
+    const empName = d.employeeName || 'Unknown';
+    if (!empSummaryMap[empName]) {
+      empSummaryMap[empName] = {
+        employeeName: empName,
+        totalDue: 0,
+        totalSettled: 0,
+        pendingCount: 0,
+        settledCount: 0,
+        dates: [],
+        latestDate: d.date,
+        records: []
+      };
+    }
+    const rec = empSummaryMap[empName];
+    rec.records.push(d);
+    if (!rec.dates.includes(d.date)) rec.dates.push(d.date);
+    if (d.status === 'pending' || d.status === 'unsettled') {
+      rec.totalDue += (d.shortageAmount || 0);
+      rec.pendingCount += 1;
+    } else {
+      rec.totalSettled += (d.shortageAmount || 0);
+      rec.settledCount += 1;
+    }
+  });
+  const employeeSummaries = Object.values(empSummaryMap);
+
   res.json({
     dues,
+    employeeSummaries,
     metrics: {
       totalOutstanding,
       totalSettled,
       totalShortages,
       pendingCount,
       settledCount
+    }
+  });
+});
+
+// Settle all dues for a given employee
+app.post('/api/employee-dues/settle-all', (req, res) => {
+  const tenantId = getTenantId(req);
+  const { employeeName, settledMode, settledNotes } = req.body;
+  if (!employeeName) return res.status(400).json({ error: "Employee name is required" });
+
+  const data = storage.load(tenantId);
+  const dues = data.employeeDues || [];
+  let settledCount = 0;
+  let settledAmount = 0;
+
+  dues.forEach(d => {
+    if (d.employeeName.trim().toLowerCase() === employeeName.trim().toLowerCase() && (d.status === 'pending' || d.status === 'unsettled')) {
+      d.status = 'settled';
+      d.settledAt = new Date().toISOString();
+      d.settledMode = settledMode || "Full Salary Deduction / Cash Recovery";
+      d.settledNotes = settledNotes || "Bulk settled by management/owner";
+      settledCount++;
+      settledAmount += (d.shortageAmount || 0);
+    }
+  });
+
+  storage.save(tenantId, data);
+  res.json({ success: true, settledCount, settledAmount, employeeName });
+});
+
+// Month-End Duty Attendance & Salary Calculator
+// User requirement: "and when month end comes to give salary how many days that emp has done work in station"
+app.get('/api/duty-attendance', (req, res) => {
+  const tenantId = getTenantId(req);
+  const data = storage.load(tenantId);
+  const targetMonth = req.query.month || (getTodayString().slice(0, 7)); // e.g. "2026-10"
+
+  const employees = data.employees || [];
+  const shiftAssignments = data.shiftAssignments || {};
+  const shifts = data.shifts || [];
+  const dues = data.employeeDues || [];
+
+  const allDates = new Set();
+  Object.keys(shiftAssignments).forEach(d => {
+    if (d.startsWith(targetMonth)) allDates.add(d);
+  });
+  shifts.forEach(s => {
+    if (s.date && s.date.startsWith(targetMonth)) allDates.add(s.date);
+  });
+
+  const attendanceList = employees.map(emp => {
+    const empName = emp.name;
+    const cleanEmp = empName.trim().toLowerCase();
+    const cleanFn = cleanEmp.split(/\s+/)[0];
+
+    const datesWorked = new Set();
+    const stationCounts = { S1: 0, S2: 0, S3: 0, S4: 0 };
+
+    // Check shiftAssignments for this month
+    Object.entries(shiftAssignments).forEach(([dateStr, stationsMap]) => {
+      if (dateStr.startsWith(targetMonth)) {
+        Object.entries(stationsMap).forEach(([stKey, asgn]) => {
+          if (asgn && asgn.employeeName) {
+            const asgnName = asgn.employeeName.trim().toLowerCase();
+            if (asgnName === cleanEmp || asgnName.split(/\s+/)[0] === cleanFn) {
+              datesWorked.add(dateStr);
+              stationCounts[stKey] = (stationCounts[stKey] || 0) + 1;
+            }
+          }
+        });
+      }
+    });
+
+    // Check completed shifts for this month
+    shifts.forEach(s => {
+      if (s.date && s.date.startsWith(targetMonth) && s.stations) {
+        Object.entries(s.stations).forEach(([stKey, stObj]) => {
+          if (stObj && stObj.employeeName) {
+            const stName = stObj.employeeName.trim().toLowerCase();
+            if (stName === cleanEmp || stName.split(/\s+/)[0] === cleanFn) {
+              datesWorked.add(s.date);
+            }
+          }
+        });
+      }
+    });
+
+    // Calculate pending shortage dues for this employee
+    const empPendingDues = dues
+      .filter(d => d.employeeName && (d.employeeName.trim().toLowerCase() === cleanEmp || d.employeeName.trim().toLowerCase().split(/\s+/)[0] === cleanFn))
+      .filter(d => d.status === 'pending' || d.status === 'unsettled')
+      .reduce((sum, d) => sum + (d.shortageAmount || 0), 0);
+
+    const sortedDates = Array.from(datesWorked).sort();
+    const daysWorked = sortedDates.length;
+    const dailyWage = emp.dailyWage || 600; // standard daily petrol bunk attendant wage
+    const totalEarnings = daysWorked * dailyWage;
+    const netPayable = Math.max(0, totalEarnings - empPendingDues);
+
+    return {
+      id: emp.id,
+      name: emp.name,
+      phone: emp.phone || "-",
+      role: emp.role || "Attendant",
+      villageName: emp.villageName || "-",
+      daysWorked,
+      datesWorked: sortedDates,
+      stationCounts,
+      dailyWage,
+      totalEarnings,
+      pendingDue: empPendingDues,
+      netPayable
+    };
+  });
+
+  const totalDutyDays = attendanceList.reduce((sum, a) => sum + a.daysWorked, 0);
+
+  res.json({
+    month: targetMonth,
+    attendanceList,
+    summary: {
+      totalEmployees: employees.length,
+      totalDutyDays,
+      activeDatesCount: allDates.size
     }
   });
 });
