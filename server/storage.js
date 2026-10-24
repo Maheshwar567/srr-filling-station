@@ -568,6 +568,10 @@ class PdbStorageManager {
                   });
                 }
               }
+              if (sh.stations[stKey]) {
+                if (!sh.stations[stKey].cardSwipes) sh.stations[stKey].cardSwipes = [];
+                if (!sh.stations[stKey].expensesList) sh.stations[stKey].expensesList = [];
+              }
             });
           }
         });

@@ -266,9 +266,9 @@
           "collections": {
             "cash": 121000,
             "upi": 38000,
-            "card": 5000,
-            "expenses": 300,
-            "expenseReason": "Tea and maintenance",
+            "card": 0,
+            "expenses": 0,
+            "expenseReason": "",
             "notes": ""
           },
           "status": "readings-entered",
@@ -288,7 +288,9 @@
               "litres": 5,
               "reason": "Daily calibration check"
             }
-          ]
+          ],
+          "cardSwipes": [],
+          "expensesList": []
         },
         "S2": {
           "stationId": "S2",
@@ -335,7 +337,9 @@
               "litres": 5,
               "reason": "Daily calibration check"
             }
-          ]
+          ],
+          "cardSwipes": [],
+          "expensesList": []
         },
         "S3": {
           "stationId": "S3",
@@ -382,7 +386,9 @@
               "litres": 5,
               "reason": "Daily calibration check"
             }
-          ]
+          ],
+          "cardSwipes": [],
+          "expensesList": []
         },
         "S4": {
           "stationId": "S4",
@@ -429,7 +435,9 @@
               "litres": 5,
               "reason": "Daily calibration check"
             }
-          ]
+          ],
+          "cardSwipes": [],
+          "expensesList": []
         }
       }
     },
@@ -469,7 +477,9 @@
             "notes": ""
           },
           "status": "in-progress",
-          "testingRecords": []
+          "testingRecords": [],
+          "cardSwipes": [],
+          "expensesList": []
         },
         "S2": {
           "stationId": "S2",
@@ -500,7 +510,9 @@
             "notes": ""
           },
           "status": "in-progress",
-          "testingRecords": []
+          "testingRecords": [],
+          "cardSwipes": [],
+          "expensesList": []
         },
         "S3": {
           "stationId": "S3",
@@ -531,7 +543,9 @@
             "notes": ""
           },
           "status": "in-progress",
-          "testingRecords": []
+          "testingRecords": [],
+          "cardSwipes": [],
+          "expensesList": []
         },
         "S4": {
           "stationId": "S4",
@@ -562,7 +576,9 @@
             "notes": ""
           },
           "status": "in-progress",
-          "testingRecords": []
+          "testingRecords": [],
+          "cardSwipes": [],
+          "expensesList": []
         }
       }
     }
@@ -668,6 +684,42 @@
       "amount": 10000,
       "slipNo": "SL-982",
       "notes": "Lorry fleet account",
+      "status": "unsettled"
+    },
+    {
+      "id": "vlog-1792828449802",
+      "date": "2026-10-24",
+      "time": "01:24 PM",
+      "stationId": "S1",
+      "employeeName": "Attendant",
+      "vehicleNumber": "AP21TC4488",
+      "driverName": "",
+      "driverPhone": "9848011223",
+      "mobileNumber": "9848011223",
+      "fuelType": "Diesel",
+      "litres": 9.5,
+      "rate": 0,
+      "amount": 1000,
+      "slipNo": "",
+      "notes": "",
+      "status": "unsettled"
+    },
+    {
+      "id": "vlog-1792828997602",
+      "date": "2026-10-23",
+      "time": "01:33 PM",
+      "stationId": "S1",
+      "employeeName": "Ramesh Kumar",
+      "vehicleNumber": "AP 21 TC 4488",
+      "driverName": "Chandra Shekar",
+      "driverPhone": "9848011223",
+      "mobileNumber": "9848011223",
+      "fuelType": "Diesel",
+      "litres": 20,
+      "rate": 0,
+      "amount": 2105,
+      "slipNo": "SL-1001",
+      "notes": "",
       "status": "unsettled"
     }
   ],

@@ -327,6 +327,141 @@ app.delete('/api/shifts/testing/:id', (req, res) => {
   res.json({ success: true, testingRecords: st.testingRecords, meters: st.meters });
 });
 
+// ----------------------------------------------------
+// CARD SWIPE (POS) TRANSACTIONS WITH AUTO/EDITABLE DATE-TIME
+// ----------------------------------------------------
+app.post('/api/shifts/card-swipes', (req, res) => {
+  const tenantId = getTenantId(req);
+  const { date, stationId, amount, machine, slipNo, dateTime } = req.body;
+  if (!date || !stationId || !amount || Number(amount) <= 0) {
+    return res.status(400).json({ error: "Date, stationId, and valid amount are required" });
+  }
+
+  const data = storage.load(tenantId);
+  const shift = data.shifts.find(s => s.date === date);
+  if (!shift || !shift.stations[stationId]) {
+    return res.status(404).json({ error: "Shift or station record not found" });
+  }
+
+  const st = shift.stations[stationId];
+  if (!st.cardSwipes) st.cardSwipes = [];
+
+  const timeStr = dateTime ? new Date(dateTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }) : new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+  const entryDate = dateTime ? dateTime.split('T')[0] : (date || getTodayString());
+
+  const entry = {
+    id: `csw-${Date.now()}`,
+    date: entryDate,
+    dateTime: dateTime || new Date().toISOString(),
+    time: timeStr,
+    amount: Number(amount),
+    machine: (machine || "IOCL POS").trim(),
+    slipNo: (slipNo || "").trim()
+  };
+
+  st.cardSwipes.push(entry);
+
+  if (!st.collections) st.collections = {};
+  const totalCard = st.cardSwipes.reduce((sum, c) => sum + (c.amount || 0), 0);
+  st.collections.card = totalCard;
+
+  storage.save(tenantId, data);
+  res.json({ success: true, entry, cardSwipes: st.cardSwipes, totalCard });
+});
+
+app.delete('/api/shifts/card-swipes/:id', (req, res) => {
+  const tenantId = getTenantId(req);
+  const { id } = req.params;
+  const { date, stationId } = req.query;
+
+  const data = storage.load(tenantId);
+  const shift = data.shifts.find(s => s.date === date);
+  if (!shift || !shift.stations[stationId]) {
+    return res.status(404).json({ error: "Shift or station record not found" });
+  }
+
+  const st = shift.stations[stationId];
+  if (!st.cardSwipes) st.cardSwipes = [];
+
+  const idx = st.cardSwipes.findIndex(c => c.id === id);
+  if (idx !== -1) {
+    st.cardSwipes.splice(idx, 1);
+  }
+
+  if (!st.collections) st.collections = {};
+  const totalCard = st.cardSwipes.reduce((sum, c) => sum + (c.amount || 0), 0);
+  st.collections.card = totalCard;
+
+  storage.save(tenantId, data);
+  res.json({ success: true, cardSwipes: st.cardSwipes, totalCard });
+});
+
+// ----------------------------------------------------
+// SHIFT EXPENSES WITH AUTO-CALCULATION
+// ----------------------------------------------------
+app.post('/api/shifts/expenses', (req, res) => {
+  const tenantId = getTenantId(req);
+  const { date, stationId, amount, reason, time } = req.body;
+  if (!date || !stationId || !amount || Number(amount) <= 0 || !reason) {
+    return res.status(400).json({ error: "Date, stationId, amount and expense reason are required" });
+  }
+
+  const data = storage.load(tenantId);
+  const shift = data.shifts.find(s => s.date === date);
+  if (!shift || !shift.stations[stationId]) {
+    return res.status(404).json({ error: "Shift or station record not found" });
+  }
+
+  const st = shift.stations[stationId];
+  if (!st.expensesList) st.expensesList = [];
+
+  const timeStr = time || new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+  const entry = {
+    id: `exp-${Date.now()}`,
+    time: timeStr,
+    amount: Number(amount),
+    reason: reason.trim()
+  };
+
+  st.expensesList.push(entry);
+
+  if (!st.collections) st.collections = {};
+  const totalExpenses = st.expensesList.reduce((sum, e) => sum + (e.amount || 0), 0);
+  st.collections.expenses = totalExpenses;
+  st.collections.expenseReason = st.expensesList.map(e => `${e.reason} (₹${e.amount})`).join(', ');
+
+  storage.save(tenantId, data);
+  res.json({ success: true, entry, expensesList: st.expensesList, totalExpenses, expenseReason: st.collections.expenseReason });
+});
+
+app.delete('/api/shifts/expenses/:id', (req, res) => {
+  const tenantId = getTenantId(req);
+  const { id } = req.params;
+  const { date, stationId } = req.query;
+
+  const data = storage.load(tenantId);
+  const shift = data.shifts.find(s => s.date === date);
+  if (!shift || !shift.stations[stationId]) {
+    return res.status(404).json({ error: "Shift or station record not found" });
+  }
+
+  const st = shift.stations[stationId];
+  if (!st.expensesList) st.expensesList = [];
+
+  const idx = st.expensesList.findIndex(e => e.id === id);
+  if (idx !== -1) {
+    st.expensesList.splice(idx, 1);
+  }
+
+  if (!st.collections) st.collections = {};
+  const totalExpenses = st.expensesList.reduce((sum, e) => sum + (e.amount || 0), 0);
+  st.collections.expenses = totalExpenses;
+  st.collections.expenseReason = st.expensesList.map(e => `${e.reason} (₹${e.amount})`).join(', ');
+
+  storage.save(tenantId, data);
+  res.json({ success: true, expensesList: st.expensesList, totalExpenses, expenseReason: st.collections.expenseReason });
+});
+
 // Fuel Rates
 app.get('/api/rates', (req, res) => {
   const tenantId = getTenantId(req);
@@ -650,10 +785,15 @@ app.get('/api/vehicle-ledger', (req, res) => {
 // Log fuel dispensed to vehicle
 app.post('/api/vehicle-ledger', (req, res) => {
   const tenantId = getTenantId(req);
-  const { date, stationId, employeeName, vehicleNumber, driverName, driverPhone, fuelType, litres, rate, amount, slipNo, notes } = req.body;
+  const { date, stationId, employeeName, vehicleNumber, driverName, driverPhone, mobileNumber, fuelType, litres, rate, amount, slipNo, notes } = req.body;
 
   if (!vehicleNumber || !amount) {
     return res.status(400).json({ error: "Vehicle number and amount are required" });
+  }
+
+  const phone = (mobileNumber || driverPhone || "").trim();
+  if (!phone || !/^[0-9]{10}$/.test(phone)) {
+    return res.status(400).json({ error: "Valid 10-digit mobile number is required (10 numbers rule)" });
   }
 
   const data = storage.load(tenantId);
@@ -668,7 +808,8 @@ app.post('/api/vehicle-ledger', (req, res) => {
     employeeName: employeeName || "Attendant",
     vehicleNumber: vehicleNumber.trim().toUpperCase(),
     driverName: (driverName || "").trim(),
-    driverPhone: (driverPhone || "").trim(),
+    driverPhone: phone,
+    mobileNumber: phone,
     fuelType: fuelType || "Diesel",
     litres: litres ? Number(Number(litres).toFixed(2)) : 0,
     rate: rate ? Number(Number(rate).toFixed(2)) : 0,

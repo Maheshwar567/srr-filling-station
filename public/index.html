@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="te">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -16,15 +16,15 @@
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts: Chakra Petch, Outfit, JetBrains Mono -->
+  <!-- Google Fonts: Outfit, JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans min-h-screen antialiased flex flex-col selection:bg-amber-200">
 
-  <!-- Clean Enterprise Navbar (Clutter Removed: No shift timings, no 2 pumps subtitle, no ticker phone url) -->
+  <!-- Clean Enterprise Navbar (Clutter Free: No shift timings, no 2 pumps subtitle, no ticker phone url) -->
   <header class="bg-gradient-to-r from-orange-600 via-amber-600 to-blue-900 text-white shadow-lg sticky top-0 z-40 border-b-4 border-amber-400">
     <div class="max-w-7xl mx-auto px-3 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-2.5">
       
@@ -47,8 +47,19 @@
         </div>
       </div>
 
-      <!-- User Status & Actions -->
+      <!-- User Status, Language Switcher & Actions -->
       <div class="flex items-center gap-2" id="headerUserActions">
+        
+        <!-- Option Tab: English / Telugu Language Switcher (User requested) -->
+        <div class="flex items-center bg-black/40 rounded-full p-0.5 border border-white/20 shadow-inner">
+          <button onclick="setAppLanguage('te')" id="langBtn-te" class="px-2.5 py-1 rounded-full text-xs font-black transition-all bg-amber-400 text-slate-900 shadow">
+            తెలుగు
+          </button>
+          <button onclick="setAppLanguage('en')" id="langBtn-en" class="px-2.5 py-1 rounded-full text-xs font-bold transition-all text-white hover:text-amber-300">
+            English
+          </button>
+        </div>
+
         <!-- Shift Date Picker -->
         <div class="flex items-center bg-black/30 backdrop-blur-sm rounded-lg px-2 py-1 text-xs border border-white/20">
           <span class="text-amber-200 mr-1 text-[11px] font-semibold">📅</span>
@@ -65,12 +76,12 @@
 
           <button onclick="openChangePasswordModal()" title="Change Password" class="bg-white/20 hover:bg-white/30 text-white text-xs px-2 py-1 rounded-lg transition-all flex items-center gap-1">
             <span>🔑</span>
-            <span class="hidden sm:inline">Password</span>
+            <span class="hidden sm:inline" id="navPasswordLabel">Password</span>
           </button>
 
           <button onclick="logoutUser()" title="Logout" class="bg-rose-600 hover:bg-rose-700 text-white text-xs px-2.5 py-1 rounded-lg shadow transition-all font-bold flex items-center gap-1">
             <span>🚪</span>
-            <span>Logout</span>
+            <span id="navLogoutLabel">Logout</span>
           </button>
         </div>
 
@@ -78,7 +89,7 @@
         <div id="navGuestBox" class="flex items-center gap-1.5">
           <button onclick="showLoginScreen()" class="bg-amber-400 hover:bg-amber-300 text-slate-900 font-black text-xs px-3 py-1.5 rounded-lg shadow transition-all flex items-center gap-1">
             <span>🔐</span>
-            <span>Sign In (లాగిన్)</span>
+            <span id="navSignInLabel">Sign In (లాగిన్)</span>
           </button>
         </div>
       </div>
@@ -90,7 +101,6 @@
 
     <!-- ============================================================== -->
     <!-- VIEW 0: LOGIN SCREEN (SHOWN WHEN NOT LOGGED IN) -->
-    <!-- User requested: "lets create logins for each employee and allow then the password change in case to change, once login show staff or admin only" -->
     <!-- ============================================================== -->
     <div id="loginView" class="max-w-md w-full mx-auto my-auto py-8">
       <div class="bg-white rounded-3xl shadow-2xl border-2 border-slate-200 p-6 sm:p-8 space-y-5 animate-scaleIn">
@@ -107,7 +117,7 @@
 
         <form id="loginForm" onsubmit="handleLoginSubmit(event)" class="space-y-4">
           <div>
-            <label class="text-xs font-bold text-slate-700 block mb-1">
+            <label class="text-xs font-bold text-slate-700 block mb-1" id="lblLoginUser">
               Mobile Number / Username (మొబైల్ నంబర్ లేదా యూజర్‌నేమ్):
             </label>
             <div class="relative">
@@ -117,7 +127,7 @@
           </div>
 
           <div>
-            <label class="text-xs font-bold text-slate-700 block mb-1">
+            <label class="text-xs font-bold text-slate-700 block mb-1" id="lblLoginPass">
               Password / PIN (పాస్‌వర్డ్):
             </label>
             <div class="relative">
@@ -129,7 +139,7 @@
 
           <p id="loginErrorMessage" class="text-xs text-rose-600 font-bold hidden"></p>
 
-          <button type="submit" class="w-full bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-black text-sm py-3 rounded-xl shadow-lg transition-all active:scale-98">
+          <button type="submit" id="btnLoginSubmit" class="w-full bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-black text-sm py-3 rounded-xl shadow-lg transition-all active:scale-98">
             Sign In (లాగిన్ చేయండి)
           </button>
         </form>
@@ -142,7 +152,6 @@
 
     <!-- ============================================================== -->
     <!-- VIEW 1: STAFF / EMPLOYEE VIEW (ONLY SHOWN WHEN STAFF LOGS IN) -->
-    <!-- Admin assigned pump is locked in read-only mode -->
     <!-- ============================================================== -->
     <div id="employeeView" class="space-y-4 hidden">
 
@@ -155,7 +164,7 @@
           <div>
             <div class="flex items-center gap-2">
               <h2 class="text-base sm:text-lg font-black text-white" id="empLoggedInName">Attendant</h2>
-              <span class="bg-emerald-500 text-slate-900 text-[10px] font-black px-2 py-0.5 rounded-full uppercase">On Duty</span>
+              <span class="bg-emerald-500 text-slate-900 text-[10px] font-black px-2 py-0.5 rounded-full uppercase" id="badgeDutyStatus">On Duty</span>
             </div>
             <p class="text-xs text-slate-300 font-medium mt-0.5" id="empAssignedPumpDescription">
               Assigned Pump: Loading assignment...
@@ -169,66 +178,78 @@
         </div>
       </div>
 
-      <!-- TOP STAFF TABS: Reading, Testing (dedicated tab!), Amount Reminder, Vehicle Account, Cash Handover -->
+      <!-- TOP STAFF TABS: Reading, Testing, Card Swipes, Amount Reminder, Vehicle Account, Cash Handover -->
       <div class="bg-white rounded-2xl p-1.5 shadow-sm border border-slate-200 flex items-center justify-between gap-1 overflow-x-auto">
         
-        <!-- Tab 1: Reading (Clean - NO testing field on screen) -->
+        <!-- Tab 1: Reading -->
         <button onclick="switchEmployeeTab('reading')" id="empTabBtn-reading" class="emp-tab-btn active flex-1 py-2.5 px-2 rounded-xl font-black text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 bg-orange-600 text-white shadow-md shrink-0">
           <span class="text-base">⛽</span>
           <div class="text-left">
-            <span class="block leading-tight">రీడింగ్ నమోదు</span>
+            <span class="block leading-tight" id="tabText-reading">రీడింగ్ నమోదు</span>
             <span class="text-[10px] font-medium opacity-90 hidden sm:block">Meter Reading</span>
           </div>
         </button>
 
-        <!-- Tab 2: Testing (Dedicated tab requested by user so testing is NOT shown on reading screen!) -->
+        <!-- Tab 2: Testing -->
         <button onclick="switchEmployeeTab('testing')" id="empTabBtn-testing" class="emp-tab-btn flex-1 py-2.5 px-2 rounded-xl font-black text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200 shrink-0">
           <span class="text-base">🧪</span>
           <div class="text-left">
             <div class="flex items-center gap-1">
-              <span class="block leading-tight text-purple-700">టెస్టింగ్</span>
+              <span class="block leading-tight text-purple-700" id="tabText-testing">టెస్టింగ్</span>
               <span id="empTestingBadgeCount" class="bg-purple-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-bold">0 L</span>
             </div>
-            <span class="text-[10px] font-medium text-slate-500 hidden sm:block">Pump Testing Litres</span>
+            <span class="text-[10px] font-medium text-slate-500 hidden sm:block">Testing Litres</span>
           </div>
         </button>
 
-        <!-- Tab 3: Amount Reminder -->
+        <!-- Tab 3: Card Swipes (POS Machine Payments) -->
+        <button onclick="switchEmployeeTab('card')" id="empTabBtn-card" class="emp-tab-btn flex-1 py-2.5 px-2 rounded-xl font-black text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200 shrink-0">
+          <span class="text-base">💳</span>
+          <div class="text-left">
+            <div class="flex items-center gap-1">
+              <span class="block leading-tight text-blue-700" id="tabText-card">కార్డ్ స్వైప్</span>
+              <span id="empCardBadgeCount" class="bg-blue-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-bold">₹0</span>
+            </div>
+            <span class="text-[10px] font-medium text-slate-500 hidden sm:block">Card Swipes</span>
+          </div>
+        </button>
+
+        <!-- Tab 4: Amount Reminder -->
         <button onclick="switchEmployeeTab('reminder')" id="empTabBtn-reminder" class="emp-tab-btn flex-1 py-2.5 px-2 rounded-xl font-black text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200 shrink-0">
           <span class="text-base">⏰</span>
           <div class="text-left">
             <div class="flex items-center gap-1">
-              <span class="block leading-tight text-amber-700">మొత్తం రిమైండర్</span>
+              <span class="block leading-tight text-amber-700" id="tabText-reminder">రిమైండర్</span>
               <span id="empReminderBadgeCount" class="bg-amber-500 text-slate-900 text-[10px] px-1.5 py-0.2 rounded-full font-black">0</span>
             </div>
             <span class="text-[10px] font-medium text-slate-500 hidden sm:block">Amount Reminder</span>
           </div>
         </button>
 
-        <!-- Tab 4: Vehicle Account -->
+        <!-- Tab 5: Vehicle Account -->
         <button onclick="switchEmployeeTab('vehicle')" id="empTabBtn-vehicle" class="emp-tab-btn flex-1 py-2.5 px-2 rounded-xl font-black text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200 shrink-0">
           <span class="text-base">🚛</span>
           <div class="text-left">
             <div class="flex items-center gap-1">
-              <span class="block leading-tight text-blue-700">వాహనం ఖాతా</span>
+              <span class="block leading-tight text-blue-800" id="tabText-vehicle">వాహనం ఖాతా</span>
               <span id="empVehicleBadgeCount" class="bg-blue-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-bold">0</span>
             </div>
             <span class="text-[10px] font-medium text-slate-500 hidden sm:block">Vehicle Fleet</span>
           </div>
         </button>
 
-        <!-- Tab 5: Cash Handover -->
+        <!-- Tab 6: Cash Handover -->
         <button onclick="switchEmployeeTab('handover')" id="empTabBtn-handover" class="emp-tab-btn flex-1 py-2.5 px-2 rounded-xl font-black text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200 shrink-0">
           <span class="text-base">💰</span>
           <div class="text-left">
-            <span class="block leading-tight text-emerald-700">నగదు లెక్క</span>
+            <span class="block leading-tight text-emerald-700" id="tabText-handover">నగదు లెక్క</span>
             <span class="text-[10px] font-medium text-slate-500 hidden sm:block">Cash Handover</span>
           </div>
         </button>
       </div>
 
       <!-- ---------------------------------------------------- -->
-      <!-- TAB CONTENT 1: METER READINGS (ULTRA CLEAN - NO TESTING INPUTS ON SCREEN) -->
+      <!-- TAB CONTENT 1: METER READINGS (CLEAN - NO TESTING INPUTS) -->
       <!-- ---------------------------------------------------- -->
       <div id="empSection-reading" class="space-y-4">
         <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
@@ -259,7 +280,6 @@
                   </div>
                 </div>
 
-                <!-- Digital Meter Inputs (Only Opening and Closing - No testing clutter!) -->
                 <div class="space-y-3">
                   <div>
                     <label class="text-xs font-extrabold text-slate-700 flex items-center gap-1.5 mb-1">
@@ -278,7 +298,7 @@
                   </div>
 
                   <div class="flex items-center justify-between pt-2 border-t border-amber-200">
-                    <span class="text-xs text-slate-500 font-bold">టెస్టింగ్ లీటర్లు: <strong id="empPetrolTestingLitresDisplay" class="font-mono text-purple-700">0.00 L</strong> (టెస్టింగ్ ట్యాబ్ లో నమోదు చేయండి)</span>
+                    <span class="text-xs text-slate-500 font-bold">టెస్టింగ్ లీటర్లు: <strong id="empPetrolTestingLitresDisplay" class="font-mono text-purple-700">0.00 L</strong></span>
                     <div class="text-right">
                       <span class="text-[11px] text-slate-500 font-bold block">అమ్మిన లీటర్లు (Net Sale):</span>
                       <span class="text-xl sm:text-2xl font-mono font-black text-orange-600" id="empPetrolSaleResult">0.00 L</span>
@@ -303,7 +323,6 @@
                   </div>
                 </div>
 
-                <!-- Digital Meter Inputs -->
                 <div class="space-y-3">
                   <div>
                     <label class="text-xs font-extrabold text-slate-700 flex items-center gap-1.5 mb-1">
@@ -322,7 +341,7 @@
                   </div>
 
                   <div class="flex items-center justify-between pt-2 border-t border-blue-200">
-                    <span class="text-xs text-slate-500 font-bold">టెస్టింగ్ లీటర్లు: <strong id="empDieselTestingLitresDisplay" class="font-mono text-purple-700">0.00 L</strong> (టెస్టింగ్ ట్యాబ్ లో నమోదు చేయండి)</span>
+                    <span class="text-xs text-slate-500 font-bold">టెస్టింగ్ లీటర్లు: <strong id="empDieselTestingLitresDisplay" class="font-mono text-purple-700">0.00 L</strong></span>
                     <div class="text-right">
                       <span class="text-[11px] text-slate-500 font-bold block">అమ్మిన లీటర్లు (Net Sale):</span>
                       <span class="text-xl sm:text-2xl font-mono font-black text-blue-600" id="empDieselSaleResult">0.00 L</span>
@@ -342,8 +361,7 @@
       </div>
 
       <!-- ---------------------------------------------------- -->
-      <!-- TAB CONTENT 2: TESTING TAB (DEDICATED SEPARATE TAB AS REQUESTED) -->
-      <!-- User requested: "dont show testing on screen, add a tab like testing and append it in the sale of that employee" -->
+      <!-- TAB CONTENT 2: TESTING TAB (DEDICATED SEPARATE TAB) -->
       <!-- ---------------------------------------------------- -->
       <div id="empSection-testing" class="space-y-4 hidden">
         <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
@@ -358,7 +376,6 @@
           </div>
 
           <div class="p-4 sm:p-5 space-y-4">
-            <!-- Add Testing Entry Form -->
             <div class="bg-purple-50/70 p-4 rounded-xl border border-purple-200 space-y-3">
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
@@ -385,7 +402,6 @@
               </div>
             </div>
 
-            <!-- Testing Records Table for this station -->
             <div>
               <h4 class="font-bold text-slate-800 text-xs mb-2">ఈ షిఫ్ట్ లో చేసిన టెస్టింగ్‌లు (Current Shift Testing Log):</h4>
               <div id="empTestingLogContainer" class="overflow-x-auto"></div>
@@ -395,7 +411,73 @@
       </div>
 
       <!-- ---------------------------------------------------- -->
-      <!-- TAB CONTENT 3: AMOUNT REMINDER -->
+      <!-- TAB CONTENT 3: CARD SWIPES (POS MACHINE PAYMENTS) -->
+      <!-- User requested: "during amount enter time and date is auto also provide edit for date time" -->
+      <!-- ---------------------------------------------------- -->
+      <div id="empSection-card" class="space-y-4 hidden">
+        <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
+          <div class="bg-gradient-to-r from-blue-700 to-indigo-800 text-white px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-xl">💳</span>
+              <div>
+                <h3 class="font-extrabold text-sm sm:text-base">కార్డ్ స్వైప్ నమోదు (Card Swipe POS Payments)</h3>
+                <p class="text-[11px] text-blue-100">Date & Time auto-recorded; editable for delayed slip entry</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="text-[10px] uppercase text-blue-200 font-bold block">Total Card Swipes</span>
+              <span class="text-base sm:text-lg font-mono font-black text-amber-300" id="cardTotalDisplay">₹0</span>
+            </div>
+          </div>
+
+          <div class="p-4 sm:p-5 space-y-4">
+            <!-- Add Card Swipe Entry Form -->
+            <div class="bg-blue-50/70 p-4 rounded-xl border border-blue-200 space-y-3">
+              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5">
+                <div>
+                  <label class="text-[11px] font-bold text-slate-700 block mb-0.5">స్వైప్ అమౌంట్ (Amount ₹) *:</label>
+                  <input type="number" id="cardSwipeAmount" onfocus="ensureCardSwipeDateTimeAuto()" placeholder="₹ e.g. 1500" class="w-full bg-white border-2 border-blue-400 rounded-lg px-2.5 py-1.5 text-xs font-mono font-black text-blue-900 focus:outline-none focus:border-blue-600">
+                </div>
+                <div>
+                  <label class="text-[11px] font-bold text-slate-700 block mb-0.5">స్వైప్ మెషిన్ / బ్యాంక్ (POS Machine):</label>
+                  <select id="cardSwipeMachine" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-900">
+                    <option value="IOCL POS">IOCL POS Machine</option>
+                    <option value="SBI POS">SBI Card Machine</option>
+                    <option value="HDFC POS">HDFC POS Machine</option>
+                    <option value="Pine Labs">Pine Labs Plutus</option>
+                    <option value="Paytm POS">Paytm All-In-One POS</option>
+                    <option value="Axis POS">Axis Bank POS</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="text-[11px] font-bold text-slate-700 block mb-0.5">తేదీ & సమయం (Date & Time - Auto/Editable):</label>
+                  <input type="datetime-local" id="cardSwipeDateTime" class="w-full bg-white border border-slate-300 rounded-lg px-2 py-1.5 text-xs font-mono font-bold text-slate-800">
+                </div>
+                <div>
+                  <label class="text-[11px] font-bold text-slate-700 block mb-0.5">స్లిప్ / ఆథరైజేషన్ నం (Slip/RRN):</label>
+                  <input type="text" id="cardSwipeSlipNo" placeholder="e.g. 092817" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-mono">
+                </div>
+              </div>
+
+              <div class="flex justify-end pt-1">
+                <button onclick="submitCardSwipeEntry()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-2 px-5 rounded-lg shadow flex items-center gap-1.5">
+                  <span>💳</span>
+                  <span>కార్డ్ స్వైప్ సేవ్ చేయి (Record Swipe)</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Card Swipes Log Table -->
+            <div>
+              <h4 class="font-bold text-slate-800 text-xs mb-2">ఈ షిఫ్ట్ లో స్వైప్ చేసిన కార్డులు (Shift Card Swipes Log):</h4>
+              <div id="empCardSwipesListContainer" class="overflow-x-auto"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ---------------------------------------------------- -->
+      <!-- TAB CONTENT 4: AMOUNT REMINDER -->
       <!-- ---------------------------------------------------- -->
       <div id="empSection-reminder" class="space-y-4 hidden">
         <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
@@ -446,7 +528,8 @@
       </div>
 
       <!-- ---------------------------------------------------- -->
-      <!-- TAB CONTENT 4: VEHICLE ACCOUNT (FLEET FUELING) -->
+      <!-- TAB CONTENT 5: VEHICLE ACCOUNT (FLEET FUELING) -->
+      <!-- User requested: "in vehicle tab, add mobile number too as mandate filed (10 numbers rule)" -->
       <!-- ---------------------------------------------------- -->
       <div id="empSection-vehicle" class="space-y-4 hidden">
         <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
@@ -471,6 +554,13 @@
                   <label class="text-[11px] font-bold text-slate-700 block mb-0.5">డ్రైవర్ పేరు (Driver Name):</label>
                   <input type="text" id="vlogDriverName" placeholder="ఉదా: చంద్ర శేఖర్" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs">
                 </div>
+                <!-- 10 Digits Mobile Number Rule -->
+                <div>
+                  <label class="text-[11px] font-bold text-slate-700 block mb-0.5">
+                    <span>మొబైల్ నంబర్ (Mobile - 10 Digits)</span> <span class="text-rose-600 font-black">*</span>:
+                  </label>
+                  <input type="tel" id="vlogMobileNumber" maxlength="10" placeholder="98480xxxxx" class="w-full bg-white border-2 border-blue-400 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-slate-900 focus:outline-none focus:border-blue-600">
+                </div>
                 <div>
                   <label class="text-[11px] font-bold text-slate-700 block mb-0.5">ఇంధనం (Fuel Type):</label>
                   <select id="vlogFuelType" onchange="updateVehicleRateAndAmount()" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-900">
@@ -478,13 +568,13 @@
                     <option value="Petrol">⛽ పెట్రోల్ (Petrol)</option>
                   </select>
                 </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
                 <div>
                   <label class="text-[11px] font-bold text-slate-700 block mb-0.5">తీసుకున్న లీటర్లు (Litres) *:</label>
                   <input type="number" step="0.01" id="vlogLitres" oninput="updateVehicleRateAndAmount()" placeholder="45.00" class="w-full bg-white border-2 border-blue-400 rounded-lg px-2.5 py-1.5 text-xs font-mono font-black text-blue-800">
                 </div>
-              </div>
-
-              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
                 <div>
                   <label class="text-[11px] font-bold text-slate-700 block mb-0.5">మొత్తం విలువ (Amount ₹):</label>
                   <input type="number" id="vlogAmount" placeholder="4735" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-mono font-black text-slate-900">
@@ -493,11 +583,12 @@
                   <label class="text-[11px] font-bold text-slate-700 block mb-0.5">స్లిప్ / టోకెన్ నంబర్ (Slip No):</label>
                   <input type="text" id="vlogSlipNo" placeholder="SL-992" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-mono">
                 </div>
-                <div class="flex items-end">
-                  <button onclick="submitVehicleFuelingEntry()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-2 px-4 rounded-lg shadow">
-                    సేవ్ చేయి (Record Fueling)
-                  </button>
-                </div>
+              </div>
+
+              <div class="flex justify-end pt-1">
+                <button onclick="submitVehicleFuelingEntry()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-2 px-6 rounded-lg shadow">
+                  సేవ్ చేయి (Record Fueling)
+                </button>
               </div>
             </div>
 
@@ -507,50 +598,179 @@
       </div>
 
       <!-- ---------------------------------------------------- -->
-      <!-- TAB CONTENT 5: CASH HANDOVER -->
+      <!-- TAB CONTENT 6: CASH HANDOVER & RECONCILIATION (AUTOMATED) -->
+      <!-- User requested: "in nagadhu lekka tab - make all automate caluclations based on the reading entires and reminder amount etc.., give clear image to employee and admin too for fast caluclations as easy gui. expense reason also auto caluclate if amount enter in that field" -->
       <!-- ---------------------------------------------------- -->
       <div id="empSection-handover" class="space-y-4 hidden">
         <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
-          <div class="bg-slate-800 text-white px-4 py-3 flex items-center justify-between">
+          <div class="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white px-4 py-3 flex items-center justify-between">
             <div class="flex items-center gap-2">
               <span class="text-xl">💰</span>
-              <h3 class="font-extrabold text-sm sm:text-base">నగదు అప్పగింత (Shift Cash & Collection Handover)</h3>
+              <div>
+                <h3 class="font-extrabold text-sm sm:text-base">నగదు లెక్క & అప్పగింత (Shift Cash Handover & Automated Reconciliation)</h3>
+                <p class="text-[11px] text-slate-300">Automated calculation based on live readings, vehicle fleet, reminders, card swipes, and expenses</p>
+              </div>
             </div>
+            <span class="bg-emerald-500 text-slate-900 font-mono font-bold text-xs px-2.5 py-1 rounded-lg" id="hoStationBadge">Station S1</span>
           </div>
 
-          <div class="p-4 sm:p-6 space-y-4">
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-              <div class="bg-emerald-50/70 p-3.5 rounded-xl border border-emerald-300">
-                <label class="text-xs font-extrabold text-emerald-950 block mb-1">💵 చేతి నగదు (Cash):</label>
-                <input type="number" id="empHandoverCash" placeholder="0" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 font-mono text-lg font-black text-slate-900">
+          <div class="p-4 sm:p-6 space-y-5">
+
+            <!-- 1. AUTOMATED FINANCIAL RECONCILIATION SUMMARY DASHBOARD -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+              
+              <!-- Card A: Gross Meter Sales -->
+              <div class="bg-slate-50 rounded-2xl p-4 border border-slate-200 space-y-2">
+                <div class="flex items-center justify-between text-xs font-bold text-slate-500">
+                  <span>1. మొత్తం అమ్మకం విలువ</span>
+                  <span class="text-[10px] uppercase">Gross Fuel Sale</span>
+                </div>
+                <div class="text-2xl font-black font-mono text-slate-900" id="hoGrossSaleDisplay">₹0</div>
+                <div class="text-[11px] text-slate-600 space-y-0.5 border-t border-slate-200 pt-1.5 font-medium">
+                  <div class="flex justify-between">
+                    <span>⛽ పెట్రోల్:</span>
+                    <span class="font-mono font-bold" id="hoPetrolSaleSubtext">0.00 L • ₹0</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>🛢️ డీజిల్:</span>
+                    <span class="font-mono font-bold" id="hoDieselSaleSubtext">0.00 L • ₹0</span>
+                  </div>
+                </div>
               </div>
-              <div class="bg-blue-50/70 p-3.5 rounded-xl border border-blue-300">
-                <label class="text-xs font-extrabold text-blue-950 block mb-1">📱 ఫోన్‌పే/గూగుల్‌పే (UPI):</label>
-                <input type="number" id="empHandoverUpi" placeholder="0" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 font-mono text-lg font-black text-slate-900">
+
+              <!-- Card B: Total Deductions (Non-Cash & Credit) -->
+              <div class="bg-amber-50/70 rounded-2xl p-4 border border-amber-200 space-y-2">
+                <div class="flex items-center justify-between text-xs font-bold text-amber-900">
+                  <span>2. మినహాయింపులు (నాన్-క్యాష్)</span>
+                  <span class="text-[10px] uppercase">Deductions</span>
+                </div>
+                <div class="text-2xl font-black font-mono text-amber-800" id="hoTotalDeductionsDisplay">- ₹0</div>
+                <div class="text-[11px] text-slate-700 space-y-1 border-t border-amber-200 pt-1.5">
+                  <div class="flex justify-between">
+                    <span>🚛 వాహనం ఖాతా (Fleet):</span>
+                    <span class="font-mono font-bold text-blue-700" id="hoVehicleDeduction">- ₹0</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>⏰ తాత్కాలిక బకాయిలు (Reminders):</span>
+                    <span class="font-mono font-bold text-amber-700" id="hoReminderDeduction">- ₹0</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>💳 కార్డ్ స్వైప్ (Card Swipes):</span>
+                    <span class="font-mono font-bold text-purple-700" id="hoCardDeduction">- ₹0</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>📉 బంక్ ఖర్చులు (Expenses):</span>
+                    <span class="font-mono font-bold text-rose-700" id="hoExpenseDeduction">- ₹0</span>
+                  </div>
+                </div>
               </div>
-              <div class="bg-purple-50/70 p-3.5 rounded-xl border border-purple-300">
-                <label class="text-xs font-extrabold text-purple-950 block mb-1">💳 కార్డ్ స్వైప్ (Card):</label>
-                <input type="number" id="empHandoverCard" placeholder="0" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 font-mono text-lg font-black text-slate-900">
+
+              <!-- Card C: Expected Net Cash in Hand -->
+              <div class="bg-gradient-to-br from-emerald-600 to-green-700 text-white rounded-2xl p-4 shadow-md space-y-2">
+                <div class="flex items-center justify-between text-xs font-bold text-emerald-100">
+                  <span>3. చేతిలో ఉండాల్సిన నికర నగదు</span>
+                  <span class="text-[10px] uppercase tracking-wider">Expected Cash</span>
+                </div>
+                <div class="text-3xl font-black font-mono text-white tracking-tight" id="hoExpectedCashDisplay">₹0</div>
+                <p class="text-[11px] text-emerald-100 border-t border-emerald-500/60 pt-1.5 leading-snug">
+                  మొత్తం అమ్మకం - (వాహనం ఖాతా + రిమైండర్లు + కార్డ్ స్వైప్ + ఖర్చులు + UPI)
+                </p>
               </div>
-              <div class="bg-rose-50/70 p-3.5 rounded-xl border border-rose-300">
-                <label class="text-xs font-extrabold text-rose-950 block mb-1">📉 ఖర్చులు (Expenses):</label>
-                <input type="number" id="empHandoverExpenses" placeholder="0" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 font-mono text-lg font-black text-slate-900">
+
+            </div>
+
+            <!-- 2. PHYSICAL CASH INPUT & LIVE TALLY STATUS -->
+            <div class="bg-slate-50 p-4 sm:p-5 rounded-2xl border-2 border-slate-200 space-y-4">
+              <h4 class="font-bold text-slate-900 text-xs sm:text-sm uppercase tracking-wide flex items-center gap-1.5">
+                <span>💵</span>
+                <span>వాస్తవంగా లెక్కించిన చేతి నగదు (Actual Physical Cash Handed Over)</span>
+              </h4>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                <!-- Actual Cash Counted -->
+                <div>
+                  <label class="text-xs font-extrabold text-slate-800 block mb-1">
+                    చేతిలో ఉన్న నిజమైన నగదు (Physical Cash) *:
+                  </label>
+                  <div class="relative">
+                    <span class="absolute left-3 top-2.5 text-slate-400 font-bold text-sm">₹</span>
+                    <input type="number" id="empHandoverCash" oninput="calculateLiveHandoverTally()" placeholder="0" class="w-full bg-white border-2 border-emerald-500 rounded-xl pl-8 pr-3 py-2 text-xl font-mono font-black text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-400">
+                  </div>
+                </div>
+
+                <!-- UPI / PhonePe Received -->
+                <div>
+                  <label class="text-xs font-extrabold text-slate-800 block mb-1">
+                    ఫోన్‌పే / గూగుల్‌పే (UPI Received):
+                  </label>
+                  <div class="relative">
+                    <span class="absolute left-3 top-2.5 text-slate-400 font-bold text-sm">₹</span>
+                    <input type="number" id="empHandoverUpi" oninput="calculateLiveHandoverTally()" placeholder="0" class="w-full bg-white border-2 border-blue-400 rounded-xl pl-8 pr-3 py-2 text-xl font-mono font-black text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                  </div>
+                </div>
+
+                <!-- LIVE TALLY RESULT BADGE -->
+                <div class="flex flex-col justify-end">
+                  <span class="text-xs font-bold text-slate-600 block mb-1">లెక్క సరిపోలిక (Reconciliation Match):</span>
+                  <div id="hoTallyBadge" class="bg-slate-200 text-slate-700 px-4 py-2.5 rounded-xl text-center font-black text-sm flex items-center justify-center gap-2 border">
+                    <span>⏳ లెక్క వేయండి (Enter cash)</span>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label class="text-xs font-bold text-slate-700 block mb-1">ఖర్చుల వివరాలు (Expense Reason):</label>
-                <input type="text" id="empHandoverExpenseReason" placeholder="ఉదా: టీ, వాటర్ క్యాన్లు" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs">
+            <!-- 3. EXPENSE REASON AUTO-CALCULATOR -->
+            <div class="bg-rose-50/60 p-4 sm:p-5 rounded-2xl border border-rose-200 space-y-3.5">
+              <div class="flex flex-wrap items-center justify-between gap-2 border-b border-rose-200 pb-2">
+                <div class="flex items-center gap-2">
+                  <span class="text-xl">📉</span>
+                  <div>
+                    <h4 class="font-extrabold text-slate-900 text-xs sm:text-sm">బంక్ ఖర్చుల నమోదు (Station Expenses - Auto-Calculated)</h4>
+                    <p class="text-[11px] text-slate-500">Amounts entered here are automatically totaled and subtracted from cash</p>
+                  </div>
+                </div>
+                <span class="text-sm font-mono font-black text-rose-700" id="hoExpenseTotalBadge">మొత్తం ఖర్చులు: ₹0</span>
               </div>
-              <div>
-                <label class="text-xs font-bold text-slate-700 block mb-1">ఇతర వివరాలు (Remarks):</label>
-                <input type="text" id="empHandoverNotes" placeholder="షిఫ్ట్ పూర్తయింది" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs">
+
+              <!-- Quick Expense Presets -->
+              <div class="flex flex-wrap items-center gap-1.5">
+                <span class="text-[11px] font-bold text-slate-600 mr-1">త్వరిత ఖర్చులు (Quick Presets):</span>
+                <button type="button" onclick="setExpensePreset('☕ టీ / టిఫిన్ (Tea & Snacks)', 50)" class="bg-white hover:bg-rose-100 text-slate-800 text-[11px] font-semibold px-2.5 py-1 rounded-lg border border-slate-300 shadow-sm transition-all">☕ టీ/టిఫిన్ (₹50)</button>
+                <button type="button" onclick="setExpensePreset('💧 తాగునీరు (Water Can)', 40)" class="bg-white hover:bg-rose-100 text-slate-800 text-[11px] font-semibold px-2.5 py-1 rounded-lg border border-slate-300 shadow-sm transition-all">💧 వాటర్ క్యాన్ (₹40)</button>
+                <button type="button" onclick="setExpensePreset('⚡ జనరేటర్ డీజిల్ (Generator)', 500)" class="bg-white hover:bg-rose-100 text-slate-800 text-[11px] font-semibold px-2.5 py-1 rounded-lg border border-slate-300 shadow-sm transition-all">⚡ జనరేటర్ డీజిల్ (₹500)</button>
+                <button type="button" onclick="setExpensePreset('🧹 క్లీనింగ్ & శానిటైజేషన్ (Cleaning)', 100)" class="bg-white hover:bg-rose-100 text-slate-800 text-[11px] font-semibold px-2.5 py-1 rounded-lg border border-slate-300 shadow-sm transition-all">🧹 క్లీనింగ్ (₹100)</button>
               </div>
+
+              <!-- Add Expense Input Row -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+                <div>
+                  <label class="text-[11px] font-bold text-slate-700 block mb-0.5">ఖర్చు కారణం (Expense Reason) *:</label>
+                  <input type="text" id="expenseReasonInput" placeholder="ఉదా: టీ, వాటర్ లేదా మరమ్మతులు" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-900">
+                </div>
+                <div>
+                  <label class="text-[11px] font-bold text-slate-700 block mb-0.5">ఖర్చు అమౌంట్ (Amount ₹) *:</label>
+                  <input type="number" id="expenseAmountInput" placeholder="₹ e.g. 50" class="w-full bg-white border-2 border-rose-400 rounded-lg px-2.5 py-1.5 text-xs font-mono font-black text-rose-900">
+                </div>
+                <div class="flex items-end">
+                  <button type="button" onclick="submitExpenseEntry()" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs py-2 px-3 rounded-lg shadow">
+                    + ఖర్చును జోడించు (Add Expense)
+                  </button>
+                </div>
+              </div>
+
+              <!-- Expenses Log Table -->
+              <div id="hoExpensesListContainer" class="overflow-x-auto pt-1"></div>
             </div>
 
-            <button onclick="submitShiftHandover()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black text-base py-3 px-6 rounded-xl shadow-lg transition-all">
-              ✅ షిఫ్ట్ కలెక్షన్ లెక్క సమర్పించు (SUBMIT HANDOVER)
+            <!-- Notes & Remarks -->
+            <div>
+              <label class="text-xs font-bold text-slate-700 block mb-1">ఇతర వివరాలు / రిమార్క్స్ (Shift Remarks):</label>
+              <input type="text" id="empHandoverNotes" placeholder="షిఫ్ట్ పూర్తయింది. లెక్క సరిచూశాను." class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs">
+            </div>
+
+            <!-- Big Submit Button -->
+            <button onclick="submitShiftHandover()" class="w-full bg-gradient-to-r from-emerald-600 to-green-700 hover:from-emerald-700 hover:to-green-800 text-white font-black text-base py-3.5 px-6 rounded-2xl shadow-xl transition-all flex items-center justify-center gap-2 active:scale-98">
+              <span>✅ షిఫ్ట్ లెక్కను ఖరారు చేయండి (FINAL SUBMIT HANDOVER)</span>
             </button>
           </div>
         </div>
@@ -598,144 +818,112 @@
       <div id="admSection-summary" class="space-y-5">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
           <!-- Slip Box -->
-          <div class="lg:col-span-6 bg-white rounded-2xl shadow-xl border-2 border-amber-300 p-5 flex flex-col justify-between">
-            <div>
-              <div class="flex items-center justify-between border-b border-slate-200 pb-2.5 mb-3">
-                <div class="flex items-center gap-2">
-                  <span class="text-2xl">📋</span>
-                  <div>
-                    <h3 class="text-sm sm:text-base font-black text-slate-900 uppercase">Indian Oil Daily Official Sales Slip</h3>
-                    <p class="text-[11px] text-slate-500">24-Hour Shift Automated Calculation</p>
-                  </div>
-                </div>
-                <span class="bg-emerald-100 text-emerald-800 text-[10px] font-black px-2 py-0.5 rounded-full uppercase">Verified</span>
-              </div>
-
-              <div class="bg-slate-900 text-amber-300 rounded-xl p-4 sm:p-5 font-mono shadow-inner border border-slate-800 relative">
-                <pre id="preSlipText" class="text-sm sm:text-base font-semibold leading-relaxed whitespace-pre font-mono selection:bg-amber-400 selection:text-slate-900">
-SRR FILLING STATION 23-10-2026
-      పెట్రోల్ 
-=3039.51 litres
-=3039.51*117.07
-=3,55,835 amount 
-          డీజిల్ 
-=2713.79 litres
-=2713.79*105.23
-=2,85,572 amount 
-P+D=355835+285572
-        =6,41,407 amount
-                </pre>
-              </div>
+          <div class="lg:col-span-5 bg-gradient-to-b from-amber-50 to-orange-50/40 p-6 rounded-3xl border-2 border-amber-300 shadow-md space-y-4">
+            <div class="flex items-center justify-between border-b border-amber-200 pb-3">
+              <span class="text-xs font-black uppercase text-amber-900" id="slipTenantBadge">SRR FILLING STATION</span>
+              <span class="text-xs font-mono font-bold bg-amber-200 px-2 py-0.5 rounded text-amber-900" id="sumShiftDate">23-10-2026</span>
             </div>
 
-            <div class="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-slate-200">
-              <button onclick="shareSlipWhatsApp()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2 px-2 rounded-xl shadow transition-all flex items-center justify-center gap-1">
-                <span>📱</span>
-                <span>WhatsApp</span>
-              </button>
-              <button onclick="copySlipToClipboard()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs py-2 px-2 rounded-xl shadow transition-all flex items-center justify-center gap-1">
+            <!-- Exact Slip Format -->
+            <pre id="preSlipText" class="font-mono text-sm sm:text-base font-black text-slate-900 bg-white p-4 rounded-2xl border border-amber-200 shadow-inner whitespace-pre leading-relaxed select-all">Loading Slip...</pre>
+
+            <div class="flex items-center gap-2 pt-2">
+              <button onclick="copySlipToClipboard()" class="flex-1 bg-slate-900 hover:bg-black text-white font-bold text-xs py-2.5 px-3 rounded-xl shadow flex items-center justify-center gap-1.5 transition-all">
                 <span id="copyIcon">📋</span>
                 <span id="copyText">Copy Slip</span>
               </button>
-              <button onclick="printDailySlip()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-2 px-2 rounded-xl shadow transition-all flex items-center justify-center gap-1">
-                <span>🖨️</span>
-                <span>Print Slip</span>
+              <button onclick="shareSlipWhatsApp()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2.5 px-3 rounded-xl shadow flex items-center justify-center gap-1.5 transition-all">
+                <span>💬</span>
+                <span>WhatsApp</span>
+              </button>
+              <button onclick="printDailySlip()" class="bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 font-bold text-xs p-2.5 rounded-xl shadow transition-all" title="Print Slip">
+                🖨️
               </button>
             </div>
           </div>
 
-          <!-- Financial Summary Cards -->
-          <div class="lg:col-span-6 space-y-3.5">
-            <div class="bg-gradient-to-br from-slate-900 via-slate-800 to-blue-950 text-white rounded-2xl p-5 shadow-xl border border-slate-700">
-              <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
-                <span class="font-bold tracking-wider uppercase">Total Day Revenue (P + D)</span>
-                <span class="text-amber-400 font-mono" id="sumShiftDate">23-10-2026</span>
+          <!-- Total Revenue Cards & Reconciliation -->
+          <div class="lg:col-span-7 space-y-4">
+            <!-- Grand Total Banner -->
+            <div class="bg-gradient-to-r from-orange-600 to-amber-600 text-white p-6 rounded-3xl shadow-lg flex items-center justify-between">
+              <div>
+                <span class="text-xs uppercase tracking-wider font-extrabold text-amber-200 block">మొత్తం అమ్మకం (Grand Total Sale)</span>
+                <div class="text-3xl sm:text-4xl font-black font-mono tracking-tight" id="cardGrandTotalAmount">₹6,41,407</div>
               </div>
-              <div class="text-3xl sm:text-4xl font-mono font-black text-amber-300" id="cardGrandTotalAmount">
-                ₹6,41,407
+              <span class="text-4xl opacity-80">⛽</span>
+            </div>
+
+            <!-- Petrol & Diesel Subtotals -->
+            <div class="grid grid-cols-2 gap-3.5">
+              <div class="bg-white p-4 rounded-2xl border-2 border-amber-200 shadow-sm space-y-1">
+                <span class="text-xs font-bold text-amber-900 uppercase">పెట్రోల్ (Petrol - MS)</span>
+                <div class="text-xl sm:text-2xl font-mono font-black text-orange-600" id="cardPetrolAmt">₹3,55,835</div>
+                <div class="text-xs font-mono text-slate-500 font-semibold" id="cardPetrolVol">3039.51 Litres</div>
               </div>
 
-              <div class="grid grid-cols-2 gap-3 mt-4 pt-3 border-t border-slate-700">
-                <div class="bg-slate-800/80 p-3 rounded-xl border border-slate-700">
-                  <span class="text-xs text-amber-400 font-bold block">⛽ Petrol Total</span>
-                  <span class="text-sm sm:text-base font-mono font-black text-white" id="cardPetrolAmt">₹3,55,835</span>
-                  <span class="text-[11px] font-mono text-slate-300 block" id="cardPetrolVol">3039.51 Litres</span>
-                </div>
-                <div class="bg-slate-800/80 p-3 rounded-xl border border-slate-700">
-                  <span class="text-xs text-cyan-400 font-bold block">🛢️ Diesel Total</span>
-                  <span class="text-sm sm:text-base font-mono font-black text-white" id="cardDieselAmt">₹2,85,572</span>
-                  <span class="text-[11px] font-mono text-slate-300 block" id="cardDieselVol">2713.79 Litres</span>
-                </div>
+              <div class="bg-white p-4 rounded-2xl border-2 border-blue-200 shadow-sm space-y-1">
+                <span class="text-xs font-bold text-blue-900 uppercase">డీజిల్ (Diesel - HSD)</span>
+                <div class="text-xl sm:text-2xl font-mono font-black text-blue-600" id="cardDieselAmt">₹2,85,572</div>
+                <div class="text-xs font-mono text-slate-500 font-semibold" id="cardDieselVol">2713.79 Litres</div>
               </div>
             </div>
 
-            <div class="bg-white rounded-2xl p-4 shadow-md border border-slate-200 space-y-3">
-              <div class="flex items-center justify-between border-b border-slate-100 pb-2">
-                <h4 class="font-bold text-slate-800 text-xs sm:text-sm">💵 Collection Reconciliation</h4>
-                <span class="text-xs font-mono font-bold text-emerald-700">Full Tally</span>
-              </div>
-              <div class="grid grid-cols-3 gap-2 text-center">
-                <div class="bg-emerald-50 p-2 rounded-lg border border-emerald-200">
-                  <span class="text-[10px] font-bold text-emerald-800 uppercase block">Cash</span>
-                  <span class="font-mono font-black text-emerald-900 text-xs sm:text-sm" id="recTotalCash">₹4,66,000</span>
+            <!-- Bunk Collections Tally (Cash, UPI, Card, Expenses) -->
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+              <h4 class="font-extrabold text-slate-900 text-xs uppercase tracking-wider">షిఫ్ట్ కలెక్షన్ల విభజన (Collection Breakdown)</h4>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs">
+                <div class="bg-emerald-50 p-2.5 rounded-xl border border-emerald-200">
+                  <span class="text-slate-500 block text-[10px] font-bold">చేతి నగదు (Cash)</span>
+                  <span class="font-mono font-black text-emerald-800 text-sm" id="recTotalCash">₹0</span>
                 </div>
-                <div class="bg-blue-50 p-2 rounded-lg border border-blue-200">
-                  <span class="text-[10px] font-bold text-blue-800 uppercase block">UPI / QR</span>
-                  <span class="font-mono font-black text-blue-900 text-xs sm:text-sm" id="recTotalUpi">₹1,47,000</span>
+                <div class="bg-blue-50 p-2.5 rounded-xl border border-blue-200">
+                  <span class="text-slate-500 block text-[10px] font-bold">ఆన్‌లైన్ (UPI)</span>
+                  <span class="font-mono font-black text-blue-800 text-sm" id="recTotalUpi">₹0</span>
                 </div>
-                <div class="bg-purple-50 p-2 rounded-lg border border-purple-200">
-                  <span class="text-[10px] font-bold text-purple-800 uppercase block">Card Swipe</span>
-                  <span class="font-mono font-black text-purple-900 text-xs sm:text-sm" id="recTotalCard">₹21,000</span>
+                <div class="bg-purple-50 p-2.5 rounded-xl border border-purple-200">
+                  <span class="text-slate-500 block text-[10px] font-bold">కార్డ్ (Card POS)</span>
+                  <span class="font-mono font-black text-purple-800 text-sm" id="recTotalCard">₹0</span>
+                </div>
+                <div class="bg-rose-50 p-2.5 rounded-xl border border-rose-200">
+                  <span class="text-slate-500 block text-[10px] font-bold">ఖర్చులు (Expenses)</span>
+                  <span class="font-mono font-black text-rose-800 text-sm" id="recTotalExpenses">₹0</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Station Table -->
-        <div class="bg-white rounded-2xl shadow-md border border-slate-200 p-4 space-y-3">
-          <h4 class="font-bold text-slate-900 text-sm">⛽ Station-Wise Breakdown (S1, S2, S3, S4)</h4>
-          <div class="overflow-x-auto">
-            <table class="w-full text-xs text-left border-collapse">
-              <thead>
-                <tr class="bg-slate-100 text-slate-700 uppercase font-bold text-[10px] border-b border-slate-200">
-                  <th class="p-2.5">Station</th>
-                  <th class="p-2.5">Pump</th>
-                  <th class="p-2.5">Attendant</th>
-                  <th class="p-2.5">Petrol (Code & Litres)</th>
-                  <th class="p-2.5">Diesel (Code & Litres)</th>
-                  <th class="p-2.5">Petrol ₹</th>
-                  <th class="p-2.5">Diesel ₹</th>
-                  <th class="p-2.5 text-right">Total ₹</th>
-                </tr>
-              </thead>
-              <tbody id="adminSummaryTableBody" class="divide-y divide-slate-100 font-medium"></tbody>
-            </table>
-          </div>
+        <!-- 4 Station Breakdown Cards -->
+        <div>
+          <h4 class="font-black text-slate-900 text-base mb-3">4 స్టేషన్ల వివరాలు (Nozzle Station Wise Breakdown)</h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5" id="stationBreakdownContainer"></div>
         </div>
       </div>
 
       <!-- SUB-TAB 2: FLEET VEHICLE LEDGER & SUM CALCULATOR -->
       <div id="admSection-fleet" class="space-y-4 hidden">
-        <div class="bg-gradient-to-r from-blue-900 to-indigo-950 text-white rounded-2xl p-5 shadow-xl border border-blue-800 space-y-4">
-          <div class="flex flex-wrap items-center justify-between gap-3">
-            <div class="flex-1 min-w-[240px]">
-              <label class="text-xs text-blue-200 font-bold block mb-1">వాహనం నంబర్ ఎంచుకో (Select Vehicle for Calculation):</label>
-              <input type="text" id="adminFleetVehicleSearch" oninput="calculateVehicleSum()" placeholder="Type vehicle number e.g. AP 21 TC 4488" class="w-full bg-white/10 text-white border border-blue-400/40 rounded-xl px-3 py-2 text-sm font-mono font-bold uppercase focus:outline-none">
+        <div class="bg-gradient-to-r from-blue-900 to-indigo-950 text-white p-5 rounded-2xl shadow-lg space-y-3.5">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-3">
+            <div>
+              <h3 class="font-black text-lg">వాహనం ఖాతా - సమ్ క్యాలిక్యులేటర్ (Fleet Multi-Day Sum Calculator)</h3>
+              <p class="text-xs text-blue-200">Search any vehicle to calculate total litres taken and unsettled amount across shifts</p>
             </div>
-            <button onclick="calculateVehicleSum()" class="bg-amber-400 hover:bg-amber-500 text-slate-900 font-black text-xs py-2.5 px-4 rounded-xl shadow self-end">
-              🔍 Calculate Sum
-            </button>
+            <div class="flex items-center gap-2">
+              <input type="text" id="adminFleetVehicleSearch" placeholder="Enter Vehicle No (e.g. AP 21 TC 4488)" class="bg-white/10 border border-white/20 rounded-xl px-3 py-1.5 text-xs text-white placeholder-blue-300 font-mono font-bold uppercase focus:outline-none focus:bg-white/20">
+              <button onclick="calculateVehicleSum()" class="bg-amber-400 hover:bg-amber-300 text-slate-900 font-black text-xs px-3.5 py-1.5 rounded-xl shadow">
+                Calculate Sum
+              </button>
+            </div>
           </div>
 
-          <div id="vehicleSumResultBox" class="bg-black/30 rounded-xl p-4 border border-white/10 grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs" id="fleetCalculationSummaryBox">
             <div>
               <span class="text-[10px] text-blue-200 font-bold block uppercase">Vehicle Number</span>
-              <span class="font-mono text-base font-black text-amber-300" id="fleetResVehicleNo">--</span>
+              <span class="font-mono text-base font-black text-white" id="fleetResVehicleNo">--</span>
             </div>
             <div>
               <span class="text-[10px] text-blue-200 font-bold block uppercase">Total Litres Dispensed</span>
-              <span class="font-mono text-base font-black text-white" id="fleetResTotalLitres">0.00 L</span>
+              <span class="font-mono text-base font-black text-blue-300" id="fleetResTotalLitres">0 L</span>
             </div>
             <div>
               <span class="text-[10px] text-blue-200 font-bold block uppercase">Total Accumulated Sum</span>
@@ -763,6 +951,7 @@ P+D=355835+285572
                   <th class="p-2.5">Date & Time</th>
                   <th class="p-2.5">Vehicle No</th>
                   <th class="p-2.5">Driver</th>
+                  <th class="p-2.5">Mobile No (10-digits)</th>
                   <th class="p-2.5">Station</th>
                   <th class="p-2.5">Fuel</th>
                   <th class="p-2.5">Litres</th>
@@ -858,15 +1047,15 @@ P+D=355835+285572
           <div class="space-y-3.5">
             <div>
               <label class="text-xs font-bold text-slate-700 block mb-1">Effective Shift Date:</label>
-              <input type="date" id="rateSetDate" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm font-bold text-slate-900">
+              <input type="date" id="rateSetDate" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs font-bold text-slate-900">
             </div>
-            <div class="grid grid-cols-2 gap-3.5">
-              <div class="bg-amber-50 p-3.5 rounded-xl border border-amber-300">
-                <label class="text-xs font-black text-amber-950 block mb-1">⛽ Petrol Rate (₹/L):</label>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-xs font-bold text-slate-700 block mb-1">Petrol Rate (₹/L):</label>
                 <input type="number" step="0.01" id="rateSetPetrol" value="117.07" class="w-full bg-white border border-amber-400 rounded-lg px-3 py-2 font-mono text-lg font-black text-amber-950">
               </div>
-              <div class="bg-blue-50 p-3.5 rounded-xl border border-blue-300">
-                <label class="text-xs font-black text-blue-950 block mb-1">🛢️ Diesel Rate (₹/L):</label>
+              <div>
+                <label class="text-xs font-bold text-slate-700 block mb-1">Diesel Rate (₹/L):</label>
                 <input type="number" step="0.01" id="rateSetDiesel" value="105.23" class="w-full bg-white border border-blue-400 rounded-lg px-3 py-2 font-mono text-lg font-black text-blue-950">
               </div>
             </div>
@@ -887,8 +1076,7 @@ P+D=355835+285572
   </main>
 
   <!-- ============================================================== -->
-  <!-- MODAL: CHANGE PASSWORD (FOR STAFF & ADMIN) -->
-  <!-- User requested: "lets create logins for each employee and allow then the password change in case to change" -->
+  <!-- MODAL: CHANGE PASSWORD -->
   <!-- ============================================================== -->
   <div id="modalChangePassword" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
     <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-sm w-full p-6 space-y-4 animate-scaleIn">
