@@ -215,47 +215,58 @@
       "role": "Attendant",
       "joiningDate": "2026-10-24",
       "active": true
+    },
+    {
+      "id": "emp-1792839909945",
+      "name": "Maheswar Reddy",
+      "username": "1234576890",
+      "password": "123",
+      "phone": "1234576890",
+      "fatherName": "S Maheswar Reddy",
+      "villageName": "Ieeja",
+      "aadhaarNumber": "",
+      "emergencyContact": "1234567788",
+      "address": "",
+      "role": "Attendant",
+      "joiningDate": "2026-10-24",
+      "active": true
     }
   ],
   "shiftAssignments": {
     "2026-10-23": {
       "S1": {
-        "employeeId": "emp1",
         "employeeName": "Ramesh Kumar",
         "dutyPin": "1122"
       },
       "S2": {
-        "employeeId": "emp2",
         "employeeName": "Suresh Reddy",
         "dutyPin": "3344"
       },
       "S3": {
-        "employeeId": "emp3",
-        "employeeName": "Venkatesh Rao",
+        "employeeName": "Rajesh Varma",
         "dutyPin": "5566"
       },
       "S4": {
-        "employeeId": "emp4",
-        "employeeName": "Naresh Babu",
+        "employeeName": "Prasad Rao",
         "dutyPin": "7788"
       }
     },
     "2026-10-24": {
       "S1": {
-        "employeeName": "Kiran Kumar",
-        "dutyPin": "123"
+        "employeeName": "Ramesh Kumar",
+        "dutyPin": "1122"
       },
       "S2": {
-        "employeeName": "Ramesh Kumar",
-        "dutyPin": "123"
+        "employeeName": "Suresh Reddy",
+        "dutyPin": "3344"
       },
       "S3": {
-        "employeeName": "Suresh Reddy",
-        "dutyPin": "123"
+        "employeeName": "Rajesh Varma",
+        "dutyPin": "5566"
       },
       "S4": {
         "employeeName": "Prasad Rao",
-        "dutyPin": "123"
+        "dutyPin": "7788"
       }
     }
   },
@@ -383,7 +394,7 @@
         },
         "S3": {
           "stationId": "S3",
-          "employeeName": "Venkatesh Rao",
+          "employeeName": "Rajesh Varma",
           "pump": "Pump 2",
           "meters": {
             "petrol": {
@@ -433,7 +444,7 @@
         },
         "S4": {
           "stationId": "S4",
-          "employeeName": "Naresh Babu",
+          "employeeName": "Prasad Rao",
           "pump": "Pump 2",
           "meters": {
             "petrol": {
@@ -492,7 +503,7 @@
       "stations": {
         "S1": {
           "stationId": "S1",
-          "employeeName": "Kiran Kumar",
+          "employeeName": "Ramesh Kumar",
           "pump": "Pump 1",
           "meters": {
             "petrol": {
@@ -526,7 +537,7 @@
         },
         "S2": {
           "stationId": "S2",
-          "employeeName": "Ramesh Kumar",
+          "employeeName": "Suresh Reddy",
           "pump": "Pump 1",
           "meters": {
             "petrol": {
@@ -560,7 +571,7 @@
         },
         "S3": {
           "stationId": "S3",
-          "employeeName": "Suresh Reddy",
+          "employeeName": "Rajesh Varma",
           "pump": "Pump 2",
           "meters": {
             "petrol": {

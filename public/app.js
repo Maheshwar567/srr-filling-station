@@ -458,10 +458,12 @@ async function handleLoginSubmit(event) {
 
   const userField = document.getElementById('loginUsernameInput');
   const passField = document.getElementById('loginPasswordInput');
+  const pinField = document.getElementById('loginDutyPinInput');
   const errEl = document.getElementById('loginErrorMessage');
 
   const username = userField ? userField.value.trim() : '';
   const password = passField ? passField.value.trim() : '';
+  const dutyPin = pinField ? pinField.value.trim() : '';
 
   if (!username || !password) {
     if (errEl) {
@@ -475,7 +477,7 @@ async function handleLoginSubmit(event) {
     const res = await fetch(`/api/auth/login?pump=${STATE.activeTenant}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password, date: STATE.selectedDate })
+      body: JSON.stringify({ username, password, dutyPin, date: STATE.selectedDate })
     });
 
     const data = await res.json();
@@ -1706,6 +1708,7 @@ function renderAdminDashboard() {
 
   // Station breakdown cards
   renderStationBreakdownCards();
+  renderSummaryPumpAssignments();
 
   // Active admin tab rendering
   if (STATE.adminTab === 'financials') loadFinancialReports();
@@ -2405,17 +2408,21 @@ async function deleteEmployee(id, name) {
 
 // --- ADMIN / MGMT / OWNER DUTY ROSTER & PUMP ALLOCATION ---
 // User requirement: "as said, mgmt and owner need to assign the pumps to emp"
-// User requirement: "and emp directly login with username and password 123 no pin which was by mgmr / owner"
+// --- ADMIN / MGMT / OWNER DUTY ROSTER & PUMP ALLOCATION ---
+// User requirement: "as said, mgmt and owner need to assign the pumps to emp"
+// User requirement: "and step4 pin needed even after the password also"
 function renderAdminDutyRoster() {
   const container = document.getElementById('dutyRosterCardsContainer');
   if (!container) return;
 
   const assignments = STATE.dutyAssignments || {};
   const stations = ['S1', 'S2', 'S3', 'S4'];
+  const defaultPins = { S1: "1122", S2: "3344", S3: "5566", S4: "7788" };
 
   container.innerHTML = stations.map(stKey => {
     const cfg = STATION_CONFIG[stKey];
     const assignedName = assignments[stKey]?.employeeName || STATE.shift?.stations?.[stKey]?.employeeName || "";
+    const dutyPin = assignments[stKey]?.dutyPin || defaultPins[stKey] || "1122";
 
     return `
       <div class="bg-white rounded-2xl shadow-md border-2 border-slate-200 p-4 space-y-3.5 hover:border-orange-300 transition-all">
@@ -2441,14 +2448,20 @@ function renderAdminDutyRoster() {
           </select>
         </div>
 
-        <div class="bg-emerald-50 text-emerald-950 p-2.5 rounded-xl border border-emerald-200 text-[11px] space-y-1">
-          <div class="flex items-center gap-1.5 font-bold text-emerald-800">
-            <span>🔑</span>
-            <span>Direct Staff Login (డైరెక్ట్ లాగిన్):</span>
+        <!-- Highlighted Station Duty Login PIN (Given to attendant by Management / Owner) -->
+        <div class="bg-gradient-to-br from-amber-50 to-orange-50 p-3 rounded-xl border-2 border-amber-300 space-y-1.5 shadow-sm">
+          <div class="flex items-center justify-between text-xs font-black text-amber-950">
+            <span class="flex items-center gap-1">🔑 డ్యూటీ లాగిన్ పిన్ (Duty PIN):</span>
+            <button onclick="generateRandomDutyPin('${stKey}')" type="button" class="text-[10px] text-amber-900 hover:text-black font-mono font-bold bg-amber-200 hover:bg-amber-300 px-2 py-0.5 rounded shadow-xs active:scale-95 transition-all">
+              🔄 New PIN
+            </button>
           </div>
-          <p class="text-[10px] text-emerald-900 font-medium">
-            Username: <strong class="font-mono text-emerald-950">emp</strong> (or first name / ${stKey})<br>
-            Password: <strong class="font-mono font-bold text-emerald-950">123</strong> (No PIN needed)
+          <div class="flex items-center gap-2">
+            <input type="text" maxlength="6" id="rosterPin-${stKey}" value="${dutyPin}" class="w-full bg-white border-2 border-amber-400 rounded-lg px-2.5 py-1.5 font-mono text-base font-black text-amber-950 tracking-widest text-center shadow-inner focus:outline-none focus:border-amber-600">
+          </div>
+          <p class="text-[10px] text-amber-900 font-semibold leading-tight">
+            * సిబ్బంది లాగిన్: యూజర్‌నేమ్ + పాస్‌వర్డ్ <strong>123</strong> + <strong>ఈ PIN (${dutyPin})</strong><br>
+            (Staff needs Password 123 + this Duty PIN to log in)
           </p>
         </div>
       </div>
@@ -2456,11 +2469,21 @@ function renderAdminDutyRoster() {
   }).join('');
 }
 
+function generateRandomDutyPin(stKey) {
+  const pinInput = document.getElementById(`rosterPin-${stKey}`);
+  if (pinInput) {
+    const newPin = Math.floor(1000 + Math.random() * 9000).toString();
+    pinInput.value = newPin;
+  }
+}
+
 async function saveDutyRosterAssignments() {
   const assignments = {};
+  const defaultPins = { S1: "1122", S2: "3344", S3: "5566", S4: "7788" };
   ['S1', 'S2', 'S3', 'S4'].forEach(stKey => {
     const empName = document.getElementById(`rosterAssign-${stKey}`)?.value || "";
-    assignments[stKey] = { employeeName: empName, dutyPin: "123" };
+    const dutyPin = document.getElementById(`rosterPin-${stKey}`)?.value || defaultPins[stKey] || "1122";
+    assignments[stKey] = { employeeName: empName, dutyPin };
   });
 
   try {
@@ -2472,8 +2495,8 @@ async function saveDutyRosterAssignments() {
     const result = await res.json();
     if (result.success) {
       showToast(STATE.lang === 'te' 
-        ? 'పంపుల కేటాయింపు సేవ్ చేయబడింది! సిబ్బంది నేరుగా పాస్‌వర్డ్ 123 తో లాగిన్ అవ్వవచ్చు.' 
-        : 'Pump assignments saved! Attendants can log in directly with password 123.');
+        ? 'పంపుల కేటాయింపు & డ్యూటీ పిన్‌లు సేవ్ చేయబడ్డాయి! సిబ్బందికి ఈ పిన్ ఇవ్వండి.' 
+        : 'Pump assignments & Duty PINs saved! Share PIN with staff.');
       loadAllData();
     } else {
       showToast('Failed to save pump assignments', 'error');
@@ -2481,6 +2504,42 @@ async function saveDutyRosterAssignments() {
   } catch (err) {
     showToast('Failed to save pump assignments', 'error');
   }
+}
+
+// Live Pump Allocations Summary for Overview / Daily Sales Slip screen
+function renderSummaryPumpAssignments() {
+  const container = document.getElementById('summaryPumpAssignmentsContainer');
+  if (!container) return;
+
+  const assignments = STATE.dutyAssignments || {};
+  const stations = ['S1', 'S2', 'S3', 'S4'];
+  const defaultPins = { S1: "1122", S2: "3344", S3: "5566", S4: "7788" };
+
+  container.innerHTML = stations.map(stKey => {
+    const cfg = STATION_CONFIG[stKey];
+    const assignedName = assignments[stKey]?.employeeName || STATE.shift?.stations?.[stKey]?.employeeName || "Unassigned";
+    const dutyPin = assignments[stKey]?.dutyPin || defaultPins[stKey] || "1122";
+    const isAssigned = assignedName && assignedName !== "Unassigned";
+
+    return `
+      <div class="bg-slate-50 border-2 ${isAssigned ? 'border-amber-300 bg-amber-50/20' : 'border-slate-200'} rounded-2xl p-3 space-y-2">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-full ${isAssigned ? 'bg-emerald-500 ring-2 ring-emerald-200' : 'bg-slate-300'}"></span>
+            <span class="font-black text-slate-900 text-xs sm:text-sm">Station ${stKey}</span>
+          </div>
+          <span class="text-[10px] font-bold bg-orange-100 text-orange-900 px-2 py-0.5 rounded-full">${cfg.pump}</span>
+        </div>
+        <div class="text-[11px] text-slate-600">
+          Attendant: <strong class="text-slate-900 text-xs">${assignedName}</strong>
+        </div>
+        <div class="bg-amber-100/70 border border-amber-300 rounded-lg px-2 py-1 flex items-center justify-between text-[11px]">
+          <span class="font-bold text-amber-900">Duty PIN:</span>
+          <span class="font-mono font-black text-amber-950 text-xs tracking-wider">${dutyPin}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
 }
 
 // --- ORACLE PDB PROVISIONING ---

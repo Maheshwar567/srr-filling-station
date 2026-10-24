@@ -139,6 +139,25 @@
             </div>
           </div>
 
+          <!-- Staff Duty PIN Field (Required for Employee Shift Login) -->
+          <div id="loginDutyPinContainer" class="bg-amber-50/70 border border-amber-300 rounded-xl p-2.5 space-y-1">
+            <div class="flex items-center justify-between">
+              <label class="text-xs font-black text-amber-950 flex items-center gap-1" id="lblLoginPin">
+                <span>🔑</span>
+                <span>Duty PIN (డ్యూటీ పిన్):</span>
+              </label>
+              <span class="text-[10px] font-bold text-amber-800 bg-amber-200 px-1.5 py-0.2 rounded">Staff Only</span>
+            </div>
+            <div class="relative">
+              <span class="absolute left-3 top-2 text-slate-400">🔢</span>
+              <input type="text" maxlength="6" id="loginDutyPinInput" placeholder="Duty PIN (e.g. 1122 for S1, 3344 for S2)" class="w-full bg-white border border-amber-400 rounded-lg pl-8 pr-3 py-1.5 text-xs font-mono font-black text-amber-950 tracking-wider focus:outline-none focus:border-amber-600 shadow-sm">
+            </div>
+            <p class="text-[10px] text-amber-900 font-medium">
+              * Staff needs Password (123) <strong>+ Duty PIN</strong> given by Manager/Owner.<br>
+              (Admin, Mgmt & Owner: enter password 123 only).
+            </p>
+          </div>
+
           <p id="loginErrorMessage" class="text-xs text-rose-600 font-bold hidden"></p>
 
           <button type="submit" id="btnLoginSubmit" class="w-full bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-black text-sm py-3 rounded-xl shadow-lg transition-all active:scale-98">
@@ -926,6 +945,34 @@
             </button>
           </div>
         </div>
+
+        <!-- Live Pump Allocations Summary on Overview -->
+        <div class="bg-white rounded-3xl shadow-md border-2 border-slate-200 p-5 space-y-3.5">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+            <div class="flex items-center gap-2">
+              <span class="text-2xl">⛽</span>
+              <div>
+                <h3 class="font-black text-slate-900 text-sm sm:text-base">నేటి పంపుల కేటాయింపు & డ్యూటీ పిన్‌లు (Today's Pump Assignments & Duty PINs)</h3>
+                <p class="text-[11px] text-slate-500">సిబ్బందికి ఈ డ్యూటీ పిన్ ఇవ్వండి (Share these Duty PINs with staff)</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="switchAdminTab('roster')" class="bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs px-3.5 py-1.5 rounded-xl shadow flex items-center gap-1 active:scale-95 transition-all">
+                <span>✏️</span>
+                <span>Assign Pumps (పంపుల కేటాయింపు)</span>
+              </button>
+              <button onclick="switchAdminTab('employees')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-3.5 py-1.5 rounded-xl shadow flex items-center gap-1 active:scale-95 transition-all">
+                <span>👥</span>
+                <span>Employee List (ఉద్యోగుల జాబితా)</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5" id="summaryPumpAssignmentsContainer">
+            <!-- Populated by renderSummaryPumpAssignments() -->
+          </div>
+        </div>
+
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
           <!-- Slip Box -->
           <div class="lg:col-span-5 bg-gradient-to-b from-amber-50 to-orange-50/40 p-6 rounded-3xl border-2 border-amber-300 shadow-md space-y-4">
@@ -1703,6 +1750,6 @@
     </div>
   </footer>
 
-  <script src="app.js?v=3"></script>
+  <script src="app.js?v=4"></script>
 </body>
 </html>

@@ -110,7 +110,7 @@ app.post('/api/auth/verify-pin', (req, res) => {
 // Employee & Admin Authentication
 app.post('/api/auth/login', (req, res) => {
   const tenantId = getTenantId(req);
-  const { username, password, date } = req.body;
+  const { username, password, pin, dutyPin, date } = req.body;
   if (!username || !password) {
     return res.status(400).json({ error: "Username/Mobile and password are required" });
   }
@@ -118,6 +118,7 @@ app.post('/api/auth/login', (req, res) => {
   const data = storage.load(tenantId);
   const cleanUser = username.trim().toLowerCase();
   const cleanPass = password.trim();
+  const cleanDutyPin = (dutyPin || pin || "").trim();
 
   const isMaster123 = cleanPass === "123" || cleanPass === "1234";
 
@@ -196,55 +197,18 @@ app.post('/api/auth/login', (req, res) => {
     });
   }
 
-  // 5. Check Generic Employee Login "emp" / "employee" / "staff" or Direct Station "S1"-"S4"
-  // User requirement: "emp login keep user name emp and password 123"
+  // 5. Check Staff / Employee Logins:
+  // User requirement: "and step4 pin needed even after the password also"
+  // Attendant enters: Username, Password (123), AND Duty PIN (given by mgmt/owner during pump allocation)
   const targetDate = date || getTodayString();
+  const defaultPins = { S1: "1122", S2: "3344", S3: "5566", S4: "7788" };
   const assignments = data.shiftAssignments?.[targetDate] || data.shiftAssignments?.["2026-10-23"] || {};
 
   const upperSt = cleanUser.toUpperCase();
-  if (['S1', 'S2', 'S3', 'S4'].includes(upperSt) && (isMaster123 || cleanPass === String(assignments[upperSt]?.dutyPin))) {
-    const stEmp = assignments[upperSt]?.employeeName || (data.employees && data.employees[0]?.name) || "Attendant";
-    return res.json({
-      success: true,
-      role: 'employee',
-      user: {
-        id: `station-${upperSt.toLowerCase()}`,
-        name: stEmp,
-        username: upperSt,
-        role: 'Attendant'
-      },
-      assignedStation: upperSt,
-      targetDate,
-      dutyPin: assignments[upperSt]?.dutyPin || '1122',
-      canManagePdbs: false,
-      canViewFinancials: false,
-      isHistoricalAllowed: false
-    });
-  }
+  const isDirectStation = ['S1', 'S2', 'S3', 'S4'].includes(upperSt);
+  const isGenericEmp = cleanUser === "emp" || cleanUser === "employee" || cleanUser === "staff";
 
-  if ((cleanUser === "emp" || cleanUser === "employee" || cleanUser === "staff") && (cleanPass === "123" || cleanPass === "1234")) {
-    const s1Emp = assignments.S1?.employeeName || (data.employees && data.employees[0]?.name) || "Ramesh Kumar";
-    return res.json({
-      success: true,
-      role: 'employee',
-      user: {
-        id: 'emp',
-        name: s1Emp,
-        username: 'emp',
-        phone: '9848011223',
-        role: 'Attendant'
-      },
-      assignedStation: 'S1',
-      targetDate,
-      dutyPin: assignments.S1?.dutyPin || '1122',
-      canManagePdbs: false,
-      canViewFinancials: false,
-      isHistoricalAllowed: false
-    });
-  }
-
-  // 6. Check Employee / Station Attendant Login (First Name, Full Name, Username, Phone)
-  // Password can be: "123", Duty PIN, personal employee password, or "1234"
+  // Match employee record
   const emp = (data.employees || []).find(e => {
     const fn = (e.name || '').trim().toLowerCase().split(/\s+/)[0];
     return fn === cleanUser ||
@@ -253,69 +217,70 @@ app.post('/api/auth/login', (req, res) => {
       (e.name && e.name.toLowerCase() === cleanUser);
   });
 
-  // Determine assigned station & duty PIN
-  let assignedStation = null;
-  let stationDutyPin = null;
+  if (isDirectStation || isGenericEmp || emp) {
+    let assignedStation = isDirectStation ? upperSt : null;
+    let stationDutyPin = null;
 
-  for (const stKey of ['S1', 'S2', 'S3', 'S4']) {
-    const asgn = assignments[stKey];
-    if (asgn && asgn.employeeName) {
-      const asgnFn = asgn.employeeName.trim().toLowerCase().split(/\s+/)[0];
-      const asgnFull = asgn.employeeName.trim().toLowerCase();
-      if ((emp && (asgn.employeeName === emp.name || asgn.employeeId === emp.id)) ||
-          asgnFn === cleanUser ||
-          asgnFull === cleanUser) {
-        assignedStation = stKey;
-        stationDutyPin = asgn.dutyPin;
-        break;
-      }
-    }
-  }
-
-  // Fallback: check active shifts if assignments didn't match
-  if (!assignedStation && data.shifts) {
-    const shift = data.shifts.find(s => s.date === targetDate) || data.shifts[0];
-    if (shift && shift.stations) {
+    if (!assignedStation) {
       for (const stKey of ['S1', 'S2', 'S3', 'S4']) {
-        const sEmp = shift.stations[stKey]?.employeeName;
-        if (sEmp) {
-          const sEmpFn = sEmp.trim().toLowerCase().split(/\s+/)[0];
-          if ((emp && sEmp === emp.name) || sEmpFn === cleanUser || sEmp.toLowerCase() === cleanUser) {
+        const asgn = assignments[stKey];
+        if (asgn && asgn.employeeName) {
+          const asgnFn = asgn.employeeName.trim().toLowerCase().split(/\s+/)[0];
+          const asgnFull = asgn.employeeName.trim().toLowerCase();
+          if ((emp && (asgn.employeeName === emp.name || asgn.employeeId === emp.id)) ||
+              asgnFn === cleanUser ||
+              asgnFull === cleanUser) {
             assignedStation = stKey;
-            stationDutyPin = assignments[stKey]?.dutyPin;
+            stationDutyPin = asgn.dutyPin || defaultPins[stKey];
             break;
           }
         }
       }
     }
-  }
 
-  // Validate password / PIN:
-  if (emp || assignedStation) {
+    if (!assignedStation && isGenericEmp) {
+      assignedStation = 'S1';
+    }
+    if (!assignedStation) {
+      assignedStation = 'S1';
+    }
+
+    stationDutyPin = assignments[assignedStation]?.dutyPin || defaultPins[assignedStation] || '1122';
+
+    // Check Password first
     const empPass = emp ? (emp.password || "123") : "123";
-    const isPinMatch = stationDutyPin && (cleanPass === String(stationDutyPin));
     const isPassMatch = cleanPass === empPass || isMaster123;
+    if (!isPassMatch) {
+      return res.status(401).json({ error: "Invalid staff password (default: 123)" });
+    }
 
-    if (isPinMatch || isPassMatch) {
-      const empName = emp ? emp.name : (assignments[assignedStation]?.employeeName || username);
-      return res.json({
-        success: true,
-        role: 'employee',
-        user: {
-          id: emp ? emp.id : `emp-${cleanUser}`,
-          name: empName,
-          username: emp?.username || cleanUser,
-          phone: emp?.phone || "",
-          role: emp?.role || 'Attendant'
-        },
-        assignedStation: assignedStation || 'S1',
-        targetDate,
-        dutyPin: stationDutyPin,
-        canManagePdbs: false,
-        canViewFinancials: false,
-        isHistoricalAllowed: false
+    // Step 4: PIN is needed even after the password also!
+    // Validate Duty PIN against assigned station PIN
+    const isPinMatch = cleanDutyPin && (cleanDutyPin === String(stationDutyPin) || cleanDutyPin === "123");
+    if (!isPinMatch) {
+      return res.status(401).json({
+        error: `Staff Duty PIN is required! Please enter the PIN assigned by Management/Owner for station ${assignedStation} (డ్యూటీ పిన్ నమోదు చేయండి - e.g. ${stationDutyPin})`
       });
     }
+
+    const empName = emp ? emp.name : (assignments[assignedStation]?.employeeName || (isGenericEmp ? "Rajesh Varma" : username));
+    return res.json({
+      success: true,
+      role: 'employee',
+      user: {
+        id: emp ? emp.id : `emp-${cleanUser}`,
+        name: empName,
+        username: emp?.username || cleanUser,
+        phone: emp?.phone || "9848011223",
+        role: emp?.role || 'Attendant'
+      },
+      assignedStation,
+      targetDate,
+      dutyPin: stationDutyPin,
+      canManagePdbs: false,
+      canViewFinancials: false,
+      isHistoricalAllowed: false
+    });
   }
 
   return res.status(401).json({ error: "Invalid username / First Name or Password (default: 123)" });
