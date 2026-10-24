@@ -858,6 +858,19 @@
           <button onclick="switchAdminTab('summary')" id="admTab-summary" class="admin-tab-btn active px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all bg-orange-600 text-white shadow">
             📄 Daily Sales Slip
           </button>
+          <button onclick="switchAdminTab('roster')" id="admTab-roster" class="admin-tab-btn px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 flex items-center gap-1.5">
+            <span>⛽</span>
+            <span id="tabLabel-roster">Pump Assignment</span>
+          </button>
+          <button onclick="switchAdminTab('employees')" id="admTab-employees" class="admin-tab-btn px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 flex items-center gap-1.5">
+            <span>👥</span>
+            <span id="tabLabel-employees">Employee List & KYC</span>
+          </button>
+          <button onclick="switchAdminTab('dues')" id="admTab-dues" class="admin-tab-btn px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 flex items-center gap-1.5">
+            <span>⚠️</span>
+            <span id="tabLabel-dues">Due</span>
+            <span id="badgePendingDuesCount" class="bg-rose-600 text-white text-[10px] font-black px-1.5 py-0.2 rounded-full">0</span>
+          </button>
           <button onclick="switchAdminTab('financials')" id="admTab-financials" class="admin-tab-btn px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 flex items-center gap-1">
             <span>📊</span>
             <span id="tabLabel-financials">Financial Reports</span>
@@ -872,22 +885,11 @@
             <span id="tabLabel-reminders">Reminders</span>
             <span id="badgePendingReminderCount" class="bg-amber-500 text-slate-900 text-[10px] font-black px-1.5 py-0.2 rounded-full">0</span>
           </button>
-          <button onclick="switchAdminTab('employees')" id="admTab-employees" class="admin-tab-btn px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white text-slate-700 hover:bg-slate-100 border border-slate-200">
-            👥 Employee KYC
-          </button>
-          <button onclick="switchAdminTab('roster')" id="admTab-roster" class="admin-tab-btn px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white text-slate-700 hover:bg-slate-100 border border-slate-200">
-            📋 Duty Allocation
-          </button>
           <button onclick="switchAdminTab('rates')" id="admTab-rates" class="admin-tab-btn px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white text-slate-700 hover:bg-slate-100 border border-slate-200">
             🏷️ Rates
           </button>
           <button onclick="switchAdminTab('tanks')" id="admTab-tanks" class="admin-tab-btn px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white text-slate-700 hover:bg-slate-100 border border-slate-200">
             🛢️ Tank Stock
-          </button>
-          <button onclick="switchAdminTab('dues')" id="admTab-dues" class="admin-tab-btn px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 flex items-center gap-1.5">
-            <span>⚠️</span>
-            <span id="tabLabel-dues">Due</span>
-            <span id="badgePendingDuesCount" class="bg-rose-600 text-white text-[10px] font-black px-1.5 py-0.2 rounded-full">0</span>
           </button>
           <button onclick="switchAdminTab('pdbs')" id="admTab-pdbs" class="admin-tab-btn px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 hidden">
             🏢 Pluggable DBs (PDBs)
@@ -897,6 +899,33 @@
 
       <!-- SUB-TAB 1: DAILY SALES SLIP -->
       <div id="admSection-summary" class="space-y-5">
+
+        <!-- Management Quick Action Header (Prominent for Mgmt & Owner) -->
+        <div class="bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-950 text-white p-3.5 sm:p-4 rounded-2xl flex flex-wrap items-center justify-between gap-3 shadow-md border border-slate-700">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-orange-600 text-white flex items-center justify-center text-xl font-black shrink-0">
+              ⛽
+            </div>
+            <div>
+              <h4 class="font-black text-sm sm:text-base text-white">Bunk Operations & Management (మేనేజ్‌మెంట్ & ఓనర్ డ్యాష్‌బోర్డ్)</h4>
+              <p class="text-xs text-blue-200">Quickly assign pumps to staff, review KYC profiles, or manage dues</p>
+            </div>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <button onclick="switchAdminTab('roster')" class="bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-black text-xs sm:text-sm px-4 py-2 rounded-xl shadow-md flex items-center gap-1.5 active:scale-95 transition-all">
+              <span>⛽</span>
+              <span>Assign Pumps (పంపుల కేటాయింపు)</span>
+            </button>
+            <button onclick="switchAdminTab('employees')" class="bg-blue-600 hover:bg-blue-700 text-white font-black text-xs sm:text-sm px-4 py-2 rounded-xl shadow-md flex items-center gap-1.5 active:scale-95 transition-all">
+              <span>👥</span>
+              <span>Employee List (ఉద్యోగుల జాబితా)</span>
+            </button>
+            <button onclick="switchAdminTab('dues')" class="bg-rose-600 hover:bg-rose-700 text-white font-black text-xs sm:text-sm px-4 py-2 rounded-xl shadow-md flex items-center gap-1.5 active:scale-95 transition-all">
+              <span>⚠️</span>
+              <span>Dues (సిబ్బంది బాకీలు)</span>
+            </button>
+          </div>
+        </div>
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
           <!-- Slip Box -->
           <div class="lg:col-span-5 bg-gradient-to-b from-amber-50 to-orange-50/40 p-6 rounded-3xl border-2 border-amber-300 shadow-md space-y-4">
@@ -1433,7 +1462,7 @@
       <div class="space-y-2.5 text-xs">
         <div>
           <label class="font-bold text-slate-700 block mb-0.5">పూర్తి పేరు (Full Name) *:</label>
-          <input type="text" id="modalEmpName" placeholder="e.g. Ramesh Kumar" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 font-bold text-slate-900">
+          <input type="text" id="modalEmpName" oninput="checkFatherNameDifferent()" placeholder="e.g. Ramesh Kumar" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 font-bold text-slate-900">
         </div>
         <div class="grid grid-cols-2 gap-2">
           <div>
@@ -1441,14 +1470,15 @@
             <input type="tel" id="modalEmpPhone" placeholder="98480xxxxx" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 font-mono font-bold">
           </div>
           <div>
-            <label class="font-bold text-slate-700 block mb-0.5">పాస్‌వర్డ్ (Default: 1234):</label>
-            <input type="text" id="modalEmpPassword" value="1234" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 font-mono font-bold">
+            <label class="font-bold text-slate-700 block mb-0.5">పాస్‌వర్డ్ (Default: 123):</label>
+            <input type="text" id="modalEmpPassword" value="123" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 font-mono font-bold">
           </div>
         </div>
         <div class="grid grid-cols-2 gap-2">
           <div>
             <label class="font-bold text-slate-700 block mb-0.5">తండ్రి పేరు (Father's Name):</label>
-            <input type="text" id="modalEmpFatherName" placeholder="Father's name" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5">
+            <input type="text" id="modalEmpFatherName" oninput="checkFatherNameDifferent()" placeholder="Father's name" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5">
+            <p id="empFatherError" class="text-rose-600 font-bold text-[10px] hidden mt-0.5">⚠️ పేరు మరియు తండ్రి పేరు ఒకేలా ఉండకూడదు (Cannot be same)</p>
           </div>
           <div>
             <label class="font-bold text-slate-700 block mb-0.5">సొంత గ్రామం (Village):</label>
@@ -1673,6 +1703,6 @@
     </div>
   </footer>
 
-  <script src="app.js?v=2"></script>
+  <script src="app.js?v=3"></script>
 </body>
 </html>

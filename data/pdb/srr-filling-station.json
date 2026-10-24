@@ -200,6 +200,21 @@
       "active": true,
       "username": "9848066778",
       "password": "123"
+    },
+    {
+      "id": "emp-1792838466290",
+      "name": "Mahesh reddy",
+      "username": "7799532888",
+      "password": "123",
+      "phone": "7799532888",
+      "fatherName": "Maheswar Reddy",
+      "villageName": "Ieeja",
+      "aadhaarNumber": "",
+      "emergencyContact": "",
+      "address": "Ieeja",
+      "role": "Attendant",
+      "joiningDate": "2026-10-24",
+      "active": true
     }
   ],
   "shiftAssignments": {
@@ -227,20 +242,20 @@
     },
     "2026-10-24": {
       "S1": {
-        "employeeId": "emp5",
-        "employeeName": "Rajesh Varma"
+        "employeeName": "Kiran Kumar",
+        "dutyPin": "123"
       },
       "S2": {
-        "employeeId": "emp6",
-        "employeeName": "Prasad Rao"
+        "employeeName": "Ramesh Kumar",
+        "dutyPin": "123"
       },
       "S3": {
-        "employeeId": "emp1",
-        "employeeName": "Ramesh Kumar"
+        "employeeName": "Suresh Reddy",
+        "dutyPin": "123"
       },
       "S4": {
-        "employeeId": "emp2",
-        "employeeName": "Suresh Reddy"
+        "employeeName": "Prasad Rao",
+        "dutyPin": "123"
       }
     }
   },
@@ -477,7 +492,7 @@
       "stations": {
         "S1": {
           "stationId": "S1",
-          "employeeName": "Rajesh Varma",
+          "employeeName": "Kiran Kumar",
           "pump": "Pump 1",
           "meters": {
             "petrol": {
@@ -511,7 +526,7 @@
         },
         "S2": {
           "stationId": "S2",
-          "employeeName": "Prasad Rao",
+          "employeeName": "Ramesh Kumar",
           "pump": "Pump 1",
           "meters": {
             "petrol": {
@@ -545,7 +560,7 @@
         },
         "S3": {
           "stationId": "S3",
-          "employeeName": "Ramesh Kumar",
+          "employeeName": "Suresh Reddy",
           "pump": "Pump 2",
           "meters": {
             "petrol": {
@@ -579,7 +594,7 @@
         },
         "S4": {
           "stationId": "S4",
-          "employeeName": "Suresh Reddy",
+          "employeeName": "Prasad Rao",
           "pump": "Pump 2",
           "meters": {
             "petrol": {

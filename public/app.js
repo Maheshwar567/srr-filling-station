@@ -147,7 +147,7 @@ function applyLanguageUI() {
   const navPassword = document.getElementById('navPasswordLabel');
 
   if (lblUser) lblUser.innerText = isTe ? 'మొదటి పేరు లేదా యూజర్‌నేమ్:' : 'First Name or Username:';
-  if (lblPass) lblPass.innerText = isTe ? 'డ్యూటీ పిన్ / పాస్‌వర్డ్:' : 'Duty PIN / Password:';
+  if (lblPass) lblPass.innerText = isTe ? 'పాస్‌వర్డ్:' : 'Password:';
   if (btnLogin) btnLogin.innerText = isTe ? 'లాగిన్ చేయండి' : 'Sign In';
   if (navSignIn) navSignIn.innerText = isTe ? 'లాగిన్' : 'Sign In';
   if (navLogout) navLogout.innerText = isTe ? 'నిష్క్రమించు' : 'Logout';
@@ -158,22 +158,22 @@ function applyLanguageUI() {
   const tabFin = document.getElementById('tabLabel-financials');
   const tabFlt = document.getElementById('tabLabel-fleet');
   const tabRem = document.getElementById('tabLabel-reminders');
-  const tabEmp = document.getElementById('admTab-employees');
-  const tabRos = document.getElementById('admTab-roster');
+  const tabEmp = document.getElementById('tabLabel-employees');
+  const tabRos = document.getElementById('tabLabel-roster');
   const tabRat = document.getElementById('admTab-rates');
   const tabTnk = document.getElementById('admTab-tanks');
   const tabDue = document.getElementById('tabLabel-dues');
   const tabPdb = document.getElementById('admTab-pdbs');
 
   if (tabSum) tabSum.innerHTML = isTe ? '📄 రోజువారీ రసీదు' : '📄 Daily Sales Slip';
+  if (tabRos) tabRos.innerText = isTe ? 'పంపుల కేటాయింపు' : 'Pump Assignment';
+  if (tabEmp) tabEmp.innerText = isTe ? 'ఉద్యోగుల జాబితా (KYC)' : 'Employee List & KYC';
+  if (tabDue) tabDue.innerText = isTe ? 'సిబ్బంది బాకీలు' : 'Due';
   if (tabFin) tabFin.innerText = isTe ? 'ఆర్థిక నివేదికలు' : 'Financial Reports';
   if (tabFlt) tabFlt.innerText = isTe ? 'వాహనాల లేడ్జర్' : 'Vehicle Fleet Ledger';
   if (tabRem) tabRem.innerText = isTe ? 'రిమైండర్లు' : 'Reminders';
-  if (tabEmp) tabEmp.innerHTML = isTe ? '👥 ఉద్యోగుల వివరాలు' : '👥 Employee KYC';
-  if (tabRos) tabRos.innerHTML = isTe ? '📋 డ్యూటీ కేటాయింపు' : '📋 Duty Allocation';
   if (tabRat) tabRat.innerHTML = isTe ? '🏷️ ఇంధనం ధరలు' : '🏷️ Rates';
   if (tabTnk) tabTnk.innerHTML = isTe ? '🛢️ ట్యాంక్ స్టాక్' : '🛢️ Tank Stock';
-  if (tabDue) tabDue.innerText = isTe ? 'బాకీలు' : 'Due';
   if (tabPdb) tabPdb.innerHTML = isTe ? '🏢 ప్లగ్గబుల్ DBs' : '🏢 Pluggable DBs (PDBs)';
 
   // 4. Update Active Daily Sales Slip text
@@ -1648,6 +1648,12 @@ function switchAdminTab(tabKey) {
   });
 
   renderAdminDashboard();
+  if (tabKey === 'roster') {
+    renderAdminDutyRoster();
+  }
+  if (tabKey === 'employees') {
+    renderAdminEmployeesTable();
+  }
   if (tabKey === 'financials') {
     loadFinancialReports();
   }
@@ -2312,12 +2318,28 @@ function openAddEmployeeModal() {
   document.getElementById('modalEmpPassword').value = '123';
   document.getElementById('modalEmpAadhaar').value = '';
   document.getElementById('modalEmpEmergency').value = '';
-  document.getElementById('modalEmpAddress').value = '';
+  const errEl = document.getElementById('empFatherError');
+  if (errEl) errEl.classList.add('hidden');
   document.getElementById('modalAddEmployee').classList.remove('hidden');
 }
 
 function closeAddEmployeeModal() {
+  const errEl = document.getElementById('empFatherError');
+  if (errEl) errEl.classList.add('hidden');
   document.getElementById('modalAddEmployee').classList.add('hidden');
+}
+
+function checkFatherNameDifferent() {
+  const name = (document.getElementById('modalEmpName')?.value || '').trim().toLowerCase();
+  const father = (document.getElementById('modalEmpFatherName')?.value || '').trim().toLowerCase();
+  const errEl = document.getElementById('empFatherError');
+  if (errEl) {
+    if (name && father && name === father) {
+      errEl.classList.remove('hidden');
+    } else {
+      errEl.classList.add('hidden');
+    }
+  }
 }
 
 async function saveNewEmployee() {
@@ -2336,6 +2358,16 @@ async function saveNewEmployee() {
     return;
   }
 
+  // User requirement: "Employee name and father name should not be same during emp kyc"
+  if (fatherName && name.toLowerCase() === fatherName.toLowerCase()) {
+    showToast(STATE.lang === 'te' 
+      ? 'ఉద్యోగి పేరు మరియు తండ్రి పేరు ఒకేలా ఉండకూడదు!' 
+      : "Employee Name and Father's Name cannot be the same!", 'error');
+    const errEl = document.getElementById('empFatherError');
+    if (errEl) errEl.classList.remove('hidden');
+    return;
+  }
+
   const payload = { name, fatherName, villageName, phone, password, aadhaarNumber, emergencyContact, address, role };
 
   try {
@@ -2349,6 +2381,8 @@ async function saveNewEmployee() {
       showToast(`Employee "${name}" added successfully!`);
       closeAddEmployeeModal();
       loadAllData();
+    } else {
+      showToast(result.error || 'Failed to add employee', 'error');
     }
   } catch (err) {
     showToast('Failed to add employee', 'error');
@@ -2369,59 +2403,52 @@ async function deleteEmployee(id, name) {
   }
 }
 
-// --- ADMIN DUTY ROSTER & PUMP ALLOCATION ---
-// User requirement: "password will be the pin which will be generated by the mgmt or admin during pump allocation pin also will need to shown on screen - once the pin shared to taht employee thn that login will allow success"
+// --- ADMIN / MGMT / OWNER DUTY ROSTER & PUMP ALLOCATION ---
+// User requirement: "as said, mgmt and owner need to assign the pumps to emp"
+// User requirement: "and emp directly login with username and password 123 no pin which was by mgmr / owner"
 function renderAdminDutyRoster() {
   const container = document.getElementById('dutyRosterCardsContainer');
   if (!container) return;
 
   const assignments = STATE.dutyAssignments || {};
   const stations = ['S1', 'S2', 'S3', 'S4'];
-  const defaultPins = { S1: "1122", S2: "3344", S3: "5566", S4: "7788" };
 
   container.innerHTML = stations.map(stKey => {
     const cfg = STATION_CONFIG[stKey];
     const assignedName = assignments[stKey]?.employeeName || STATE.shift?.stations?.[stKey]?.employeeName || "";
-    const dutyPin = assignments[stKey]?.dutyPin || defaultPins[stKey] || "1234";
 
     return `
       <div class="bg-white rounded-2xl shadow-md border-2 border-slate-200 p-4 space-y-3.5 hover:border-orange-300 transition-all">
         <div class="flex items-center justify-between border-b border-slate-100 pb-2">
           <div class="flex items-center gap-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+            <span class="w-3 h-3 rounded-full ${assignedName ? 'bg-emerald-500 ring-2 ring-emerald-200' : 'bg-slate-300'}"></span>
             <span class="font-black text-slate-900 text-sm">Station ${stKey}</span>
           </div>
           <span class="bg-orange-100 text-orange-900 text-[10px] font-bold px-2 py-0.5 rounded-full">${cfg.pump}</span>
         </div>
-        <div class="text-[11px] text-slate-600">
-          Nozzles: Petrol (${cfg.petrolCode}) • Diesel (${cfg.dieselCode})
+        <div class="text-[11px] text-slate-600 bg-slate-50 p-2 rounded-lg border border-slate-200">
+          Nozzles: <strong>Petrol (${cfg.petrolCode})</strong> • <strong>Diesel (${cfg.dieselCode})</strong>
         </div>
         <div>
           <label class="text-[11px] font-bold text-slate-700 block mb-1">Assign Attendant (సిబ్బంది ఎంపిక):</label>
-          <select id="rosterAssign-${stKey}" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs font-bold text-slate-900">
-            <option value="">-- Choose Staff --</option>
+          <select id="rosterAssign-${stKey}" class="w-full bg-slate-50 border-2 border-slate-200 focus:border-orange-500 rounded-lg p-2 text-xs font-bold text-slate-900 focus:outline-none">
+            <option value="">-- Choose Staff (ఎంపిక చేయండి) --</option>
             ${STATE.employees.map(e => `
               <option value="${e.name}" ${e.name === assignedName ? 'selected' : ''}>
-                ${e.name}
+                ${e.name} (${e.phone || 'Staff'})
               </option>
             `).join('')}
           </select>
         </div>
 
-        <!-- Highlighted Duty Login PIN Card -->
-        <div class="bg-gradient-to-br from-amber-50 to-orange-50 p-3 rounded-xl border-2 border-amber-300 space-y-1.5 shadow-sm">
-          <div class="flex items-center justify-between text-xs font-black text-amber-950">
-            <span class="flex items-center gap-1">🔑 డ్యూటీ లాగిన్ పిన్ (Login PIN):</span>
-            <button onclick="generateRandomPin('${stKey}')" type="button" class="text-[10px] text-amber-900 hover:text-black font-mono font-bold bg-amber-200 hover:bg-amber-300 px-2 py-0.5 rounded shadow-xs active:scale-95 transition-all">
-              🔄 New PIN
-            </button>
+        <div class="bg-emerald-50 text-emerald-950 p-2.5 rounded-xl border border-emerald-200 text-[11px] space-y-1">
+          <div class="flex items-center gap-1.5 font-bold text-emerald-800">
+            <span>🔑</span>
+            <span>Direct Staff Login (డైరెక్ట్ లాగిన్):</span>
           </div>
-          <div class="flex items-center gap-2">
-            <input type="text" maxlength="6" id="rosterPin-${stKey}" value="${dutyPin}" class="w-full bg-white border-2 border-amber-400 rounded-lg px-2.5 py-1.5 font-mono text-base font-black text-amber-950 tracking-widest text-center shadow-inner focus:outline-none focus:border-amber-600">
-          </div>
-          <p class="text-[10px] text-amber-900 font-medium leading-tight">
-            లాగిన్ యూజర్‌నేమ్: <strong>సిబ్బంది మొదటి పేరు (First Name)</strong><br>
-            పాస్‌వర్డ్: <strong>ఈ PIN (${dutyPin})</strong>
+          <p class="text-[10px] text-emerald-900 font-medium">
+            Username: <strong class="font-mono text-emerald-950">emp</strong> (or first name / ${stKey})<br>
+            Password: <strong class="font-mono font-bold text-emerald-950">123</strong> (No PIN needed)
           </p>
         </div>
       </div>
@@ -2429,20 +2456,11 @@ function renderAdminDutyRoster() {
   }).join('');
 }
 
-function generateRandomPin(stKey) {
-  const pinInput = document.getElementById(`rosterPin-${stKey}`);
-  if (pinInput) {
-    const newPin = Math.floor(1000 + Math.random() * 9000).toString();
-    pinInput.value = newPin;
-  }
-}
-
 async function saveDutyRosterAssignments() {
   const assignments = {};
   ['S1', 'S2', 'S3', 'S4'].forEach(stKey => {
     const empName = document.getElementById(`rosterAssign-${stKey}`)?.value || "";
-    const dutyPin = document.getElementById(`rosterPin-${stKey}`)?.value || "1234";
-    assignments[stKey] = { employeeName: empName, dutyPin };
+    assignments[stKey] = { employeeName: empName, dutyPin: "123" };
   });
 
   try {
@@ -2453,11 +2471,15 @@ async function saveDutyRosterAssignments() {
     });
     const result = await res.json();
     if (result.success) {
-      showToast('Duty roster saved with login PINs! Attendant can now login with First Name + PIN.');
+      showToast(STATE.lang === 'te' 
+        ? 'పంపుల కేటాయింపు సేవ్ చేయబడింది! సిబ్బంది నేరుగా పాస్‌వర్డ్ 123 తో లాగిన్ అవ్వవచ్చు.' 
+        : 'Pump assignments saved! Attendants can log in directly with password 123.');
       loadAllData();
+    } else {
+      showToast('Failed to save pump assignments', 'error');
     }
   } catch (err) {
-    showToast('Failed to save duty assignments', 'error');
+    showToast('Failed to save pump assignments', 'error');
   }
 }
 

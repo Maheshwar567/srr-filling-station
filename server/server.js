@@ -1424,15 +1424,21 @@ app.post('/api/employees', (req, res) => {
 
   const cleanPhone = (phone || "").trim();
   const cleanName = name.trim();
+  const cleanFather = (fatherName || "").trim();
+
+  if (cleanFather && cleanName.toLowerCase() === cleanFather.toLowerCase()) {
+    return res.status(400).json({ error: "Employee name and Father's name cannot be the same (ఉద్యోగి పేరు మరియు తండ్రి పేరు ఒకేలా ఉండకూడదు)" });
+  }
+
   const cleanUsername = (username || cleanPhone || cleanName.toLowerCase().replace(/\s+/g, '')).trim();
 
   const newEmp = {
     id: `emp-${Date.now()}`,
     name: cleanName,
     username: cleanUsername,
-    password: (password || "1234").trim(),
+    password: (password || "123").trim(),
     phone: cleanPhone,
-    fatherName: (fatherName || "").trim(),
+    fatherName: cleanFather,
     villageName: (villageName || "").trim(),
     aadhaarNumber: (aadhaarNumber || "").trim(),
     emergencyContact: (emergencyContact || "").trim(),
