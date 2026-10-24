@@ -120,21 +120,21 @@
         <form id="loginForm" onsubmit="handleLoginSubmit(event)" class="space-y-4">
           <div>
             <label class="text-xs font-bold text-slate-700 block mb-1" id="lblLoginUser">
-              Mobile Number / Username (మొబైల్ నంబర్ లేదా యూజర్‌నేమ్):
+              First Name / Username (సిబ్బంది మొదటి పేరు లేదా యూజర్‌నేమ్):
             </label>
             <div class="relative">
               <span class="absolute left-3 top-2.5 text-slate-400">👤</span>
-              <input type="text" id="loginUsernameInput" required placeholder="e.g. 9848011223 or admin" class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl pl-9 pr-3 py-2 text-sm font-bold text-slate-900 focus:border-orange-500 focus:outline-none focus:bg-white shadow-sm">
+              <input type="text" id="loginUsernameInput" required placeholder="e.g. Ramesh, Suresh or admin" class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl pl-9 pr-3 py-2 text-sm font-bold text-slate-900 focus:border-orange-500 focus:outline-none focus:bg-white shadow-sm">
             </div>
           </div>
 
           <div>
             <label class="text-xs font-bold text-slate-700 block mb-1" id="lblLoginPass">
-              Password / PIN (పాస్‌వర్డ్):
+              Duty PIN / Password (డ్యూటీ పిన్ లేదా పాస్‌వర్డ్):
             </label>
             <div class="relative">
-              <span class="absolute left-3 top-2.5 text-slate-400">🔒</span>
-              <input type="password" id="loginPasswordInput" required placeholder="Enter password (default: 1234)" class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl pl-9 pr-10 py-2 text-sm font-bold text-slate-900 focus:border-orange-500 focus:outline-none focus:bg-white shadow-sm">
+              <span class="absolute left-3 top-2.5 text-slate-400">🔑</span>
+              <input type="password" id="loginPasswordInput" required placeholder="Enter Duty PIN (e.g. 1122) or Password" class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl pl-9 pr-10 py-2 text-sm font-bold text-slate-900 focus:border-orange-500 focus:outline-none focus:bg-white shadow-sm">
               <button type="button" onclick="togglePasswordVisibility('loginPasswordInput')" class="absolute right-3 top-2.5 text-slate-400 hover:text-slate-700">👁️</button>
             </div>
           </div>
@@ -146,8 +146,9 @@
           </button>
         </form>
 
-        <div class="pt-3 border-t border-slate-100 text-center text-[11px] text-slate-400">
-          Default Passwords: Staff = <strong class="text-slate-600 font-mono">1234</strong> | Admin = <strong class="text-slate-600 font-mono">1234</strong>
+        <div class="pt-3 border-t border-slate-100 text-center text-[11px] text-slate-500 font-medium">
+          Staff: <strong class="text-slate-800 font-mono">First Name</strong> (e.g. Ramesh) + <strong class="text-slate-800 font-mono">Duty PIN</strong> (e.g. 1122)<br>
+          Admin: <strong class="text-slate-800 font-mono">admin</strong> / <strong class="text-slate-800 font-mono">1234</strong>
         </div>
       </div>
     </div>
@@ -157,30 +158,22 @@
     <!-- ============================================================== -->
     <div id="employeeView" class="space-y-4 hidden">
 
-      <!-- Attendant Locked Duty Info Banner -->
-      <div class="bg-gradient-to-r from-blue-900 to-slate-900 text-white p-4 rounded-2xl shadow-md flex flex-wrap items-center justify-between gap-3 border border-slate-700">
+      <!-- Attendant Locked Duty Info Banner (Clean: Name and S1 only) -->
+      <!-- User requirement: "just keep emy name and S1 only (because as we know S1 means from pump1 only - so no need to mentions all other)" -->
+      <div class="bg-gradient-to-r from-blue-900 to-slate-900 text-white px-4 py-3 rounded-2xl shadow-md flex items-center justify-between gap-3 border border-slate-700">
         <div class="flex items-center gap-3">
-          <div class="w-12 h-12 rounded-xl bg-orange-600 text-white flex items-center justify-center text-2xl font-black shrink-0">
+          <div class="w-10 h-10 rounded-xl bg-orange-600 text-white flex items-center justify-center text-xl font-black shrink-0">
             👤
           </div>
-          <div>
-            <div class="flex items-center gap-2">
-              <h2 class="text-base sm:text-lg font-black text-white" id="empLoggedInName">Attendant</h2>
-              <span class="bg-emerald-500 text-slate-900 text-[10px] font-black px-2 py-0.5 rounded-full uppercase" id="badgeDutyStatus">On Duty</span>
-            </div>
-            <p class="text-xs text-slate-300 font-medium mt-0.5" id="empAssignedPumpDescription">
-              Assigned Pump: Loading assignment...
-            </p>
+          <div class="flex items-center gap-2">
+            <h2 class="text-base sm:text-lg font-black text-white" id="empLoggedInName">Attendant</h2>
+            <span class="bg-amber-400 text-slate-900 text-xs sm:text-sm font-mono font-black px-3 py-0.5 rounded-full uppercase tracking-wider" id="empAssignedStationBadge">S1</span>
           </div>
         </div>
-
-        <div class="bg-black/40 px-3 py-1.5 rounded-xl border border-white/10 text-right">
-          <span class="text-[10px] text-amber-300 font-bold block uppercase tracking-wider">🔒 Pump Lock Status</span>
-          <span class="text-xs font-mono font-bold text-white" id="empLockStatusBadge">Assigned by Admin (Read-Only)</span>
-        </div>
+        <span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[11px] font-bold px-2.5 py-1 rounded-lg">● On Duty</span>
       </div>
 
-      <!-- TOP STAFF TABS: Reading, Testing, Card Swipes, Amount Reminder, Vehicle Account, Cash Handover -->
+      <!-- TOP STAFF TABS: Reading, Testing, Card Swipes, UPI, Amount Reminder, Vehicle Account, Cash Handover -->
       <div class="bg-white rounded-2xl p-1.5 shadow-sm border border-slate-200 flex items-center justify-between gap-1 overflow-x-auto">
         
         <!-- Tab 1: Reading -->
@@ -216,7 +209,19 @@
           </div>
         </button>
 
-        <!-- Tab 4: Amount Reminder -->
+        <!-- Tab 4: UPI / PhonePe Payments (User requested: "also give a tab UPI on employee page") -->
+        <button onclick="switchEmployeeTab('upi')" id="empTabBtn-upi" class="emp-tab-btn flex-1 py-2.5 px-2 rounded-xl font-black text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200 shrink-0">
+          <span class="text-base">📲</span>
+          <div class="text-left">
+            <div class="flex items-center gap-1">
+              <span class="block leading-tight text-indigo-700" id="tabText-upi">యూపీఐ</span>
+              <span id="empUpiBadgeCount" class="bg-indigo-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-bold">₹0</span>
+            </div>
+            <span class="text-[10px] font-medium text-slate-500 hidden sm:block">UPI / Online</span>
+          </div>
+        </button>
+
+        <!-- Tab 5: Amount Reminder -->
         <button onclick="switchEmployeeTab('reminder')" id="empTabBtn-reminder" class="emp-tab-btn flex-1 py-2.5 px-2 rounded-xl font-black text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200 shrink-0">
           <span class="text-base">⏰</span>
           <div class="text-left">
@@ -224,11 +229,11 @@
               <span class="block leading-tight text-amber-700" id="tabText-reminder">రిమైండర్</span>
               <span id="empReminderBadgeCount" class="bg-amber-500 text-slate-900 text-[10px] px-1.5 py-0.2 rounded-full font-black">0</span>
             </div>
-            <span class="text-[10px] font-medium text-slate-500 hidden sm:block">Amount Reminder</span>
+            <span class="text-[10px] font-medium text-slate-500 hidden sm:block">Reminders</span>
           </div>
         </button>
 
-        <!-- Tab 5: Vehicle Account -->
+        <!-- Tab 6: Vehicle Account -->
         <button onclick="switchEmployeeTab('vehicle')" id="empTabBtn-vehicle" class="emp-tab-btn flex-1 py-2.5 px-2 rounded-xl font-black text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200 shrink-0">
           <span class="text-base">🚛</span>
           <div class="text-left">
@@ -240,7 +245,7 @@
           </div>
         </button>
 
-        <!-- Tab 6: Cash Handover -->
+        <!-- Tab 7: Cash Handover -->
         <button onclick="switchEmployeeTab('handover')" id="empTabBtn-handover" class="emp-tab-btn flex-1 py-2.5 px-2 rounded-xl font-black text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200 shrink-0">
           <span class="text-base">💰</span>
           <div class="text-left">
@@ -441,15 +446,8 @@
                   <input type="number" id="cardSwipeAmount" onfocus="ensureCardSwipeDateTimeAuto()" placeholder="₹ e.g. 1500" class="w-full bg-white border-2 border-blue-400 rounded-lg px-2.5 py-1.5 text-xs font-mono font-black text-blue-900 focus:outline-none focus:border-blue-600">
                 </div>
                 <div>
-                  <label class="text-[11px] font-bold text-slate-700 block mb-0.5">స్వైప్ మెషిన్ / బ్యాంక్ (POS Machine):</label>
-                  <select id="cardSwipeMachine" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-900">
-                    <option value="IOCL POS">IOCL POS Machine</option>
-                    <option value="SBI POS">SBI Card Machine</option>
-                    <option value="HDFC POS">HDFC POS Machine</option>
-                    <option value="Pine Labs">Pine Labs Plutus</option>
-                    <option value="Paytm POS">Paytm All-In-One POS</option>
-                    <option value="Axis POS">Axis Bank POS</option>
-                  </select>
+                  <label class="text-[11px] font-bold text-slate-700 block mb-0.5" id="lblCardMachine">స్వైప్ మెషిన్ (POS Machine):</label>
+                  <input type="text" id="cardSwipeMachine" value="Paytm All-in-one" readonly class="w-full bg-slate-100 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-slate-800 cursor-not-allowed">
                 </div>
                 <div>
                   <label class="text-[11px] font-bold text-slate-700 block mb-0.5">తేదీ & సమయం (Date & Time - Auto/Editable):</label>
@@ -473,6 +471,71 @@
             <div>
               <h4 class="font-bold text-slate-800 text-xs mb-2">ఈ షిఫ్ట్ లో స్వైప్ చేసిన కార్డులు (Shift Card Swipes Log):</h4>
               <div id="empCardSwipesListContainer" class="overflow-x-auto"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ---------------------------------------------------- -->
+      <!-- TAB CONTENT: UPI / PHONEPE PAYMENTS (USER REQUESTED) -->
+      <!-- User requirement: "also give a tab UPI on employee page" -->
+      <!-- ---------------------------------------------------- -->
+      <div id="empSection-upi" class="space-y-4 hidden">
+        <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
+          <div class="bg-gradient-to-r from-indigo-700 to-purple-800 text-white px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-xl">📲</span>
+              <div>
+                <h3 class="font-extrabold text-sm sm:text-base" id="upiSectionHeader">యూపీఐ / ఆన్‌లైన్ పేమెంట్లు (UPI & QR Payments)</h3>
+                <p class="text-[11px] text-indigo-100">PhonePe, Google Pay, Paytm QR transactions</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="text-[10px] uppercase text-indigo-200 font-bold block">Total UPI Received</span>
+              <span class="text-base sm:text-lg font-mono font-black text-amber-300" id="upiTotalDisplay">₹0</span>
+            </div>
+          </div>
+
+          <div class="p-4 sm:p-5 space-y-4">
+            <!-- Add UPI Entry Form -->
+            <div class="bg-indigo-50/70 p-4 rounded-xl border border-indigo-200 space-y-3">
+              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5">
+                <div>
+                  <label class="text-[11px] font-bold text-slate-700 block mb-0.5">మొత్తం (Amount ₹) *:</label>
+                  <input type="number" id="upiPaymentAmount" placeholder="₹ e.g. 500" class="w-full bg-white border-2 border-indigo-400 rounded-lg px-2.5 py-1.5 text-xs font-mono font-black text-indigo-950 focus:outline-none focus:border-indigo-600">
+                </div>
+                <div>
+                  <label class="text-[11px] font-bold text-slate-700 block mb-0.5">యాప్ / రకం (App / Mode):</label>
+                  <select id="upiPaymentApp" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-900">
+                    <option value="PhonePe">PhonePe QR</option>
+                    <option value="Google Pay">Google Pay</option>
+                    <option value="Paytm">Paytm Soundbox</option>
+                    <option value="BHIM UPI">BHIM UPI</option>
+                    <option value="Direct Transfer">Direct Bank Transfer</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="text-[11px] font-bold text-slate-700 block mb-0.5">సమయం (Time - Auto):</label>
+                  <input type="text" id="upiPaymentTime" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-xs font-mono font-bold text-slate-800">
+                </div>
+                <div>
+                  <label class="text-[11px] font-bold text-slate-700 block mb-0.5">రిఫరెన్స్ నం / UTR (Optional):</label>
+                  <input type="text" id="upiPaymentRef" placeholder="e.g. 429182749182" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-mono">
+                </div>
+              </div>
+
+              <div class="flex justify-end pt-1">
+                <button onclick="submitUpiEntry()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-2 px-5 rounded-lg shadow flex items-center gap-1.5 active:scale-95">
+                  <span>📲</span>
+                  <span>యూపీఐ సేవ్ చేయి (Record UPI)</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- UPI Logs Table -->
+            <div>
+              <h4 class="font-bold text-slate-800 text-xs mb-2">ఈ షిఫ్ట్ లో అందుకున్న యూపీఐ పేమెంట్లు (Shift UPI Log):</h4>
+              <div id="empUpiListContainer" class="overflow-x-auto"></div>
             </div>
           </div>
         </div>
@@ -661,6 +724,10 @@
                     <span class="font-mono font-bold text-purple-700" id="hoCardDeduction">- ₹0</span>
                   </div>
                   <div class="flex justify-between">
+                    <span>📲 యూపీఐ (UPI QR):</span>
+                    <span class="font-mono font-bold text-indigo-700" id="hoUpiDeduction">- ₹0</span>
+                  </div>
+                  <div class="flex justify-between">
                     <span>📉 బంక్ ఖర్చులు (Expenses):</span>
                     <span class="font-mono font-bold text-rose-700" id="hoExpenseDeduction">- ₹0</span>
                   </div>
@@ -816,6 +883,11 @@
           </button>
           <button onclick="switchAdminTab('tanks')" id="admTab-tanks" class="admin-tab-btn px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white text-slate-700 hover:bg-slate-100 border border-slate-200">
             🛢️ Tank Stock
+          </button>
+          <button onclick="switchAdminTab('dues')" id="admTab-dues" class="admin-tab-btn px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 flex items-center gap-1.5">
+            <span>⚠️</span>
+            <span id="tabLabel-dues">Due</span>
+            <span id="badgePendingDuesCount" class="bg-rose-600 text-white text-[10px] font-black px-1.5 py-0.2 rounded-full">0</span>
           </button>
           <button onclick="switchAdminTab('pdbs')" id="admTab-pdbs" class="admin-tab-btn px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 hidden">
             🏢 Pluggable DBs (PDBs)
@@ -1103,6 +1175,82 @@
                 </tr>
               </thead>
               <tbody id="adminRemindersTableBody" class="divide-y divide-slate-100 font-medium"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUB-TAB: EMPLOYEE SHORTAGE DUE (USER REQUESTED: "allow a tab called due ... whatever the amount related will be stored forever and can be viewed any time in admin page") -->
+      <div id="admSection-dues" class="space-y-4 hidden">
+        <!-- Banner -->
+        <div class="bg-gradient-to-r from-rose-800 to-red-950 text-white p-5 rounded-3xl shadow-lg space-y-2">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-3">
+              <span class="text-3xl">⚠️</span>
+              <div>
+                <h3 class="font-black text-lg" id="duesHeaderTitle">సిబ్బంది బాకీల లెక్క (Employee Shortage & Due Ledger)</h3>
+                <p class="text-xs text-rose-200" id="duesHeaderSubtitle">Permanent record of cash shortages marked on attendant names during shift handover</p>
+              </div>
+            </div>
+            <button onclick="loadEmployeeDues()" class="bg-white hover:bg-rose-100 text-rose-900 font-bold text-xs px-3.5 py-1.5 rounded-xl shadow flex items-center gap-1 transition-all active:scale-95">
+              <span>🔄</span>
+              <span id="duesRefreshBtn">Refresh Dues</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 3 Metric Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+          <div class="bg-white p-4 rounded-2xl border-2 border-rose-300 shadow-sm space-y-1">
+            <span class="text-xs font-bold text-slate-500 uppercase" id="duesLblTotalPending">రావలసిన మొత్తం బాకీ (Total Outstanding Dues)</span>
+            <div class="text-2xl font-mono font-black text-rose-600" id="dueMetricTotalPending">₹0</div>
+            <span class="text-[11px] text-rose-800 font-bold block" id="dueMetricPendingCount">0 Incidents Pending</span>
+          </div>
+
+          <div class="bg-white p-4 rounded-2xl border-2 border-emerald-200 shadow-sm space-y-1">
+            <span class="text-xs font-bold text-slate-500 uppercase" id="duesLblTotalSettled">వసూలైన మొత్తం (Total Recovered)</span>
+            <div class="text-2xl font-mono font-black text-emerald-600" id="dueMetricTotalSettled">₹0</div>
+            <span class="text-[11px] text-emerald-800 font-bold block" id="dueMetricSettledCount">0 Dues Cleared</span>
+          </div>
+
+          <div class="bg-white p-4 rounded-2xl border-2 border-slate-200 shadow-sm space-y-1">
+            <span class="text-xs font-bold text-slate-500 uppercase" id="duesLblTotalIncidents">మొత్తం షార్టేజ్ రికార్డులు (Total Shortages)</span>
+            <div class="text-2xl font-mono font-black text-slate-900" id="dueMetricTotalIncidents">0</div>
+            <span class="text-[11px] text-slate-500 font-bold block">Lifetime Audit History</span>
+          </div>
+        </div>
+
+        <!-- Employee Dues Table -->
+        <div class="bg-white rounded-2xl shadow-md border border-slate-200 p-4 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+            <h4 class="font-bold text-slate-900 text-sm" id="duesTableHeading">సిబ్బంది బాకీల పూర్తి పట్టిక (Attendant Shortage Ledger)</h4>
+            <div class="flex items-center gap-2">
+              <input type="text" id="duesFilterEmployeeInput" oninput="filterEmployeeDuesTable()" placeholder="Search staff name..." class="bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1 text-xs">
+              <select id="duesFilterStatusSelect" onchange="filterEmployeeDuesTable()" class="bg-slate-50 border border-slate-300 rounded-lg px-2 py-1 text-xs font-bold">
+                <option value="all">All Status (అన్నీ)</option>
+                <option value="pending" selected>Pending Only (బాకీలు)</option>
+                <option value="settled">Settled Only (వసూలైనవి)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-100 text-slate-700 uppercase font-bold text-[10px] border-b border-slate-200">
+                  <th class="p-2.5">Date & Time</th>
+                  <th class="p-2.5">Employee Name</th>
+                  <th class="p-2.5">Station</th>
+                  <th class="p-2.5">Expected Cash (₹)</th>
+                  <th class="p-2.5">Given Cash (₹)</th>
+                  <th class="p-2.5">Shortage Due (₹)</th>
+                  <th class="p-2.5">Status</th>
+                  <th class="p-2.5 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody id="adminDuesTableBody" class="divide-y divide-slate-100 font-medium">
+                <tr><td colspan="8" class="p-4 text-center text-slate-400">Loading dues records...</td></tr>
+              </tbody>
             </table>
           </div>
         </div>
@@ -1455,6 +1603,57 @@
         <button onclick="saveAdminStationReading()" class="bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-black text-xs px-5 py-2.5 rounded-xl shadow flex items-center gap-1.5 transition-all">
           <span>💾</span>
           <span>రీడింగ్స్ సేవ్ చేయి & రసీదు నవీకరించు (Save & Recalculate Slip)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: SETTLE EMPLOYEE SHORTAGE DUE -->
+  <div id="modalSettleDue" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-sm w-full p-6 space-y-4 animate-scaleIn">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-2.5">
+        <h3 class="font-black text-slate-900 text-base" id="modalSettleDueTitle">💰 బాకీ రికవరీ / సెటిల్ (Settle Due)</h3>
+        <button onclick="closeSettleDueModal()" class="text-slate-400 hover:text-slate-700 text-xl font-bold">✕</button>
+      </div>
+
+      <input type="hidden" id="settleDueRecordId">
+
+      <div class="bg-amber-50 p-3 rounded-xl border border-amber-200 space-y-1.5">
+        <div class="flex justify-between text-xs">
+          <span class="text-slate-600 font-bold" id="lblSettleDueStaff">సిబ్బంది (Staff):</span>
+          <span class="font-black text-slate-900" id="settleDueEmpName">-</span>
+        </div>
+        <div class="flex justify-between text-xs">
+          <span class="text-slate-600 font-bold" id="lblSettleDueDateStation">స్టేషన్ / తేదీ:</span>
+          <span class="font-mono font-bold text-slate-800" id="settleDueDateStation">-</span>
+        </div>
+        <div class="flex justify-between text-sm border-t border-amber-200 pt-1.5">
+          <span class="text-rose-900 font-bold" id="lblSettleDueAmount">బాకీ మొత్తం (Due):</span>
+          <span class="font-mono font-black text-rose-700 text-base" id="settleDueAmount">₹0</span>
+        </div>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="text-xs font-bold text-slate-700 block mb-1" id="lblSettleDueMode">సెటిల్ చేసిన విధానం (Payment Mode):</label>
+          <select id="settleDueMode" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs font-bold text-slate-900">
+            <option value="Cash Recovery">నగదు రికవరీ (Cash Recovery)</option>
+            <option value="UPI / PhonePe">యూపీఐ / PhonePe (UPI)</option>
+            <option value="Salary Deduction">జీతం నుండి మినహాయింపు (Salary Deduction)</option>
+            <option value="Management Waiver">క్షమాపణ / రద్దు (Management Waiver)</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs font-bold text-slate-700 block mb-1" id="lblSettleDueNotes">వివరణ / నోట్స్ (Notes):</label>
+          <input type="text" id="settleDueNotes" placeholder="Received by Manager..." class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900">
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2 border-t border-slate-200">
+        <button onclick="closeSettleDueModal()" class="text-xs font-bold text-slate-600 px-3.5 py-2 rounded-lg hover:bg-slate-100">Cancel</button>
+        <button onclick="confirmSettleDue()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-xl shadow flex items-center gap-1.5 active:scale-95">
+          <span>✓</span>
+          <span>సెటిల్ కన్ఫర్మ్ చేయి (Confirm Settle)</span>
         </button>
       </div>
     </div>

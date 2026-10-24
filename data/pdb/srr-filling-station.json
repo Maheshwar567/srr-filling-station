@@ -201,19 +201,23 @@
     "2026-10-23": {
       "S1": {
         "employeeId": "emp1",
-        "employeeName": "Ramesh Kumar"
+        "employeeName": "Ramesh Kumar",
+        "dutyPin": "1122"
       },
       "S2": {
         "employeeId": "emp2",
-        "employeeName": "Suresh Reddy"
+        "employeeName": "Suresh Reddy",
+        "dutyPin": "3344"
       },
       "S3": {
         "employeeId": "emp3",
-        "employeeName": "Venkatesh Rao"
+        "employeeName": "Venkatesh Rao",
+        "dutyPin": "5566"
       },
       "S4": {
         "employeeId": "emp4",
-        "employeeName": "Naresh Babu"
+        "employeeName": "Naresh Babu",
+        "dutyPin": "7788"
       }
     },
     "2026-10-24": {
@@ -250,47 +254,62 @@
           "meters": {
             "petrol": {
               "code": "A1",
-              "open": 120500.2,
-              "close": 121300.1,
+              "open": 1000,
+              "close": 1100,
               "testing": 5,
-              "saleLitres": 794.9
+              "saleLitres": 95
             },
             "diesel": {
               "code": "A2",
-              "open": 245000.5,
-              "close": 245710.2,
+              "open": 2000,
+              "close": 2080,
               "testing": 5,
-              "saleLitres": 704.7
+              "saleLitres": 75
             }
           },
           "collections": {
-            "cash": 121000,
-            "upi": 38000,
+            "cash": 7659,
+            "upi": 0,
             "card": 0,
             "expenses": 0,
             "expenseReason": "",
-            "notes": ""
+            "notes": "Handover shortage test"
           },
-          "status": "readings-entered",
+          "status": "submitted",
           "submittedAt": "2026-10-24T09:05:00.000Z",
           "testingRecords": [
             {
-              "id": "tst-init-p-S1",
-              "time": "09:00 AM",
+              "id": "tst-1792834552312",
+              "time": "03:05 PM",
               "fuelType": "Petrol",
               "litres": 5,
-              "reason": "Daily calibration check"
+              "reason": "Daily calibration check poured back to tank"
             },
             {
-              "id": "tst-init-d-S1",
-              "time": "09:00 AM",
+              "id": "tst-1792834565011",
+              "time": "03:06 PM",
               "fuelType": "Diesel",
               "litres": 5,
-              "reason": "Daily calibration check"
+              "reason": "Daily calibration check poured back to tank"
             }
           ],
-          "cardSwipes": [],
-          "expensesList": []
+          "cardSwipes": [
+            {
+              "id": "csw-1792834525202",
+              "date": "2026-10-24",
+              "dateTime": "2026-10-24T09:35:00.000Z",
+              "time": "03:05 PM",
+              "amount": 1000,
+              "machine": "IOCL POS",
+              "slipNo": ""
+            }
+          ],
+          "expensesList": [],
+          "upiPayments": [],
+          "grossSale": 19014,
+          "totalDeductions": 10355,
+          "expectedCash": 8659,
+          "shortage": 1000
         },
         "S2": {
           "stationId": "S2",
@@ -339,7 +358,8 @@
             }
           ],
           "cardSwipes": [],
-          "expensesList": []
+          "expensesList": [],
+          "upiPayments": []
         },
         "S3": {
           "stationId": "S3",
@@ -388,7 +408,8 @@
             }
           ],
           "cardSwipes": [],
-          "expensesList": []
+          "expensesList": [],
+          "upiPayments": []
         },
         "S4": {
           "stationId": "S4",
@@ -437,7 +458,8 @@
             }
           ],
           "cardSwipes": [],
-          "expensesList": []
+          "expensesList": [],
+          "upiPayments": []
         }
       }
     },
@@ -479,7 +501,8 @@
           "status": "in-progress",
           "testingRecords": [],
           "cardSwipes": [],
-          "expensesList": []
+          "expensesList": [],
+          "upiPayments": []
         },
         "S2": {
           "stationId": "S2",
@@ -512,7 +535,8 @@
           "status": "in-progress",
           "testingRecords": [],
           "cardSwipes": [],
-          "expensesList": []
+          "expensesList": [],
+          "upiPayments": []
         },
         "S3": {
           "stationId": "S3",
@@ -545,7 +569,8 @@
           "status": "in-progress",
           "testingRecords": [],
           "cardSwipes": [],
-          "expensesList": []
+          "expensesList": [],
+          "upiPayments": []
         },
         "S4": {
           "stationId": "S4",
@@ -578,7 +603,8 @@
           "status": "in-progress",
           "testingRecords": [],
           "cardSwipes": [],
-          "expensesList": []
+          "expensesList": [],
+          "upiPayments": []
         }
       }
     }
@@ -815,6 +841,25 @@
       "currentStock": 18900,
       "dipCm": 198,
       "deliveries": []
+    }
+  ],
+  "employeeDues": [
+    {
+      "id": "due-1792836604426",
+      "date": "2026-10-23",
+      "stationId": "S1",
+      "employeeName": "Ramesh Kumar",
+      "grossAmount": 19014,
+      "totalDeductions": 10355,
+      "expectedCash": 8659,
+      "actualCash": 7659,
+      "shortageAmount": 1000,
+      "status": "settled",
+      "notes": "Handover shortage test",
+      "createdAt": "2026-10-24T10:10:04.426Z",
+      "settledAt": "2026-10-24T10:10:04.445Z",
+      "settledMode": "Cash Recovery",
+      "settledNotes": "Recovered next morning from Ramesh"
     }
   ]
 }

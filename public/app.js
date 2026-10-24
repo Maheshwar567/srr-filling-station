@@ -125,6 +125,7 @@ function applyLanguageUI() {
   const tReading = document.getElementById('tabText-reading');
   const tTesting = document.getElementById('tabText-testing');
   const tCard = document.getElementById('tabText-card');
+  const tUpi = document.getElementById('tabText-upi');
   const tReminder = document.getElementById('tabText-reminder');
   const tVehicle = document.getElementById('tabText-vehicle');
   const tHandover = document.getElementById('tabText-handover');
@@ -132,6 +133,7 @@ function applyLanguageUI() {
   if (tReading) tReading.innerText = isTe ? 'రీడింగ్ నమోదు' : 'Meter Reading';
   if (tTesting) tTesting.innerText = isTe ? 'టెస్టింగ్ లీటర్లు' : 'Testing Litres';
   if (tCard) tCard.innerText = isTe ? 'కార్డ్ స్వైపులు' : 'Card Swipes';
+  if (tUpi) tUpi.innerText = isTe ? 'యూపీఐ' : 'UPI';
   if (tReminder) tReminder.innerText = isTe ? 'రిమైండర్లు' : 'Reminders';
   if (tVehicle) tVehicle.innerText = isTe ? 'వాహనాల ఖాతా' : 'Vehicle Fleet';
   if (tHandover) tHandover.innerText = isTe ? 'నగదు లెక్క' : 'Cash Handover';
@@ -144,8 +146,8 @@ function applyLanguageUI() {
   const navLogout = document.getElementById('navLogoutLabel');
   const navPassword = document.getElementById('navPasswordLabel');
 
-  if (lblUser) lblUser.innerText = isTe ? 'మొబైల్ నంబర్ లేదా యూజర్‌నేమ్:' : 'Mobile Number or Username:';
-  if (lblPass) lblPass.innerText = isTe ? 'పాస్‌వర్డ్ / పిన్:' : 'Password / PIN:';
+  if (lblUser) lblUser.innerText = isTe ? 'మొదటి పేరు లేదా యూజర్‌నేమ్:' : 'First Name or Username:';
+  if (lblPass) lblPass.innerText = isTe ? 'డ్యూటీ పిన్ / పాస్‌వర్డ్:' : 'Duty PIN / Password:';
   if (btnLogin) btnLogin.innerText = isTe ? 'లాగిన్ చేయండి' : 'Sign In';
   if (navSignIn) navSignIn.innerText = isTe ? 'లాగిన్' : 'Sign In';
   if (navLogout) navLogout.innerText = isTe ? 'నిష్క్రమించు' : 'Logout';
@@ -160,6 +162,7 @@ function applyLanguageUI() {
   const tabRos = document.getElementById('admTab-roster');
   const tabRat = document.getElementById('admTab-rates');
   const tabTnk = document.getElementById('admTab-tanks');
+  const tabDue = document.getElementById('tabLabel-dues');
   const tabPdb = document.getElementById('admTab-pdbs');
 
   if (tabSum) tabSum.innerHTML = isTe ? '📄 రోజువారీ రసీదు' : '📄 Daily Sales Slip';
@@ -170,6 +173,7 @@ function applyLanguageUI() {
   if (tabRos) tabRos.innerHTML = isTe ? '📋 డ్యూటీ కేటాయింపు' : '📋 Duty Allocation';
   if (tabRat) tabRat.innerHTML = isTe ? '🏷️ ఇంధనం ధరలు' : '🏷️ Rates';
   if (tabTnk) tabTnk.innerHTML = isTe ? '🛢️ ట్యాంక్ స్టాక్' : '🛢️ Tank Stock';
+  if (tabDue) tabDue.innerText = isTe ? 'బాకీలు' : 'Due';
   if (tabPdb) tabPdb.innerHTML = isTe ? '🏢 ప్లగ్గబుల్ DBs' : '🏢 Pluggable DBs (PDBs)';
 
   // 4. Update Active Daily Sales Slip text
@@ -282,6 +286,18 @@ async function loadAllData() {
     // 6. Daily Summary
     const sumRes = await fetch(`/api/daily-summary?pump=${tenant}&date=${STATE.selectedDate}`);
     STATE.summary = await sumRes.json();
+
+    // 7. Employee Dues (Permanent Shortage Tracking)
+    try {
+      const duesRes = await fetch(`/api/employee-dues?pump=${tenant}`);
+      if (duesRes.ok) {
+        const duesData = await duesRes.json();
+        STATE.employeeDues = duesData.dues || [];
+        STATE.duesMetrics = duesData.metrics || {};
+        const duesBadge = document.getElementById('badgePendingDuesCount');
+        if (duesBadge) duesBadge.innerText = STATE.duesMetrics.pendingCount || 0;
+      }
+    } catch (e) {}
 
     // Determine and enforce active view routing
     routeUserView();
@@ -423,31 +439,17 @@ function resolveEmployeePumpLock() {
   STATE.selectedStation = assignedStation || 'S1';
   STATE.currentUser.assignedStation = assignedStation;
 
-  // Update Attendant Duty Banner
+  // Update Attendant Duty Banner (Clean: shows Name and S1 only)
+  // User requirement: "just keep emy name and S1 only (because as we know S1 means from pump1 only - so no need to mentions all other)"
   const nameEl = document.getElementById('empLoggedInName');
-  const pumpDesc = document.getElementById('empAssignedPumpDescription');
-  const lockBadge = document.getElementById('empLockStatusBadge');
+  const badgeEl = document.getElementById('empAssignedStationBadge');
   const stCodeEl = document.getElementById('empReadingStationCode');
   const hoBadge = document.getElementById('hoStationBadge');
 
   if (nameEl) nameEl.innerText = empName;
-
-  if (assignedStation) {
-    const cfg = STATION_CONFIG[assignedStation];
-    if (pumpDesc) {
-      pumpDesc.innerHTML = `కేటాయించిన పంప్: <strong class="text-amber-300 font-bold">Station ${assignedStation} (${cfg.pump} - ${cfg.side})</strong>`;
-    }
-    if (lockBadge) lockBadge.innerText = `🔒 Duty Locked to Station ${assignedStation}`;
-    if (stCodeEl) stCodeEl.innerText = `Station ${assignedStation} (${cfg.pump})`;
-    if (hoBadge) hoBadge.innerText = `Station ${assignedStation}`;
-  } else {
-    if (pumpDesc) {
-      pumpDesc.innerHTML = `<span class="text-amber-400 font-bold">⚠️ ఈ షిఫ్ట్ కు మీకు పంప్ కేటాయించలేదు. దయచేసి అడ్మిన్ ను సంప్రదించండి.</span>`;
-    }
-    if (lockBadge) lockBadge.innerText = `Pending Duty Assignment`;
-    if (stCodeEl) stCodeEl.innerText = `Station S1 (Default)`;
-    if (hoBadge) hoBadge.innerText = `Station S1`;
-  }
+  if (badgeEl) badgeEl.innerText = assignedStation || 'S1';
+  if (stCodeEl) stCodeEl.innerText = assignedStation || 'S1';
+  if (hoBadge) hoBadge.innerText = assignedStation || 'S1';
 }
 
 // --- AUTHENTICATION (SIGN IN, LOGOUT, CHANGE PASSWORD) ---
@@ -612,7 +614,7 @@ function switchOilPumpTenant(tenantId) {
 // --- EMPLOYEE VIEW CONTROLLER ---
 function switchEmployeeTab(tab) {
   STATE.employeeTab = tab;
-  const tabs = ['reading', 'testing', 'card', 'reminder', 'vehicle', 'handover'];
+  const tabs = ['reading', 'testing', 'card', 'upi', 'reminder', 'vehicle', 'handover'];
   
   tabs.forEach(t => {
     const btn = document.getElementById(`empTabBtn-${t}`);
@@ -633,6 +635,7 @@ function switchEmployeeTab(tab) {
     ensureCardSwipeDateTimeAuto();
     renderCardSwipesLog();
   }
+  if (tab === 'upi') renderUpiList();
   if (tab === 'reminder') renderEmployeeReminders();
   if (tab === 'vehicle') renderEmployeeVehicleEntries();
   if (tab === 'handover') {
@@ -709,9 +712,17 @@ function renderEmployeeView() {
   if (badgeCard) badgeCard.innerText = `₹${totalCard.toLocaleString('en-IN')}`;
   if (cardTotDisp) cardTotDisp.innerText = `₹${totalCard.toLocaleString('en-IN')}`;
 
+  const upiPayments = stData.upiPayments || [];
+  const totalUpi = upiPayments.reduce((s, u) => s + (u.amount || 0), 0);
+  const badgeUpi = document.getElementById('empUpiBadgeCount');
+  const upiTotDisp = document.getElementById('upiTotalDisplay');
+  if (badgeUpi) badgeUpi.innerText = `₹${totalUpi.toLocaleString('en-IN')}`;
+  if (upiTotDisp) upiTotDisp.innerText = `₹${totalUpi.toLocaleString('en-IN')}`;
+
   calculateEmployeeLiveLitres();
   renderTestingLog();
   renderCardSwipesLog();
+  renderUpiList();
   renderEmployeeReminders();
   renderEmployeeVehicleEntries();
   renderExpensesLog();
@@ -1003,6 +1014,127 @@ function renderCardSwipesLog() {
   `;
 }
 
+// --- UPI / QR ONLINE PAYMENTS (PhonePe, GPay, Paytm Soundbox) ---
+// User requirement: "also give a tab UPI on employee page"
+async function submitUpiEntry() {
+  const amount = parseFloat(document.getElementById('upiPaymentAmount')?.value) || 0;
+  const app = document.getElementById('upiPaymentApp')?.value || 'PhonePe';
+  const ref = document.getElementById('upiPaymentRef')?.value.trim() || '';
+  const time = document.getElementById('upiPaymentTime')?.value.trim() || '';
+
+  if (amount <= 0) {
+    showToast(STATE.lang === 'te' ? 'దయచేసి సరైన యూపీఐ అమౌంట్ నమోదు చేయండి' : 'Please enter valid UPI amount', 'error');
+    document.getElementById('upiPaymentAmount')?.focus();
+    return;
+  }
+
+  const payload = {
+    date: STATE.selectedDate,
+    stationId: STATE.selectedStation,
+    amount,
+    app,
+    ref,
+    time: time || new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
+  };
+
+  try {
+    const res = await fetch(`/api/shifts/upi-payments?pump=${STATE.activeTenant}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const result = await res.json();
+    if (result.success) {
+      showToast(STATE.lang === 'te' ? `యూపీఐ ₹${amount.toLocaleString('en-IN')} నమోదు చేయబడింది!` : `UPI ₹${amount.toLocaleString('en-IN')} recorded!`);
+      if (document.getElementById('upiPaymentAmount')) document.getElementById('upiPaymentAmount').value = '';
+      if (document.getElementById('upiPaymentRef')) document.getElementById('upiPaymentRef').value = '';
+      const timeEl = document.getElementById('upiPaymentTime');
+      if (timeEl) timeEl.value = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+      await loadAllData();
+    } else {
+      showToast(result.error || 'Failed to record UPI payment', 'error');
+    }
+  } catch (err) {
+    showToast('Failed to record UPI payment', 'error');
+  }
+}
+
+async function deleteUpiEntry(id) {
+  if (!confirm(STATE.lang === 'te' ? 'ఈ యూపీఐ రికార్డును తొలగించాలా?' : 'Delete this UPI payment record?')) return;
+
+  try {
+    const res = await fetch(`/api/shifts/upi-payments/${id}?pump=${STATE.activeTenant}&date=${STATE.selectedDate}&stationId=${STATE.selectedStation}`, {
+      method: 'DELETE'
+    });
+
+    const result = await res.json();
+    if (result.success) {
+      showToast('UPI payment removed');
+      loadAllData();
+    }
+  } catch (err) {
+    showToast('Failed to delete UPI payment', 'error');
+  }
+}
+
+function renderUpiList() {
+  const container = document.getElementById('empUpiListContainer');
+  const timeInput = document.getElementById('upiPaymentTime');
+  if (timeInput && !timeInput.value) {
+    timeInput.value = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+  }
+
+  if (!container) return;
+
+  const stData = STATE.shift?.stations?.[STATE.selectedStation] || {};
+  const upiList = stData.upiPayments || [];
+  const totalUpi = upiList.reduce((s, u) => s + (u.amount || 0), 0);
+
+  const upiTotDisp = document.getElementById('upiTotalDisplay');
+  const upiBadge = document.getElementById('empUpiBadgeCount');
+  if (upiTotDisp) upiTotDisp.innerText = `₹${totalUpi.toLocaleString('en-IN')}`;
+  if (upiBadge) upiBadge.innerText = `₹${totalUpi.toLocaleString('en-IN')}`;
+
+  if (upiList.length === 0) {
+    container.innerHTML = `
+      <div class="text-center py-6 text-slate-400 text-xs bg-slate-50 rounded-xl border border-slate-200">
+        ${STATE.lang === 'te' ? 'ఈ షిఫ్ట్ లో ఇంకా ఎలాంటి యూపీఐ పేమెంట్లు నమోదు కాలేదు.' : 'No UPI payments recorded yet for this shift.'}
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = `
+    <table class="w-full text-xs text-left border-collapse">
+      <thead>
+        <tr class="bg-indigo-100 text-indigo-950 uppercase font-bold border-b border-indigo-200">
+          <th class="p-2">Time</th>
+          <th class="p-2">App / Mode</th>
+          <th class="p-2">Reference / UTR</th>
+          <th class="p-2 text-right">Amount (₹)</th>
+          <th class="p-2 text-right">Action</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100 font-medium">
+        ${upiList.map(u => `
+          <tr class="hover:bg-slate-50">
+            <td class="p-2 font-mono text-slate-600">${u.time || '-'}</td>
+            <td class="p-2 font-bold text-slate-900">${u.app || 'PhonePe'}</td>
+            <td class="p-2 font-mono text-slate-500">${u.ref || '-'}</td>
+            <td class="p-2 font-mono font-black text-indigo-900 text-sm text-right">₹${Number(u.amount || 0).toLocaleString('en-IN')}</td>
+            <td class="p-2 text-right">
+              <button onclick="deleteUpiEntry('${u.id}')" class="text-rose-600 hover:text-rose-800 font-bold text-[11px] px-2 py-0.5 rounded border border-rose-200 hover:bg-rose-50">
+                🗑️ Delete
+              </button>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
 // --- VEHICLE ACCOUNT (MANDATORY 10-DIGIT MOBILE NUMBER RULE) ---
 function updateVehicleRateAndAmount() {
   const fuel = document.getElementById('vlogFuelType').value;
@@ -1267,8 +1399,13 @@ function calculateLiveHandoverTally() {
   const expenseTotal = expensesList.reduce((s, e) => s + (e.amount || 0), 0);
 
   // UPI Received
+  const upiPayments = stData.upiPayments || [];
+  const loggedUpiTotal = upiPayments.reduce((s, u) => s + (u.amount || 0), 0);
   const upiInput = document.getElementById('empHandoverUpi');
-  const upiTotal = parseFloat(upiInput?.value) || 0;
+  if (upiInput && (!upiInput.value || upiInput.value === '0')) {
+    if (loggedUpiTotal > 0) upiInput.value = loggedUpiTotal;
+  }
+  const upiTotal = (parseFloat(upiInput?.value) || 0) || loggedUpiTotal;
 
   const totalDeductions = vehicleTotal + reminderTotal + cardTotal + expenseTotal + upiTotal;
 
@@ -1283,6 +1420,7 @@ function calculateLiveHandoverTally() {
   const elVehDed = document.getElementById('hoVehicleDeduction');
   const elRemDed = document.getElementById('hoReminderDeduction');
   const elCardDed = document.getElementById('hoCardDeduction');
+  const elUpiDed = document.getElementById('hoUpiDeduction');
   const elExpDed = document.getElementById('hoExpenseDeduction');
   const elExpCash = document.getElementById('hoExpectedCashDisplay');
 
@@ -1293,6 +1431,7 @@ function calculateLiveHandoverTally() {
   if (elVehDed) elVehDed.innerText = `- ₹${vehicleTotal.toLocaleString('en-IN')}`;
   if (elRemDed) elRemDed.innerText = `- ₹${reminderTotal.toLocaleString('en-IN')}`;
   if (elCardDed) elCardDed.innerText = `- ₹${cardTotal.toLocaleString('en-IN')}`;
+  if (elUpiDed) elUpiDed.innerText = `- ₹${upiTotal.toLocaleString('en-IN')}`;
   if (elExpDed) elExpDed.innerText = `- ₹${expenseTotal.toLocaleString('en-IN')}`;
   if (elExpCash) elExpCash.innerText = `₹${expectedCash.toLocaleString('en-IN')}`;
 
@@ -1328,11 +1467,12 @@ function calculateLiveHandoverTally() {
 }
 
 async function submitShiftHandover() {
-  const cash = parseFloat(document.getElementById('empHandoverCash').value) || 0;
-  const upi = parseFloat(document.getElementById('empHandoverUpi').value) || 0;
-  const notes = document.getElementById('empHandoverNotes').value.trim();
-
+  const cash = parseFloat(document.getElementById('empHandoverCash')?.value) || 0;
   const stData = STATE.shift?.stations?.[STATE.selectedStation] || {};
+  const loggedUpiTotal = (stData.upiPayments || []).reduce((s, u) => s + (u.amount || 0), 0);
+  const upi = parseFloat(document.getElementById('empHandoverUpi')?.value) || loggedUpiTotal || 0;
+  const notes = document.getElementById('empHandoverNotes')?.value.trim() || "";
+
   const card = (stData.cardSwipes || []).reduce((s, c) => s + (c.amount || 0), 0);
   const expenses = (stData.expensesList || []).reduce((s, e) => s + (e.amount || 0), 0);
   const expenseReason = stData.collections?.expenseReason || "";
@@ -1351,10 +1491,15 @@ async function submitShiftHandover() {
     });
     const result = await res.json();
     if (result.success) {
-      showToast(STATE.lang === 'te' ? 'షిఫ్ట్ కలెక్షన్ లెక్క విజయవంతంగా సమర్పించబడింది!' : 'Shift collections submitted successfully!');
+      if (result.shortage > 0) {
+        showToast(STATE.lang === 'te' 
+          ? `నగదు సమర్పించబడింది. షార్టేజ్ ₹${result.shortage.toLocaleString('en-IN')} బాకీగా నమోదు చేయబడింది!` 
+          : `Handover saved. Shortage of ₹${result.shortage.toLocaleString('en-IN')} marked as due!`);
+      } else {
+        showToast(STATE.lang === 'te' ? 'షిఫ్ట్ కలెక్షన్ లెక్క విజయవంతంగా సమర్పించబడింది!' : 'Shift collections submitted successfully!');
+      }
       loadAllData();
     }
-  } catch (err) {
     showToast('Failed to submit handover', 'error');
   }
 }
@@ -1483,7 +1628,7 @@ function switchAdminTab(tabKey) {
   }
 
   STATE.adminTab = tabKey;
-  const tabs = ['summary', 'financials', 'fleet', 'reminders', 'employees', 'roster', 'rates', 'tanks', 'pdbs'];
+  const tabs = ['summary', 'financials', 'dues', 'fleet', 'reminders', 'employees', 'roster', 'rates', 'tanks', 'pdbs'];
   
   tabs.forEach(t => {
     const btn = document.getElementById(`admTab-${t}`);
@@ -1502,6 +1647,9 @@ function switchAdminTab(tabKey) {
   renderAdminDashboard();
   if (tabKey === 'financials') {
     loadFinancialReports();
+  }
+  if (tabKey === 'dues') {
+    loadEmployeeDues();
   }
 }
 
@@ -1552,6 +1700,7 @@ function renderAdminDashboard() {
 
   // Active admin tab rendering
   if (STATE.adminTab === 'financials') loadFinancialReports();
+  if (STATE.adminTab === 'dues') loadEmployeeDues();
   if (STATE.adminTab === 'fleet') renderAdminFleetLedger();
   if (STATE.adminTab === 'reminders') renderAdminRemindersTable();
   if (STATE.adminTab === 'employees') renderAdminEmployeesTable();
@@ -1845,6 +1994,136 @@ async function refreshAdminNozzles() {
   showToast('🔄 Nozzles auto-synced! Daily sales slip refreshed.');
 }
 
+// --- ADMIN / MGMT EMPLOYEE DUES LEDGER & SHORTAGES ---
+// User requirement: "also for mgmt or admin - > allow a tab called due
+// for example a employee will total sale 20000 thn he given 19000 means 1000 rupees will be the due will be marked on that employee name
+// note :: what ever the amount related will be stored forever and can be viewd any time in admin page"
+async function loadEmployeeDues() {
+  try {
+    const res = await fetch(`/api/employee-dues?pump=${STATE.activeTenant}`);
+    if (!res.ok) return;
+    const data = await res.json();
+    STATE.employeeDues = data.dues || [];
+    STATE.duesMetrics = data.metrics || {};
+    renderEmployeeDues();
+  } catch (err) {
+    console.error('Error loading employee dues:', err);
+  }
+}
+
+function renderEmployeeDues() {
+  const m = STATE.duesMetrics || {};
+  const elPending = document.getElementById('dueMetricTotalPending');
+  const elPendingCount = document.getElementById('dueMetricPendingCount');
+  const elSettled = document.getElementById('dueMetricTotalSettled');
+  const elSettledCount = document.getElementById('dueMetricSettledCount');
+  const elTotalInc = document.getElementById('dueMetricTotalIncidents');
+
+  if (elPending) elPending.innerText = `₹${(m.totalOutstanding || 0).toLocaleString('en-IN')}`;
+  if (elPendingCount) elPendingCount.innerText = `${m.pendingCount || 0} Incidents Outstanding`;
+  if (elSettled) elSettled.innerText = `₹${(m.totalSettled || 0).toLocaleString('en-IN')}`;
+  if (elSettledCount) elSettledCount.innerText = `${m.settledCount || 0} Dues Cleared`;
+  if (elTotalInc) elTotalInc.innerText = `${STATE.employeeDues?.length || 0}`;
+
+  filterEmployeeDuesTable();
+}
+
+function filterEmployeeDuesTable() {
+  const tbody = document.getElementById('adminDuesTableBody');
+  if (!tbody) return;
+
+  const dues = STATE.employeeDues || [];
+  const search = (document.getElementById('duesFilterEmployeeInput')?.value || '').toLowerCase().trim();
+  const statusFilter = document.getElementById('duesFilterStatusSelect')?.value || 'all';
+
+  let filtered = dues.filter(d => {
+    const matchesEmp = !search || (d.employeeName && d.employeeName.toLowerCase().includes(search));
+    const isPending = d.status === 'pending' || d.status === 'unsettled';
+    const matchesStatus = statusFilter === 'all' || 
+      (statusFilter === 'pending' && isPending) ||
+      (statusFilter === 'settled' && d.status === 'settled');
+    return matchesEmp && matchesStatus;
+  });
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-slate-400 text-xs font-semibold">రికార్డులు ఏవీ కనుగొనబడలేదు (No employee shortage records found)</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(d => {
+    const isPending = d.status === 'pending' || d.status === 'unsettled';
+    const statusBadge = isPending
+      ? `<span class="bg-rose-100 text-rose-800 text-[10px] font-bold px-2 py-0.5 rounded-full border border-rose-300">⚠️ Pending Shortage</span>`
+      : `<span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-300">✓ Settled (${d.settledMode || 'Recovered'})</span>`;
+
+    const actionBtn = isPending
+      ? `<button onclick="openSettleDueModal('${d.id}', '${(d.employeeName || 'Attendant').replace(/'/g, "\\'")}', ${d.shortageAmount}, '${d.date}', '${d.stationId || 'S1'}')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] px-2.5 py-1 rounded-lg shadow active:scale-95 flex items-center gap-1">
+          <span>✓</span><span>సెటిల్ (Settle)</span>
+        </button>`
+      : `<span class="text-[11px] text-slate-400 font-mono font-medium">${d.settledAt ? d.settledAt.split('T')[0] : 'Cleared'}</span>`;
+
+    return `
+      <tr class="hover:bg-slate-50 transition-colors">
+        <td class="p-2.5 font-mono text-slate-600">
+          <div class="font-bold text-slate-900">${d.date}</div>
+          <div class="text-[10px] text-slate-400">${d.createdAt ? new Date(d.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : ''}</div>
+        </td>
+        <td class="p-2.5 font-bold text-slate-900">
+          <div>${d.employeeName}</div>
+          <div class="text-[10px] text-slate-500 font-normal">${d.notes || ''}</div>
+        </td>
+        <td class="p-2.5">
+          <span class="bg-slate-100 text-slate-800 text-xs font-mono font-black px-2 py-0.5 rounded">${d.stationId || 'S1'}</span>
+        </td>
+        <td class="p-2.5 font-mono text-slate-700 font-bold">₹${Number(d.expectedCash || 0).toLocaleString('en-IN')}</td>
+        <td class="p-2.5 font-mono text-slate-700 font-bold">₹${Number(d.actualCash || 0).toLocaleString('en-IN')}</td>
+        <td class="p-2.5 font-mono font-black text-rose-700 text-sm">₹${Number(d.shortageAmount || 0).toLocaleString('en-IN')}</td>
+        <td class="p-2.5">${statusBadge}</td>
+        <td class="p-2.5 text-right">${actionBtn}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function openSettleDueModal(dueId, empName, amount, date, stationId) {
+  document.getElementById('settleDueRecordId').value = dueId;
+  document.getElementById('settleDueEmpName').innerText = empName;
+  document.getElementById('settleDueDateStation').innerText = `${stationId} • ${date}`;
+  document.getElementById('settleDueAmount').innerText = `₹${Number(amount).toLocaleString('en-IN')}`;
+  document.getElementById('settleDueNotes').value = '';
+  document.getElementById('modalSettleDue').classList.remove('hidden');
+}
+
+function closeSettleDueModal() {
+  document.getElementById('modalSettleDue').classList.add('hidden');
+}
+
+async function confirmSettleDue() {
+  const dueId = document.getElementById('settleDueRecordId').value;
+  const settledMode = document.getElementById('settleDueMode').value;
+  const settledNotes = document.getElementById('settleDueNotes').value.trim();
+
+  if (!dueId) return;
+
+  try {
+    const res = await fetch(`/api/employee-dues/${dueId}/settle?pump=${STATE.activeTenant}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ settledMode, settledNotes })
+    });
+    const result = await res.json();
+    if (result.success) {
+      showToast(STATE.lang === 'te' ? 'బాకీ విజయవంతంగా సెటిల్ చేయబడింది!' : 'Due settled successfully!');
+      closeSettleDueModal();
+      await loadEmployeeDues();
+    } else {
+      showToast(result.error || 'Failed to settle due', 'error');
+    }
+  } catch (err) {
+    showToast('Server error settling due', 'error');
+  }
+}
+
 // --- ADMIN FLEET VEHICLE LEDGER & SUM CALCULATOR ---
 async function renderAdminFleetLedger() {
   try {
@@ -2088,28 +2367,34 @@ async function deleteEmployee(id, name) {
 }
 
 // --- ADMIN DUTY ROSTER & PUMP ALLOCATION ---
+// User requirement: "password will be the pin which will be generated by the mgmt or admin during pump allocation pin also will need to shown on screen - once the pin shared to taht employee thn that login will allow success"
 function renderAdminDutyRoster() {
   const container = document.getElementById('dutyRosterCardsContainer');
   if (!container) return;
 
   const assignments = STATE.dutyAssignments || {};
   const stations = ['S1', 'S2', 'S3', 'S4'];
+  const defaultPins = { S1: "1122", S2: "3344", S3: "5566", S4: "7788" };
 
   container.innerHTML = stations.map(stKey => {
     const cfg = STATION_CONFIG[stKey];
     const assignedName = assignments[stKey]?.employeeName || STATE.shift?.stations?.[stKey]?.employeeName || "";
+    const dutyPin = assignments[stKey]?.dutyPin || defaultPins[stKey] || "1234";
 
     return `
-      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 space-y-3">
-        <div class="flex items-center justify-between">
-          <span class="font-black text-slate-900 text-sm">Station ${stKey}</span>
-          <span class="bg-orange-100 text-orange-800 text-[10px] font-bold px-2 py-0.5 rounded">${cfg.pump}</span>
+      <div class="bg-white rounded-2xl shadow-md border-2 border-slate-200 p-4 space-y-3.5 hover:border-orange-300 transition-all">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+            <span class="font-black text-slate-900 text-sm">Station ${stKey}</span>
+          </div>
+          <span class="bg-orange-100 text-orange-900 text-[10px] font-bold px-2 py-0.5 rounded-full">${cfg.pump}</span>
         </div>
         <div class="text-[11px] text-slate-600">
-          Meters: Petrol (${cfg.petrolCode}) • Diesel (${cfg.dieselCode})
+          Nozzles: Petrol (${cfg.petrolCode}) • Diesel (${cfg.dieselCode})
         </div>
         <div>
-          <label class="text-[11px] font-bold text-slate-700 block mb-1">Assign Attendant:</label>
+          <label class="text-[11px] font-bold text-slate-700 block mb-1">Assign Attendant (సిబ్బంది ఎంపిక):</label>
           <select id="rosterAssign-${stKey}" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs font-bold text-slate-900">
             <option value="">-- Choose Staff --</option>
             ${STATE.employees.map(e => `
@@ -2119,16 +2404,42 @@ function renderAdminDutyRoster() {
             `).join('')}
           </select>
         </div>
+
+        <!-- Highlighted Duty Login PIN Card -->
+        <div class="bg-gradient-to-br from-amber-50 to-orange-50 p-3 rounded-xl border-2 border-amber-300 space-y-1.5 shadow-sm">
+          <div class="flex items-center justify-between text-xs font-black text-amber-950">
+            <span class="flex items-center gap-1">🔑 డ్యూటీ లాగిన్ పిన్ (Login PIN):</span>
+            <button onclick="generateRandomPin('${stKey}')" type="button" class="text-[10px] text-amber-900 hover:text-black font-mono font-bold bg-amber-200 hover:bg-amber-300 px-2 py-0.5 rounded shadow-xs active:scale-95 transition-all">
+              🔄 New PIN
+            </button>
+          </div>
+          <div class="flex items-center gap-2">
+            <input type="text" maxlength="6" id="rosterPin-${stKey}" value="${dutyPin}" class="w-full bg-white border-2 border-amber-400 rounded-lg px-2.5 py-1.5 font-mono text-base font-black text-amber-950 tracking-widest text-center shadow-inner focus:outline-none focus:border-amber-600">
+          </div>
+          <p class="text-[10px] text-amber-900 font-medium leading-tight">
+            లాగిన్ యూజర్‌నేమ్: <strong>సిబ్బంది మొదటి పేరు (First Name)</strong><br>
+            పాస్‌వర్డ్: <strong>ఈ PIN (${dutyPin})</strong>
+          </p>
+        </div>
       </div>
     `;
   }).join('');
+}
+
+function generateRandomPin(stKey) {
+  const pinInput = document.getElementById(`rosterPin-${stKey}`);
+  if (pinInput) {
+    const newPin = Math.floor(1000 + Math.random() * 9000).toString();
+    pinInput.value = newPin;
+  }
 }
 
 async function saveDutyRosterAssignments() {
   const assignments = {};
   ['S1', 'S2', 'S3', 'S4'].forEach(stKey => {
     const empName = document.getElementById(`rosterAssign-${stKey}`)?.value || "";
-    assignments[stKey] = { employeeName: empName };
+    const dutyPin = document.getElementById(`rosterPin-${stKey}`)?.value || "1234";
+    assignments[stKey] = { employeeName: empName, dutyPin };
   });
 
   try {
@@ -2139,7 +2450,7 @@ async function saveDutyRosterAssignments() {
     });
     const result = await res.json();
     if (result.success) {
-      showToast('Duty roster saved! Attendant screens updated.');
+      showToast('Duty roster saved with login PINs! Attendant can now login with First Name + PIN.');
       loadAllData();
     }
   } catch (err) {

@@ -571,11 +571,14 @@ class PdbStorageManager {
               if (sh.stations[stKey]) {
                 if (!sh.stations[stKey].cardSwipes) sh.stations[stKey].cardSwipes = [];
                 if (!sh.stations[stKey].expensesList) sh.stations[stKey].expensesList = [];
+                if (!sh.stations[stKey].upiPayments) sh.stations[stKey].upiPayments = [];
               }
             });
           }
         });
       }
+
+      if (!data.employeeDues) data.employeeDues = [];
 
       return data;
     } catch (err) {
