@@ -366,12 +366,21 @@ function routeUserView() {
   if (navUser) navUser.innerText = STATE.currentUser.name || 'User';
 
   const userRole = STATE.currentUser.role;
-  let roleLabel = 'Staff';
-  if (userRole === 'owner') roleLabel = isTe ? 'ఓనర్' : 'Bunk Owner';
-  else if (userRole === 'mgmt') roleLabel = isTe ? 'మేనేజ్‌మెంట్' : 'Management';
-  else if (userRole === 'developer' || userRole === 'admin') roleLabel = isTe ? 'డెవలపర్' : 'Developer';
-  else roleLabel = isTe ? 'అటెండెంట్' : 'Attendant';
-  if (navRole) navRole.innerText = roleLabel;
+  const isStaff = userRole !== 'owner' && userRole !== 'mgmt' && userRole !== 'developer' && userRole !== 'admin';
+
+  // User requirement: "once staff logged , dont show attendant logged in show only their name next to date"
+  if (navRole) {
+    if (isStaff) {
+      navRole.classList.add('hidden');
+    } else {
+      navRole.classList.remove('hidden');
+      let roleLabel = 'Staff';
+      if (userRole === 'owner') roleLabel = isTe ? 'ఓనర్' : 'Bunk Owner';
+      else if (userRole === 'mgmt') roleLabel = isTe ? 'మేనేజ్‌మెంట్' : 'Management';
+      else if (userRole === 'developer' || userRole === 'admin') roleLabel = isTe ? 'డెవలపర్' : 'Developer';
+      navRole.innerText = roleLabel;
+    }
+  }
 
   // Case 2: MANAGEMENT / BUNK OWNER / DEVELOPER LOGGED IN
   // User requirement: "in management login: show only daily sales slip, pump assigment, emp list (remove kyc), Due (...), and when month end comes to give salary how many days that emp has done work in station, remove Finance report from mgmt login (show only owner login), Vehicle bills (replace vehicle fleet ledger with it), remove pluggable DBs every where except dev login. for owner: mgmt options along with finance"
@@ -1654,17 +1663,28 @@ function calculateLiveHandoverTally() {
   const stData = STATE.shift?.stations?.[stId] || {};
 
   // 1. Gross Meter Fuel Sales
-  const pOpen = parseFloat(document.getElementById('empPetrolOpen')?.value) || 0;
-  const pClose = parseFloat(document.getElementById('empPetrolClose')?.value) || 0;
+  // User requirement: "shift ended, the opending closing reading showing in meter reading tab, but cash handover showing nothing (only what ever entered in card swipe, upi showing amounts those showing in cash handover)"
+  const pOpenInput = parseFloat(document.getElementById('empPetrolOpen')?.value) || 0;
+  const pCloseInput = parseFloat(document.getElementById('empPetrolClose')?.value) || 0;
   const pTest = Number(stData.meters?.petrol?.testing || 0);
-  const pLitres = pClose > pOpen ? Math.max(0, pClose - pOpen - pTest) : 0;
+
+  let pLitres = Number(stData.meters?.petrol?.saleLitres || 0);
+  if (pCloseInput > pOpenInput) {
+    const pOpenActual = Number(stData.initialJoinedMeters?.petrol?.open ?? pOpenInput);
+    pLitres = Math.max(0, pCloseInput - pOpenActual - pTest);
+  }
   const pRate = STATE.rates.petrol || 117.07;
   const pAmt = Math.round(pLitres * pRate);
 
-  const dOpen = parseFloat(document.getElementById('empDieselOpen')?.value) || 0;
-  const dClose = parseFloat(document.getElementById('empDieselClose')?.value) || 0;
+  const dOpenInput = parseFloat(document.getElementById('empDieselOpen')?.value) || 0;
+  const dCloseInput = parseFloat(document.getElementById('empDieselClose')?.value) || 0;
   const dTest = Number(stData.meters?.diesel?.testing || 0);
-  const dLitres = dClose > dOpen ? Math.max(0, dClose - dOpen - dTest) : 0;
+
+  let dLitres = Number(stData.meters?.diesel?.saleLitres || 0);
+  if (dCloseInput > dOpenInput) {
+    const dOpenActual = Number(stData.initialJoinedMeters?.diesel?.open ?? dOpenInput);
+    dLitres = Math.max(0, dCloseInput - dOpenActual - dTest);
+  }
   const dRate = STATE.rates.diesel || 105.23;
   const dAmt = Math.round(dLitres * dRate);
 

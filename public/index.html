@@ -869,24 +869,17 @@
                 <span class="text-sm font-mono font-black text-rose-700" id="hoExpenseTotalBadge">మొత్తం ఖర్చులు: ₹0</span>
               </div>
 
-              <!-- Quick Expense Presets -->
-              <div class="flex flex-wrap items-center gap-1.5">
-                <span class="text-[11px] font-bold text-slate-600 mr-1">త్వరిత ఖర్చులు (Quick Presets):</span>
-                <button type="button" onclick="setExpensePreset('☕ టీ / టిఫిన్ (Tea & Snacks)', 50)" class="bg-white hover:bg-rose-100 text-slate-800 text-[11px] font-semibold px-2.5 py-1 rounded-lg border border-slate-300 shadow-sm transition-all">☕ టీ/టిఫిన్ (₹50)</button>
-                <button type="button" onclick="setExpensePreset('💧 తాగునీరు (Water Can)', 40)" class="bg-white hover:bg-rose-100 text-slate-800 text-[11px] font-semibold px-2.5 py-1 rounded-lg border border-slate-300 shadow-sm transition-all">💧 వాటర్ క్యాన్ (₹40)</button>
-                <button type="button" onclick="setExpensePreset('⚡ జనరేటర్ డీజిల్ (Generator)', 500)" class="bg-white hover:bg-rose-100 text-slate-800 text-[11px] font-semibold px-2.5 py-1 rounded-lg border border-slate-300 shadow-sm transition-all">⚡ జనరేటర్ డీజిల్ (₹500)</button>
-                <button type="button" onclick="setExpensePreset('🧹 క్లీనింగ్ & శానిటైజేషన్ (Cleaning)', 100)" class="bg-white hover:bg-rose-100 text-slate-800 text-[11px] font-semibold px-2.5 py-1 rounded-lg border border-slate-300 shadow-sm transition-all">🧹 క్లీనింగ్ (₹100)</button>
-              </div>
-
-              <!-- Add Expense Input Row -->
+              <!-- Single Option: Tea / Food (NO default amount, staff enters amount) -->
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
                 <div>
-                  <label class="text-[11px] font-bold text-slate-700 block mb-0.5">ఖర్చు కారణం (Expense Reason) *:</label>
-                  <input type="text" id="expenseReasonInput" placeholder="ఉదా: టీ, వాటర్ లేదా మరమ్మతులు" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-900">
+                  <label class="text-[11px] font-bold text-slate-700 block mb-0.5">ఖర్చు రకం (Expense Type):</label>
+                  <select id="expenseReasonInput" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-2 text-xs font-bold text-slate-900 cursor-default">
+                    <option value="☕ టీ / భోజనం (Tea / Food)">☕ టీ / భోజనం (Tea / Food)</option>
+                  </select>
                 </div>
                 <div>
                   <label class="text-[11px] font-bold text-slate-700 block mb-0.5">ఖర్చు అమౌంట్ (Amount ₹) *:</label>
-                  <input type="number" id="expenseAmountInput" placeholder="₹ e.g. 50" class="w-full bg-white border-2 border-rose-400 rounded-lg px-2.5 py-1.5 text-xs font-mono font-black text-rose-900">
+                  <input type="number" id="expenseAmountInput" placeholder="₹ అమౌంట్ నమోదు చేయండి" class="w-full bg-white border-2 border-rose-400 rounded-lg px-2.5 py-1.5 text-xs font-mono font-black text-rose-900">
                 </div>
                 <div class="flex items-end">
                   <button type="button" onclick="submitExpenseEntry()" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs py-2 px-3 rounded-lg shadow">
@@ -1914,6 +1907,6 @@
     </div>
   </footer>
 
-  <script src="app.js?v=6"></script>
+  <script src="app.js?v=7"></script>
 </body>
 </html>
