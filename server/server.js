@@ -1024,12 +1024,12 @@ app.post('/api/shifts/station-handover', (req, res) => {
   const petrolRate = shift.petrolRate || (data.rates?.[data.rates.length - 1]?.petrol) || 117.07;
   const dieselRate = shift.dieselRate || (data.rates?.[data.rates.length - 1]?.diesel) || 105.23;
 
-  const pOpen = Number(st.meters?.petrol?.open || 0);
+  const pOpen = Number(st.initialJoinedMeters?.petrol?.open ?? st.meters?.petrol?.open ?? 0);
   const pClose = Number(st.meters?.petrol?.close || 0);
   const pTesting = Number(st.meters?.petrol?.testing || 0);
   const pSale = pClose > pOpen ? Number((pClose - pOpen - pTesting).toFixed(2)) : (st.meters?.petrol?.saleLitres || 0);
 
-  const dOpen = Number(st.meters?.diesel?.open || 0);
+  const dOpen = Number(st.initialJoinedMeters?.diesel?.open ?? st.meters?.diesel?.open ?? 0);
   const dClose = Number(st.meters?.diesel?.close || 0);
   const dTesting = Number(st.meters?.diesel?.testing || 0);
   const dSale = dClose > dOpen ? Number((dClose - dOpen - dTesting).toFixed(2)) : (st.meters?.diesel?.saleLitres || 0);
@@ -1095,6 +1095,39 @@ app.post('/api/shifts/station-handover', (req, res) => {
 
   storage.save(tenantId, data);
   res.json({ success: true, station: shift.stations[stationId], shortage, expectedCash, actualCash });
+});
+
+// Admin / Mgmt / Owner Handover Verification API
+// Allows management or owner to inspect, verify, and approve cash handover
+app.post('/api/shifts/admin-verify-handover', (req, res) => {
+  const tenantId = getTenantId(req);
+  const { date, stationId, adminCash, adminUpi, verifiedBy, notes, updateCollections } = req.body;
+  const data = storage.load(tenantId);
+  const shift = data.shifts.find(s => s.date === date);
+  if (!shift || !shift.stations[stationId]) {
+    return res.status(404).json({ error: "Station shift record not found" });
+  }
+
+  const st = shift.stations[stationId];
+  st.adminVerification = {
+    verified: true,
+    verifiedBy: verifiedBy || "Management",
+    verifiedAt: new Date().toISOString(),
+    adminCash: Number(adminCash || 0),
+    adminUpi: Number(adminUpi || 0),
+    notes: notes || ""
+  };
+  st.status = "verified";
+
+  if (updateCollections) {
+    if (!st.collections) st.collections = {};
+    st.collections.cash = Number(adminCash || 0);
+    if (adminUpi !== undefined && adminUpi !== null) st.collections.upi = Number(adminUpi);
+    if (notes) st.collections.notes = notes;
+  }
+
+  storage.save(tenantId, data);
+  res.json({ success: true, station: st });
 });
 
 // ----------------------------------------------------

@@ -167,6 +167,7 @@ function applyLanguageUI() {
   const tabFlt = document.getElementById('tabLabel-fleet');
   const tabRem = document.getElementById('tabLabel-reminders');
   const tabEmp = document.getElementById('tabLabel-employees');
+  const tabAdminHo = document.getElementById('tabLabel-adminHandover');
   const tabRos = document.getElementById('tabLabel-roster');
   const tabAtt = document.getElementById('tabLabel-attendance');
   const tabRat = document.getElementById('admTab-rates');
@@ -175,6 +176,7 @@ function applyLanguageUI() {
   const tabPdb = document.getElementById('admTab-pdbs');
 
   if (tabSum) tabSum.innerHTML = isTe ? '📄 రోజువారీ రసీదు' : '📄 Daily Sales Slip';
+  if (tabAdminHo) tabAdminHo.innerText = isTe ? 'నగదు లెక్క' : 'Cash Handover';
   if (tabRos) tabRos.innerText = isTe ? 'పంపుల కేటాయింపు' : 'Pump Assignment';
   if (tabEmp) tabEmp.innerText = isTe ? 'సిబ్బంది జాబితా' : 'Employee List';
   if (tabDue) tabDue.innerText = isTe ? 'బాకీలు' : 'Due';
@@ -219,6 +221,12 @@ function applyLanguageUI() {
 
   // 6. Recalculate Live Handover Tally
   calculateLiveHandoverTally();
+  if (STATE.adminTab === 'handover') {
+    calculateAdminHandoverTally();
+  }
+
+  // 7. Enforce Role Visibility
+  updateAdminTabVisibility();
 }
 
 // --- DATA FETCHING (TENANT SPECIFIC) ---
@@ -333,6 +341,89 @@ function updateTicker() {
   if (rDiesel) rDiesel.value = STATE.rates.diesel;
 }
 
+// --- STRICT ROLE TAB PERMISSIONS CONTROLLER ---
+// Rules:
+// 1. Pluggable DBs (PDBs) -> ONLY Developer / Superadmin can see. Hidden from mgmt and owner.
+// 2. Financial Reports -> ONLY Bunk Owner and Developer can see. Strictly HIDDEN from mgmt.
+// 3. Rates, Tank Stock, Reminders -> ONLY Bunk Owner and Developer can see. Strictly HIDDEN from mgmt.
+// 4. Management -> Daily Sales Slip, Cash Handover, Pump Assignment, Employee List, Due, Duty & Salary Days, Vehicle Bills.
+function updateAdminTabVisibility() {
+  const role = STATE.currentUser?.role;
+  const isOwner = role === 'owner';
+  const isDev = role === 'developer' || role === 'admin';
+
+  const tabFin = document.getElementById('admTab-financials');
+  const tabRem = document.getElementById('admTab-reminders');
+  const tabRates = document.getElementById('admTab-rates');
+  const tabTanks = document.getElementById('admTab-tanks');
+  const tabPdbs = document.getElementById('admTab-pdbs');
+  const pdbSelectorBox = document.getElementById('headerTenantSelectorBox');
+
+  // Pluggable DBs: Strictly Developer / Admin ONLY
+  if (tabPdbs) {
+    if (isDev) {
+      tabPdbs.classList.remove('hidden');
+      tabPdbs.style.display = '';
+    } else {
+      tabPdbs.classList.add('hidden');
+      tabPdbs.style.display = 'none';
+    }
+  }
+  if (pdbSelectorBox) {
+    if (isDev) {
+      pdbSelectorBox.classList.remove('hidden');
+      pdbSelectorBox.style.display = '';
+    } else {
+      pdbSelectorBox.classList.add('hidden');
+      pdbSelectorBox.style.display = 'none';
+    }
+  }
+
+  // Financial Reports: Owner and Dev ONLY (Strictly hidden for mgmt)
+  if (tabFin) {
+    if (isOwner || isDev) {
+      tabFin.classList.remove('hidden');
+      tabFin.style.display = '';
+    } else {
+      tabFin.classList.add('hidden');
+      tabFin.style.display = 'none';
+    }
+  }
+
+  // Rates: Owner and Dev ONLY (Strictly hidden for mgmt)
+  if (tabRates) {
+    if (isOwner || isDev) {
+      tabRates.classList.remove('hidden');
+      tabRates.style.display = '';
+    } else {
+      tabRates.classList.add('hidden');
+      tabRates.style.display = 'none';
+    }
+  }
+
+  // Tanks: Owner and Dev ONLY (Strictly hidden for mgmt)
+  if (tabTanks) {
+    if (isOwner || isDev) {
+      tabTanks.classList.remove('hidden');
+      tabTanks.style.display = '';
+    } else {
+      tabTanks.classList.add('hidden');
+      tabTanks.style.display = 'none';
+    }
+  }
+
+  // Reminders: Owner and Dev ONLY (Strictly hidden for mgmt)
+  if (tabRem) {
+    if (isOwner || isDev) {
+      tabRem.classList.remove('hidden');
+      tabRem.style.display = '';
+    } else {
+      tabRem.classList.add('hidden');
+      tabRem.style.display = 'none';
+    }
+  }
+}
+
 // --- VIEW ROUTING (ATTENDANT / MANAGEMENT / BUNK OWNER / DEVELOPER) ---
 // User requirement: "in bunk owner (lets keep mgmt) and lets create one more login with bunk owner(or only owner) to see all the financial report. Note : mgmt user will not be allowed to see the historical finance/sale/ whatever the old cannot viewed where as only owner can see it. bunk owner cannot know the PDB and all which developer can see"
 function routeUserView() {
@@ -391,6 +482,7 @@ function routeUserView() {
     if (empView) empView.classList.add('hidden');
     if (admView) admView.classList.remove('hidden');
 
+    const tabHandover = document.getElementById('admTab-handover');
     const tabRoster = document.getElementById('admTab-roster');
     const tabEmployees = document.getElementById('admTab-employees');
     const tabDues = document.getElementById('admTab-dues');
@@ -400,24 +492,20 @@ function routeUserView() {
     const tabTanks = document.getElementById('admTab-tanks');
     const tabReminders = document.getElementById('admTab-reminders');
 
-    // Management visible core tabs: Daily Sales Slip, Pump Assignment, Employee List, Due, Duty & Salary, Vehicle Bills
+    // Management visible core tabs: Daily Sales Slip, Cash Handover, Pump Assignment, Employee List, Due, Duty & Salary, Vehicle Bills
+    if (tabHandover) tabHandover.classList.remove('hidden');
     if (tabRoster) tabRoster.classList.remove('hidden');
     if (tabEmployees) tabEmployees.classList.remove('hidden');
     if (tabDues) tabDues.classList.remove('hidden');
     if (tabAttendance) tabAttendance.classList.remove('hidden');
     if (tabFleet) tabFleet.classList.remove('hidden');
 
+    // Apply strict visibility rules
+    updateAdminTabVisibility();
+
     // Role-Specific Restrictions:
     if (userRole === 'mgmt') {
-      // Management: strictly blocked from Financial Reports, PDBs, Rates & Tanks tabs
-      if (finTab) finTab.classList.add('hidden');
-      if (pdbTab) pdbTab.classList.add('hidden');
-      if (pdbDropdown) pdbDropdown.classList.add('hidden');
-      if (tabRates) tabRates.classList.add('hidden');
-      if (tabTanks) tabTanks.classList.add('hidden');
-      if (tabReminders) tabReminders.classList.add('hidden');
-
-      const mgmtAllowedTabs = ['summary', 'roster', 'employees', 'dues', 'attendance', 'fleet'];
+      const mgmtAllowedTabs = ['summary', 'handover', 'roster', 'employees', 'dues', 'attendance', 'fleet'];
       if (!mgmtAllowedTabs.includes(STATE.adminTab)) {
         STATE.adminTab = 'summary';
       }
@@ -428,29 +516,18 @@ function routeUserView() {
         headerDateInput.disabled = true;
       }
     } else if (userRole === 'owner') {
-      // Owner: sees all Management options + Financial Reports, Rates & Tanks. NO PDBs
-      if (finTab) finTab.classList.remove('hidden');
-      if (pdbTab) pdbTab.classList.add('hidden');
-      if (pdbDropdown) pdbDropdown.classList.add('hidden');
-      if (tabRates) tabRates.classList.remove('hidden');
-      if (tabTanks) tabTanks.classList.remove('hidden');
-      if (tabReminders) tabReminders.classList.remove('hidden');
       if (headerDateInput) headerDateInput.disabled = false;
       if (STATE.adminTab === 'pdbs') STATE.adminTab = 'summary';
     } else {
-      // Developer / Superadmin: All tabs + PDBs
-      if (finTab) finTab.classList.remove('hidden');
-      if (pdbTab) pdbTab.classList.remove('hidden');
-      if (pdbDropdown) pdbDropdown.classList.remove('hidden');
-      if (tabRates) tabRates.classList.remove('hidden');
-      if (tabTanks) tabTanks.classList.remove('hidden');
-      if (tabReminders) tabReminders.classList.remove('hidden');
       if (headerDateInput) headerDateInput.disabled = false;
     }
 
     renderAdminDashboard();
     renderAdminEmployeesTable();
     renderAdminDutyRoster();
+    if (STATE.adminTab === 'handover') {
+      renderAdminHandoverDashboard();
+    }
     return;
   }
 
@@ -1928,35 +2005,48 @@ async function clearReminder(id) {
 
 // --- ADMIN / OWNER / MANAGEMENT DASHBOARD CONTROLLER ---
 function switchAdminTab(tabKey) {
-  // If mgmt user tries to open financials, restrict and redirect
-  if (tabKey === 'financials' && STATE.currentUser?.role === 'mgmt') {
-    showToast(STATE.lang === 'te' ? 'ఆర్థిక నివేదికలు కేవలం ఓనర్ కు మాత్రమే అందుబాటులో ఉంటాయి' : 'Financial reports are restricted to Bunk Owner only', 'error');
-    tabKey = 'summary';
+  const role = STATE.currentUser?.role;
+
+  // If mgmt user tries to open restricted tabs, restrict and redirect
+  if (role === 'mgmt') {
+    const mgmtBlocked = ['financials', 'reminders', 'rates', 'tanks', 'pdbs'];
+    if (mgmtBlocked.includes(tabKey)) {
+      showToast(STATE.lang === 'te' ? 'ఈ విభాగం కేవలం ఓనర్ కు మాత్రమే అందుబాటులో ఉంటుంది' : 'Restricted to Bunk Owner only', 'error');
+      tabKey = 'summary';
+    }
   }
 
   // If non-developer tries to open PDBs, restrict
-  if (tabKey === 'pdbs' && STATE.currentUser?.role !== 'developer' && STATE.currentUser?.role !== 'admin') {
+  if (tabKey === 'pdbs' && role !== 'developer' && role !== 'admin') {
     tabKey = 'summary';
   }
 
   STATE.adminTab = tabKey;
-  const tabs = ['summary', 'financials', 'dues', 'attendance', 'fleet', 'reminders', 'employees', 'roster', 'rates', 'tanks', 'pdbs'];
+  const tabs = ['summary', 'handover', 'financials', 'dues', 'attendance', 'fleet', 'reminders', 'employees', 'roster', 'rates', 'tanks', 'pdbs'];
   
   tabs.forEach(t => {
     const btn = document.getElementById(`admTab-${t}`);
     const sec = document.getElementById(`admSection-${t}`);
     if (btn && sec) {
       if (t === tabKey) {
-        btn.className = "admin-tab-btn active px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all bg-orange-600 text-white shadow";
+        btn.classList.add('active', 'bg-orange-600', 'text-white', 'shadow');
+        btn.classList.remove('bg-white', 'text-slate-700', 'hover:bg-slate-100');
         sec.classList.remove('hidden');
       } else {
-        btn.className = "admin-tab-btn px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white text-slate-700 hover:bg-slate-100 border border-slate-200";
+        btn.classList.remove('active', 'bg-orange-600', 'text-white', 'shadow');
+        btn.classList.add('bg-white', 'text-slate-700', 'hover:bg-slate-100');
         sec.classList.add('hidden');
       }
     }
   });
 
+  // Re-enforce visibility rules immediately
+  updateAdminTabVisibility();
+
   renderAdminDashboard();
+  if (tabKey === 'handover') {
+    renderAdminHandoverDashboard();
+  }
   if (tabKey === 'roster') {
     renderAdminDutyRoster();
   }
@@ -1975,6 +2065,593 @@ function switchAdminTab(tabKey) {
   if (tabKey === 'fleet') {
     renderAdminFleetLedger();
   }
+}
+
+// =========================================================================
+// MANAGEMENT & OWNER CASH HANDOVER CONTROLLER
+// User requirement: "for mgmt and owner should also do cash handover in their login too.. because they need to their own and before checking with staff (think same caluclation will show on both staff and owner pages)"
+// =========================================================================
+
+function getStationHandoverMetrics(stId) {
+  const stData = STATE.shift?.stations?.[stId] || {};
+  const pRate = STATE.rates?.petrol || 117.07;
+  const dRate = STATE.rates?.diesel || 105.23;
+
+  const pOpen = Number(stData.initialJoinedMeters?.petrol?.open ?? stData.meters?.petrol?.open ?? 0);
+  const pClose = Number(stData.meters?.petrol?.close || 0);
+  const pTest = Number(stData.meters?.petrol?.testing || 0);
+  let pLitres = Number(stData.meters?.petrol?.saleLitres || 0);
+  if (pClose > pOpen) {
+    pLitres = Math.max(0, pClose - pOpen - pTest);
+  }
+  const pAmt = Math.round(pLitres * pRate);
+
+  const dOpen = Number(stData.initialJoinedMeters?.diesel?.open ?? stData.meters?.diesel?.open ?? 0);
+  const dClose = Number(stData.meters?.diesel?.close || 0);
+  const dTest = Number(stData.meters?.diesel?.testing || 0);
+  let dLitres = Number(stData.meters?.diesel?.saleLitres || 0);
+  if (dClose > dOpen) {
+    dLitres = Math.max(0, dClose - dOpen - dTest);
+  }
+  const dAmt = Math.round(dLitres * dRate);
+
+  const grossSale = pAmt + dAmt;
+
+  const currentVehicles = (STATE.vehicleLedger || []).filter(v => v.stationId === stId);
+  const vehicleTotal = currentVehicles.reduce((s, v) => s + (v.amount || 0), 0);
+
+  const pendingReminders = (STATE.reminders || []).filter(r => r.stationId === stId && r.status === 'pending');
+  const reminderTotal = pendingReminders.reduce((s, r) => s + (r.amount || 0), 0);
+
+  const cardSwipes = stData.cardSwipes || [];
+  const cardTotal = cardSwipes.reduce((s, c) => s + (c.amount || 0), 0);
+
+  const expensesList = stData.expensesList || [];
+  const expenseTotal = expensesList.reduce((s, e) => s + (e.amount || 0), 0);
+
+  const upiPayments = stData.upiPayments || [];
+  const loggedUpiTotal = upiPayments.reduce((s, u) => s + (u.amount || 0), 0);
+
+  const staffCash = Number(stData.collections?.cash || 0);
+  const staffUpi = Number(stData.collections?.upi ?? loggedUpiTotal);
+  const staffNotes = stData.collections?.notes || '';
+
+  const totalDeductions = vehicleTotal + reminderTotal + cardTotal + expenseTotal + staffUpi;
+  const expectedCash = Math.max(0, grossSale - totalDeductions);
+  const staffShortage = staffCash ? Math.max(0, expectedCash - staffCash) : 0;
+  const staffExcess = staffCash > expectedCash ? (staffCash - expectedCash) : 0;
+
+  return {
+    stationId: stId,
+    attendantName: stData.employeeName || STATE.dutyAssignments?.[stId]?.employeeName || 'Unassigned',
+    pOpen, pClose, pTest, pLitres, pRate, pAmt,
+    dOpen, dClose, dTest, dLitres, dRate, dAmt,
+    grossSale,
+    vehicleTotal,
+    reminderTotal,
+    cardTotal,
+    expenseTotal,
+    expensesList,
+    loggedUpiTotal,
+    staffCash,
+    staffUpi,
+    staffNotes,
+    expectedCash,
+    totalDeductions,
+    staffShortage,
+    staffExcess,
+    status: stData.status || 'in_progress',
+    adminVerification: stData.adminVerification || null
+  };
+}
+
+function renderAdminHandoverDashboard() {
+  if (!STATE.adminSelectedStation) STATE.adminSelectedStation = 'S1';
+  const activeSt = STATE.adminSelectedStation;
+  const metrics = getStationHandoverMetrics(activeSt);
+  const isTe = STATE.lang === 'te';
+
+  // 1. Render Station Pill Buttons (S1, S2, S3, S4)
+  const pillsContainer = document.getElementById('admHoStationPills');
+  if (pillsContainer) {
+    const stKeys = ['S1', 'S2', 'S3', 'S4'];
+    pillsContainer.innerHTML = stKeys.map(k => {
+      const m = getStationHandoverMetrics(k);
+      const isSelected = k === activeSt;
+      const isVerified = m.status === 'verified';
+      const isSubmitted = m.status === 'submitted';
+
+      let statusBadge = '';
+      if (isVerified) {
+        statusBadge = `<span class="bg-emerald-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full ml-1">✓</span>`;
+      } else if (isSubmitted) {
+        statusBadge = `<span class="bg-amber-400 text-slate-950 text-[9px] font-black px-1.5 py-0.5 rounded-full ml-1">📩</span>`;
+      }
+
+      const activeClass = isSelected 
+        ? "bg-slate-900 text-white shadow-md ring-2 ring-emerald-500" 
+        : "bg-slate-100 text-slate-700 hover:bg-slate-200";
+
+      return `
+        <button onclick="switchAdminHandoverStation('${k}')" class="px-3 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1 ${activeClass}">
+          <span>${k} (${STATION_CONFIG[k]?.pump || k})</span>
+          <span class="text-[10px] opacity-75 font-normal">(${m.attendantName.split(' ')[0]})</span>
+          ${statusBadge}
+        </button>
+      `;
+    }).join('');
+  }
+
+  // Active Station Attendant Info in selector bar
+  const infoEl = document.getElementById('admHoActiveStationAttendantInfo');
+  if (infoEl) {
+    infoEl.innerHTML = `
+      <span>🧑‍💼 సిబ్బంది: <strong>${metrics.attendantName}</strong></span>
+      <span class="mx-1.5 text-slate-300">•</span>
+      <span>నోజిల్స్: <strong>${STATION_CONFIG[activeSt]?.side || activeSt}</strong></span>
+    `;
+  }
+
+  // 2. Update Reconciliation Summary Cards
+  const elGross = document.getElementById('admHoGrossSaleDisplay');
+  const elPSub = document.getElementById('admHoPetrolSaleSubtext');
+  const elDSub = document.getElementById('admHoDieselSaleSubtext');
+  const elTotDed = document.getElementById('admHoTotalDeductionsDisplay');
+  const elVehDed = document.getElementById('admHoVehicleDeduction');
+  const elRemDed = document.getElementById('admHoReminderDeduction');
+  const elCardDed = document.getElementById('admHoCardDeduction');
+  const elUpiDed = document.getElementById('admHoUpiDeduction');
+  const elExpDed = document.getElementById('admHoExpenseDeduction');
+  const elExpCash = document.getElementById('admHoExpectedCashDisplay');
+
+  if (elGross) elGross.innerText = `₹${metrics.grossSale.toLocaleString('en-IN')}`;
+  if (elPSub) elPSub.innerText = `${metrics.pLitres.toFixed(2)} L • ₹${metrics.pAmt.toLocaleString('en-IN')}`;
+  if (elDSub) elDSub.innerText = `${metrics.dLitres.toFixed(2)} L • ₹${metrics.dAmt.toLocaleString('en-IN')}`;
+  if (elTotDed) elTotDed.innerText = `- ₹${metrics.totalDeductions.toLocaleString('en-IN')}`;
+  if (elVehDed) elVehDed.innerText = `- ₹${metrics.vehicleTotal.toLocaleString('en-IN')}`;
+  if (elRemDed) elRemDed.innerText = `- ₹${metrics.reminderTotal.toLocaleString('en-IN')}`;
+  if (elCardDed) elCardDed.innerText = `- ₹${metrics.cardTotal.toLocaleString('en-IN')}`;
+  if (elUpiDed) elUpiDed.innerText = `- ₹${metrics.staffUpi.toLocaleString('en-IN')}`;
+  if (elExpDed) elExpDed.innerText = `- ₹${metrics.expenseTotal.toLocaleString('en-IN')}`;
+  if (elExpCash) elExpCash.innerText = `₹${metrics.expectedCash.toLocaleString('en-IN')}`;
+
+  // 3. Populate Staff Attendant Submission info
+  const staffNameEl = document.getElementById('admHoStaffName');
+  const staffCashEl = document.getElementById('admHoStaffCash');
+  const staffUpiEl = document.getElementById('admHoStaffUpi');
+  const staffDiffEl = document.getElementById('admHoStaffDiff');
+  const staffNotesEl = document.getElementById('admHoStaffNotes');
+  const staffStatusBadge = document.getElementById('admHoStaffStatusBadge');
+  const verifBanner = document.getElementById('admHoVerificationBanner');
+
+  if (staffNameEl) staffNameEl.innerText = metrics.attendantName;
+  if (staffCashEl) staffCashEl.innerText = `₹${metrics.staffCash.toLocaleString('en-IN')}`;
+  if (staffUpiEl) staffUpiEl.innerText = `₹${metrics.staffUpi.toLocaleString('en-IN')}`;
+
+  if (staffDiffEl) {
+    if (metrics.staffCash === 0 && metrics.status !== 'submitted' && metrics.status !== 'verified') {
+      staffDiffEl.innerText = 'Pending Submission';
+      staffDiffEl.className = 'font-mono font-bold text-slate-500 text-xs';
+    } else {
+      const diff = metrics.staffCash - metrics.expectedCash;
+      if (diff === 0) {
+        staffDiffEl.innerText = '✓ Balanced (₹0)';
+        staffDiffEl.className = 'font-mono font-black text-emerald-700 text-sm';
+      } else if (diff < 0) {
+        staffDiffEl.innerText = `-₹${Math.abs(diff).toLocaleString('en-IN')} (Shortage)`;
+        staffDiffEl.className = 'font-mono font-black text-rose-700 text-sm';
+      } else {
+        staffDiffEl.innerText = `+₹${diff.toLocaleString('en-IN')} (Excess)`;
+        staffDiffEl.className = 'font-mono font-black text-amber-700 text-sm';
+      }
+    }
+  }
+
+  if (staffNotesEl) staffNotesEl.innerText = metrics.staffNotes || (isTe ? 'ఎలాంటి రిమార్క్స్ లేవు' : 'No remarks');
+
+  if (staffStatusBadge) {
+    if (metrics.status === 'verified') {
+      staffStatusBadge.className = 'text-[10px] font-black px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300';
+      staffStatusBadge.innerText = isTe ? '✓ ఆమోదించబడింది (Verified)' : '✓ Verified & Approved';
+    } else if (metrics.status === 'submitted') {
+      staffStatusBadge.className = 'text-[10px] font-black px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300';
+      staffStatusBadge.innerText = isTe ? '📩 సమర్పించారు (Submitted)' : '📩 Submitted by Staff';
+    } else {
+      staffStatusBadge.className = 'text-[10px] font-black px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-700';
+      staffStatusBadge.innerText = isTe ? '⏳ నడుస్తోంది (In Progress)' : '⏳ In Progress';
+    }
+  }
+
+  if (verifBanner) {
+    if (metrics.adminVerification?.verified) {
+      verifBanner.classList.remove('hidden');
+      verifBanner.className = 'p-2.5 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-900 border border-emerald-200';
+      verifBanner.innerHTML = `
+        <div class="flex items-center gap-1.5 text-emerald-800">
+          <span>✓</span>
+          <span>Verified by <strong>${metrics.adminVerification.verifiedBy || 'Management'}</strong> on ${new Date(metrics.adminVerification.verifiedAt).toLocaleTimeString()}</span>
+        </div>
+        ${metrics.adminVerification.notes ? `<div class="text-[11px] text-emerald-700 mt-1">Note: ${metrics.adminVerification.notes}</div>` : ''}
+      `;
+    } else {
+      verifBanner.classList.add('hidden');
+    }
+  }
+
+  // 4. Pre-fill Management Input Fields
+  const cashInput = document.getElementById('admHandoverCashInput');
+  const upiInput = document.getElementById('admHandoverUpiInput');
+  const notesInput = document.getElementById('admHandoverNotesInput');
+
+  if (cashInput) {
+    if (metrics.adminVerification?.adminCash != null && metrics.adminVerification.adminCash > 0) {
+      cashInput.value = metrics.adminVerification.adminCash;
+    } else if (metrics.staffCash > 0) {
+      cashInput.value = metrics.staffCash;
+    } else {
+      cashInput.value = '';
+    }
+  }
+
+  if (upiInput) {
+    if (metrics.adminVerification?.adminUpi != null && metrics.adminVerification.adminUpi > 0) {
+      upiInput.value = metrics.adminVerification.adminUpi;
+    } else {
+      upiInput.value = metrics.staffUpi || (metrics.loggedUpiTotal > 0 ? metrics.loggedUpiTotal : '');
+    }
+  }
+
+  if (notesInput) {
+    notesInput.value = metrics.adminVerification?.notes || '';
+  }
+
+  // 5. Calculate live tally badge
+  calculateAdminHandoverTally();
+
+  // 6. Render expenses for active station
+  renderAdminExpensesList(activeSt);
+
+  // 7. Render 4 stations overview table
+  renderAdminAllStationsTable();
+}
+
+function calculateAdminHandoverTally() {
+  const activeSt = STATE.adminSelectedStation || 'S1';
+  const metrics = getStationHandoverMetrics(activeSt);
+
+  const cashVal = parseFloat(document.getElementById('admHandoverCashInput')?.value);
+  const upiVal = parseFloat(document.getElementById('admHandoverUpiInput')?.value) || metrics.loggedUpiTotal || 0;
+
+  // Re-calculate expected cash with management's UPI value
+  const totalDeductions = metrics.vehicleTotal + metrics.reminderTotal + metrics.cardTotal + metrics.expenseTotal + upiVal;
+  const expectedCash = Math.max(0, metrics.grossSale - totalDeductions);
+
+  // Update Expected Cash card display
+  const elExpCash = document.getElementById('admHoExpectedCashDisplay');
+  const elTotDed = document.getElementById('admHoTotalDeductionsDisplay');
+  const elUpiDed = document.getElementById('admHoUpiDeduction');
+
+  if (elExpCash) elExpCash.innerText = `₹${expectedCash.toLocaleString('en-IN')}`;
+  if (elTotDed) elTotDed.innerText = `- ₹${totalDeductions.toLocaleString('en-IN')}`;
+  if (elUpiDed) elUpiDed.innerText = `- ₹${upiVal.toLocaleString('en-IN')}`;
+
+  const tallyBadge = document.getElementById('admHoTallyBadge');
+  if (!tallyBadge) return;
+
+  if (isNaN(cashVal) || document.getElementById('admHandoverCashInput')?.value === '') {
+    tallyBadge.className = 'bg-slate-100 text-slate-700 px-4 py-2.5 rounded-xl text-center font-bold text-xs flex items-center justify-center gap-1.5 border border-slate-200';
+    tallyBadge.innerHTML = STATE.lang === 'te' ? '<span>⏳ నగదు నమోదు చేయండి</span>' : '<span>⏳ Enter physical cash</span>';
+    return;
+  }
+
+  const diff = cashVal - expectedCash;
+
+  if (diff === 0) {
+    tallyBadge.className = 'bg-emerald-600 text-white px-4 py-2.5 rounded-xl text-center font-black text-xs sm:text-sm shadow-md flex items-center justify-center gap-1.5 animate-pulse';
+    tallyBadge.innerHTML = STATE.lang === 'te' ? '<span>✓ లెక్క ఖచ్చితంగా సరిపోయింది! (₹0)</span>' : '<span>✓ Exact Tally Balanced! (₹0)</span>';
+  } else if (diff < 0) {
+    tallyBadge.className = 'bg-rose-600 text-white px-4 py-2.5 rounded-xl text-center font-black text-xs sm:text-sm shadow-md flex items-center justify-center gap-1.5';
+    tallyBadge.innerHTML = STATE.lang === 'te'
+      ? `<span>⚠️ నగదు తక్కువగా ఉంది: -₹${Math.abs(diff).toLocaleString('en-IN')} (Shortage)</span>`
+      : `<span>⚠️ Cash Shortage: -₹${Math.abs(diff).toLocaleString('en-IN')}</span>`;
+  } else {
+    tallyBadge.className = 'bg-amber-500 text-slate-900 px-4 py-2.5 rounded-xl text-center font-black text-xs sm:text-sm shadow-md flex items-center justify-center gap-1.5';
+    tallyBadge.innerHTML = STATE.lang === 'te'
+      ? `<span>💰 అదనపు నగదు ఉంది: +₹${diff.toLocaleString('en-IN')} (Excess)</span>`
+      : `<span>💰 Excess Cash: +₹${diff.toLocaleString('en-IN')}</span>`;
+  }
+}
+
+function switchAdminHandoverStation(stKey) {
+  STATE.adminSelectedStation = stKey;
+  renderAdminHandoverDashboard();
+}
+
+async function saveAdminHandoverCount(silent = false) {
+  const activeSt = STATE.adminSelectedStation || 'S1';
+  const cash = parseFloat(document.getElementById('admHandoverCashInput')?.value) || 0;
+  const upi = parseFloat(document.getElementById('admHandoverUpiInput')?.value) || 0;
+  const notes = document.getElementById('admHandoverNotesInput')?.value.trim() || '';
+
+  const payload = {
+    date: STATE.selectedDate,
+    stationId: activeSt,
+    adminCash: cash,
+    adminUpi: upi,
+    verifiedBy: STATE.currentUser?.name || (STATE.currentUser?.role === 'owner' ? 'Bunk Owner' : 'Management'),
+    notes,
+    updateCollections: false
+  };
+
+  try {
+    const res = await fetch(`/api/shifts/admin-verify-handover?pump=${STATE.activeTenant}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const result = await res.json();
+    if (result.success) {
+      if (!silent) {
+        showToast(STATE.lang === 'te' ? 'మేనేజ్‌మెంట్ లెక్క విజయవంతంగా సేవ్ చేయబడింది!' : 'Management count saved successfully!');
+      }
+      await loadAllData();
+      renderAdminHandoverDashboard();
+    } else {
+      if (!silent) showToast('Failed to save count', 'error');
+    }
+  } catch (e) {
+    if (!silent) showToast('Failed to save count', 'error');
+  }
+}
+
+async function confirmAndVerifyStaffHandover() {
+  const activeSt = STATE.adminSelectedStation || 'S1';
+  const cash = parseFloat(document.getElementById('admHandoverCashInput')?.value) || 0;
+  const upi = parseFloat(document.getElementById('admHandoverUpiInput')?.value) || 0;
+  const notes = document.getElementById('admHandoverNotesInput')?.value.trim() || '';
+
+  const payload = {
+    date: STATE.selectedDate,
+    stationId: activeSt,
+    adminCash: cash,
+    adminUpi: upi,
+    verifiedBy: STATE.currentUser?.name || (STATE.currentUser?.role === 'owner' ? 'Bunk Owner' : 'Management'),
+    notes: notes || 'Verified and approved by management/owner',
+    updateCollections: true
+  };
+
+  try {
+    const res = await fetch(`/api/shifts/admin-verify-handover?pump=${STATE.activeTenant}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const result = await res.json();
+    if (result.success) {
+      showToast(STATE.lang === 'te' ? `స్టేషన్ ${activeSt} నగదు లెక్క సరిచూసి ఆమోదించబడింది! ✓` : `Station ${activeSt} handover verified and confirmed! ✓`);
+      await loadAllData();
+      renderAdminHandoverDashboard();
+    } else {
+      showToast('Failed to confirm handover', 'error');
+    }
+  } catch (e) {
+    showToast('Failed to confirm handover', 'error');
+  }
+}
+
+function renderAdminExpensesList(stId) {
+  const container = document.getElementById('admHoExpensesListContainer');
+  if (!container) return;
+
+  const stData = STATE.shift?.stations?.[stId] || {};
+  const expenses = stData.expensesList || [];
+  const total = expenses.reduce((s, e) => s + (e.amount || 0), 0);
+
+  const totalBadge = document.getElementById('admHoExpenseTotalBadge');
+  if (totalBadge) totalBadge.innerText = `మొత్తం ఖర్చులు: ₹${total.toLocaleString('en-IN')}`;
+
+  if (expenses.length === 0) {
+    container.innerHTML = `
+      <div class="text-center py-3 text-slate-400 text-xs bg-white rounded-xl border border-rose-100">
+        ఈ స్టేషన్ లో ఇప్పటివరకు ఎలాంటి ఖర్చులు నమోదు కాలేదు. (No expenses recorded yet)
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = `
+    <table class="w-full text-xs text-left border-collapse bg-white rounded-xl overflow-hidden border border-rose-100">
+      <thead>
+        <tr class="bg-rose-100 text-rose-950 uppercase font-bold border-b border-rose-200">
+          <th class="p-2">Time</th>
+          <th class="p-2">Reason</th>
+          <th class="p-2 text-right">Amount (₹)</th>
+          <th class="p-2 text-right">Action</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-rose-50 font-medium">
+        ${expenses.map(e => `
+          <tr class="hover:bg-rose-50/50">
+            <td class="p-2 font-mono text-slate-500">${e.time || '-'}</td>
+            <td class="p-2 font-bold text-slate-900">${e.reason}</td>
+            <td class="p-2 font-mono font-black text-rose-800 text-sm text-right">₹${Number(e.amount || 0).toLocaleString('en-IN')}</td>
+            <td class="p-2 text-right">
+              <button onclick="deleteAdminExpenseEntry('${e.id}')" class="text-rose-600 hover:text-rose-800 font-bold text-[11px] px-2 py-0.5 rounded border border-rose-200 hover:bg-rose-50">
+                🗑️ Delete
+              </button>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+async function submitAdminExpenseEntry() {
+  const activeSt = STATE.adminSelectedStation || 'S1';
+  const reason = document.getElementById('admExpenseReasonInput')?.value.trim() || '☕ టీ / భోజనం (Tea / Food)';
+  const amount = parseFloat(document.getElementById('admExpenseAmountInput')?.value) || 0;
+
+  if (amount <= 0) {
+    showToast(STATE.lang === 'te' ? 'దయచేసి ఖర్చు అమౌంట్ నమోదు చేయండి' : 'Please enter expense amount', 'error');
+    return;
+  }
+
+  const payload = {
+    date: STATE.selectedDate,
+    stationId: activeSt,
+    amount,
+    reason
+  };
+
+  try {
+    const res = await fetch(`/api/shifts/expenses?pump=${STATE.activeTenant}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const result = await res.json();
+    if (result.success) {
+      showToast(`ఖర్చు ₹${amount} చేర్చబడింది!`);
+      const amtInput = document.getElementById('admExpenseAmountInput');
+      if (amtInput) amtInput.value = '';
+      await loadAllData();
+      renderAdminHandoverDashboard();
+    } else {
+      showToast('Failed to add expense', 'error');
+    }
+  } catch (e) {
+    showToast('Failed to add expense', 'error');
+  }
+}
+
+async function deleteAdminExpenseEntry(id) {
+  const activeSt = STATE.adminSelectedStation || 'S1';
+  if (!confirm(STATE.lang === 'te' ? 'ఈ ఖర్చును తొలగించాలనుకుంటున్నారా?' : 'Delete this expense entry?')) return;
+
+  try {
+    const res = await fetch(`/api/shifts/expenses/${id}?pump=${STATE.activeTenant}&date=${STATE.selectedDate}&stationId=${activeSt}`, {
+      method: 'DELETE'
+    });
+    const result = await res.json();
+    if (result.success) {
+      showToast('Expense removed');
+      await loadAllData();
+      renderAdminHandoverDashboard();
+    } else {
+      showToast('Failed to delete expense', 'error');
+    }
+  } catch (e) {
+    showToast('Failed to delete expense', 'error');
+  }
+}
+
+function renderAdminAllStationsTable() {
+  const container = document.getElementById('admHoAllStationsTableContainer');
+  if (!container) return;
+
+  const stKeys = ['S1', 'S2', 'S3', 'S4'];
+  let totalBunkGross = 0;
+  let totalBunkDed = 0;
+  let totalBunkExpCash = 0;
+  let totalBunkStaffCash = 0;
+
+  const rowsHtml = stKeys.map(k => {
+    const m = getStationHandoverMetrics(k);
+    totalBunkGross += m.grossSale;
+    totalBunkDed += m.totalDeductions;
+    totalBunkExpCash += m.expectedCash;
+    totalBunkStaffCash += m.staffCash;
+
+    const diff = m.staffCash - m.expectedCash;
+    let diffDisplay = `<span class="text-slate-400">-</span>`;
+    if (m.staffCash > 0 || m.status === 'submitted' || m.status === 'verified') {
+      if (diff === 0) {
+        diffDisplay = `<span class="text-emerald-700 font-black">✓ ₹0</span>`;
+      } else if (diff < 0) {
+        diffDisplay = `<span class="text-rose-700 font-black">-₹${Math.abs(diff).toLocaleString('en-IN')}</span>`;
+      } else {
+        diffDisplay = `<span class="text-amber-700 font-black">+₹${diff.toLocaleString('en-IN')}</span>`;
+      }
+    }
+
+    let statusPill = `<span class="bg-slate-100 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded-full">In Progress</span>`;
+    if (m.status === 'verified') {
+      statusPill = `<span class="bg-emerald-100 text-emerald-800 text-[10px] font-black px-2 py-0.5 rounded-full border border-emerald-300">✓ Verified</span>`;
+    } else if (m.status === 'submitted') {
+      statusPill = `<span class="bg-amber-100 text-amber-900 text-[10px] font-black px-2 py-0.5 rounded-full border border-amber-300">📩 Submitted</span>`;
+    }
+
+    const isCurrent = k === (STATE.adminSelectedStation || 'S1');
+    const rowBg = isCurrent ? "bg-emerald-50/50 font-bold" : "hover:bg-slate-50";
+
+    return `
+      <tr class="${rowBg} border-b border-slate-100">
+        <td class="p-2.5 font-black text-slate-900 flex items-center gap-1.5">
+          <span>${k}</span>
+          <span class="text-[10px] font-semibold text-slate-500">(${STATION_CONFIG[k]?.pump || k})</span>
+        </td>
+        <td class="p-2.5 text-slate-800 font-bold">${m.attendantName}</td>
+        <td class="p-2.5 font-mono text-right text-slate-900 font-bold">₹${m.grossSale.toLocaleString('en-IN')}</td>
+        <td class="p-2.5 font-mono text-right text-amber-800 font-semibold">-₹${m.totalDeductions.toLocaleString('en-IN')}</td>
+        <td class="p-2.5 font-mono text-right font-black text-emerald-700">₹${m.expectedCash.toLocaleString('en-IN')}</td>
+        <td class="p-2.5 font-mono text-right font-black text-slate-900">₹${m.staffCash.toLocaleString('en-IN')}</td>
+        <td class="p-2.5 font-mono text-right">${diffDisplay}</td>
+        <td class="p-2.5 text-center">${statusPill}</td>
+        <td class="p-2.5 text-center">
+          <button onclick="switchAdminHandoverStation('${k}')" class="bg-slate-800 hover:bg-slate-900 text-white text-[11px] font-black px-2.5 py-1 rounded-lg shadow-sm">
+            ${isCurrent ? 'Viewing' : 'Inspect'}
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  const bunkDiff = totalBunkStaffCash - totalBunkExpCash;
+  let bunkDiffDisplay = `<span class="text-slate-400">-</span>`;
+  if (totalBunkStaffCash > 0) {
+    if (bunkDiff === 0) bunkDiffDisplay = `<span class="text-emerald-700 font-black">✓ ₹0</span>`;
+    else if (bunkDiff < 0) bunkDiffDisplay = `<span class="text-rose-700 font-black">-₹${Math.abs(bunkDiff).toLocaleString('en-IN')}</span>`;
+    else bunkDiffDisplay = `<span class="text-amber-700 font-black">+₹${bunkDiff.toLocaleString('en-IN')}</span>`;
+  }
+
+  container.innerHTML = `
+    <table class="w-full text-xs text-left border-collapse">
+      <thead>
+        <tr class="bg-slate-100 text-slate-700 uppercase font-black border-b border-slate-200">
+          <th class="p-2.5">Station</th>
+          <th class="p-2.5">Attendant</th>
+          <th class="p-2.5 text-right">Gross Fuel</th>
+          <th class="p-2.5 text-right">Deductions</th>
+          <th class="p-2.5 text-right">Expected Cash</th>
+          <th class="p-2.5 text-right">Staff Handed</th>
+          <th class="p-2.5 text-right">Diff</th>
+          <th class="p-2.5 text-center">Status</th>
+          <th class="p-2.5 text-center">Action</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100 font-medium">
+        ${rowsHtml}
+      </tbody>
+      <tfoot>
+        <tr class="bg-slate-900 text-white font-black text-xs border-t-2 border-slate-700">
+          <td class="p-3" colspan="2">BUNK GRAND TOTAL (మొత్తం బంక్):</td>
+          <td class="p-3 font-mono text-right text-amber-300">₹${totalBunkGross.toLocaleString('en-IN')}</td>
+          <td class="p-3 font-mono text-right text-rose-300">-₹${totalBunkDed.toLocaleString('en-IN')}</td>
+          <td class="p-3 font-mono text-right text-emerald-400 text-sm">₹${totalBunkExpCash.toLocaleString('en-IN')}</td>
+          <td class="p-3 font-mono text-right text-white text-sm">₹${totalBunkStaffCash.toLocaleString('en-IN')}</td>
+          <td class="p-3 font-mono text-right">${bunkDiffDisplay}</td>
+          <td class="p-3" colspan="2"></td>
+        </tr>
+      </tfoot>
+    </table>
+  `;
+}
+
+async function refreshAdminHandoverData() {
+  await loadAllData();
+  renderAdminHandoverDashboard();
+  showToast(STATE.lang === 'te' ? 'తాజా లెక్కలు అప్‌డేట్ చేయబడ్డాయి' : 'Handover data refreshed');
 }
 
 function renderAdminDashboard() {

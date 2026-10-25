@@ -488,184 +488,213 @@
       "id": "shift-2026-10-25",
       "date": "2026-10-25",
       "status": "active",
-      "petrolRate": 117.07,
-      "dieselRate": 105.23,
       "stations": {
         "S1": {
-          "stationId": "S1",
-          "employeeName": "Mahesh",
           "pump": "Pump 1",
           "meters": {
-            "petrol": {
-              "code": "A1",
-              "open": 1000,
-              "close": 1600,
-              "testing": 0,
-              "saleLitres": 600
-            },
             "diesel": {
               "code": "A2",
               "open": 2000,
-              "close": 2900,
-              "testing": 0,
-              "saleLitres": 900
+              "close": 2500,
+              "testing": 5,
+              "saleLitres": 495
+            },
+            "petrol": {
+              "code": "A1",
+              "open": 1000,
+              "close": 2000,
+              "testing": 5,
+              "saleLitres": 995
             }
           },
-          "readingsHistory": [
+          "status": "verified",
+          "shortage": 165574,
+          "grossSale": 168574,
+          "stationId": "S1",
+          "cardSwipes": [
             {
-              "id": "sess-1792907718525",
-              "sessionIndex": 1,
-              "time": "11:25 AM",
-              "tag": "Meals Break",
-              "employeeName": "Mahesh",
-              "petrol": {
-                "open": 1000,
-                "close": 1250,
-                "testing": 0,
-                "saleLitres": 250
-              },
-              "diesel": {
-                "open": 2000,
-                "close": 2400,
-                "testing": 0,
-                "saleLitres": 400
-              }
-            },
-            {
-              "id": "sess-1792907718673",
-              "sessionIndex": 2,
-              "time": "11:25 AM",
-              "tag": "Dinner Break",
-              "employeeName": "Mahesh",
-              "petrol": {
-                "open": 1250,
-                "close": 1600,
-                "testing": 0,
-                "saleLitres": 350
-              },
-              "diesel": {
-                "open": 2400,
-                "close": 2900,
-                "testing": 0,
-                "saleLitres": 500
-              }
+              "id": "csw-1792908593620",
+              "date": "2026-10-25",
+              "time": "06:09 AM",
+              "amount": 1000,
+              "slipNo": "",
+              "machine": "Paytm All-in-one",
+              "dateTime": "2026-10-25T06:09:00.000Z"
             }
           ],
           "collections": {
+            "upi": 2000,
+            "card": 1000,
             "cash": 0,
-            "upi": 0,
-            "card": 0,
+            "notes": "",
             "expenses": 0,
-            "expenseReason": "",
-            "notes": ""
+            "expenseReason": ""
           },
-          "status": "readings-entered",
-          "initialJoinedMeters": {
-            "petrol": {
-              "open": 1000
+          "upiPayments": [
+            {
+              "id": "upi-1792908603643",
+              "app": "PhonePe",
+              "ref": "",
+              "time": "11:37 AM",
+              "amount": 2000
+            }
+          ],
+          "employeeName": "Ramesh Kumar",
+          "expectedCash": 165574,
+          "nextOpenDiesel": 2500,
+          "nextOpenPetrol": 2000,
+          "testingRecords": [
+            {
+              "id": "tst-1792908557516",
+              "time": "06:09 AM",
+              "litres": 5,
+              "reason": "Daily calibration check poured back to tank",
+              "fuelType": "Petrol"
             },
+            {
+              "id": "tst-1792908570704",
+              "time": "06:09 AM",
+              "litres": 5,
+              "reason": "Daily calibration check poured back to tank",
+              "fuelType": "Diesel"
+            }
+          ],
+          "readingsHistory": [
+            {
+              "id": "sess-1792908402246",
+              "tag": "Shift Final",
+              "time": "11:36 AM",
+              "diesel": {
+                "open": 2000,
+                "close": 2500,
+                "testing": 0,
+                "saleLitres": 500
+              },
+              "petrol": {
+                "open": 1000,
+                "close": 2000,
+                "testing": 0,
+                "saleLitres": 1000
+              },
+              "employeeName": "Ramesh Kumar",
+              "sessionIndex": 1
+            }
+          ],
+          "totalDeductions": 3000,
+          "initialJoinedMeters": {
             "diesel": {
               "open": 2000
             },
+            "petrol": {
+              "open": 1000
+            },
             "joinedAt": "11:25 AM"
           },
-          "nextOpenPetrol": 1600,
-          "nextOpenDiesel": 2900
+          "adminVerification": {
+            "verified": true,
+            "verifiedBy": "Bunk Owner",
+            "verifiedAt": "2026-10-25T06:49:40.160Z",
+            "adminCash": 50000,
+            "adminUpi": 2000,
+            "notes": "Checked and matched meter readings"
+          }
         },
         "S2": {
-          "stationId": "S2",
-          "employeeName": "",
           "pump": "Pump 1",
           "meters": {
-            "petrol": {
-              "code": "B1",
-              "open": 0,
-              "close": 0,
-              "testing": 0,
-              "saleLitres": 0
-            },
             "diesel": {
               "code": "B2",
               "open": 0,
               "close": 0,
               "testing": 0,
               "saleLitres": 0
-            }
-          },
-          "readingsHistory": [],
-          "collections": {
-            "cash": 0,
-            "upi": 0,
-            "card": 0,
-            "expenses": 0,
-            "expenseReason": "",
-            "notes": ""
-          },
-          "status": "pending"
-        },
-        "S3": {
-          "stationId": "S3",
-          "employeeName": "",
-          "pump": "Pump 2",
-          "meters": {
+            },
             "petrol": {
-              "code": "A1",
+              "code": "B1",
               "open": 0,
               "close": 0,
               "testing": 0,
               "saleLitres": 0
-            },
+            }
+          },
+          "status": "pending",
+          "stationId": "S2",
+          "collections": {
+            "upi": 0,
+            "card": 0,
+            "cash": 0,
+            "notes": "",
+            "expenses": 0,
+            "expenseReason": ""
+          },
+          "employeeName": "",
+          "readingsHistory": []
+        },
+        "S3": {
+          "pump": "Pump 2",
+          "meters": {
             "diesel": {
               "code": "A2",
               "open": 0,
               "close": 0,
               "testing": 0,
               "saleLitres": 0
-            }
-          },
-          "readingsHistory": [],
-          "collections": {
-            "cash": 0,
-            "upi": 0,
-            "card": 0,
-            "expenses": 0,
-            "expenseReason": "",
-            "notes": ""
-          },
-          "status": "pending"
-        },
-        "S4": {
-          "stationId": "S4",
-          "employeeName": "",
-          "pump": "Pump 2",
-          "meters": {
+            },
             "petrol": {
-              "code": "B1",
+              "code": "A1",
               "open": 0,
               "close": 0,
               "testing": 0,
               "saleLitres": 0
-            },
+            }
+          },
+          "status": "pending",
+          "stationId": "S3",
+          "collections": {
+            "upi": 0,
+            "card": 0,
+            "cash": 0,
+            "notes": "",
+            "expenses": 0,
+            "expenseReason": ""
+          },
+          "employeeName": "",
+          "readingsHistory": []
+        },
+        "S4": {
+          "pump": "Pump 2",
+          "meters": {
             "diesel": {
               "code": "B2",
               "open": 0,
               "close": 0,
               "testing": 0,
               "saleLitres": 0
+            },
+            "petrol": {
+              "code": "B1",
+              "open": 0,
+              "close": 0,
+              "testing": 0,
+              "saleLitres": 0
             }
           },
-          "readingsHistory": [],
+          "status": "pending",
+          "stationId": "S4",
           "collections": {
-            "cash": 0,
             "upi": 0,
             "card": 0,
+            "cash": 0,
+            "notes": "",
             "expenses": 0,
-            "expenseReason": "",
-            "notes": ""
+            "expenseReason": ""
           },
-          "status": "pending"
+          "employeeName": "",
+          "readingsHistory": []
         }
-      }
+      },
+      "dieselRate": 105.23,
+      "petrolRate": 117.07
     }
   ],
   "employees": [
@@ -930,6 +959,23 @@
   ],
   "employeeDues": [
     {
+      "id": "due-1792908626245",
+      "date": "2026-10-25",
+      "notes": "Shift handover shortage: expected ₹165574, given ₹0",
+      "status": "pending",
+      "createdAt": "2026-10-25T06:10:26.245Z",
+      "settledAt": null,
+      "stationId": "S1",
+      "actualCash": 0,
+      "grossAmount": 168574,
+      "settledMode": null,
+      "employeeName": "Ramesh Kumar",
+      "expectedCash": 165574,
+      "settledNotes": null,
+      "shortageAmount": 165574,
+      "totalDeductions": 3000
+    },
+    {
       "id": "due-1792836604426",
       "date": "2026-10-23",
       "notes": "Handover shortage test",
@@ -1088,6 +1134,24 @@
       "S4": {
         "dutyPin": "7788",
         "employeeName": "Prasad Rao"
+      }
+    },
+    "2026-10-25": {
+      "S1": {
+        "dutyPin": "1122",
+        "employeeName": "Ramesh Kumar"
+      },
+      "S2": {
+        "dutyPin": "3344",
+        "employeeName": "Suresh Reddy"
+      },
+      "S3": {
+        "dutyPin": "5566",
+        "employeeName": "Venkatesh Rao"
+      },
+      "S4": {
+        "dutyPin": "7788",
+        "employeeName": "Naresh Babu"
       }
     }
   }
