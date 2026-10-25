@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const os = require('os');
-const storage = require('./storage');
+const storage = require('./cloudDb');
 const { calculateShiftSummary, formatIndianNumber } = require('./calculations');
 
 const app = express();
@@ -44,6 +44,11 @@ function getLocalIpAddress() {
 // ----------------------------------------------------
 // MULTI-TENANT PDB (PLUGGABLE DATABASE) API
 // ----------------------------------------------------
+
+// 0. Cloud Database Status & Provider Info
+app.get('/api/database/status', (req, res) => {
+  res.json(storage.getProviderInfo());
+});
 
 // 1. List all Oil Pump Pluggable Databases
 app.get('/api/tenants', (req, res) => {
@@ -1660,9 +1665,15 @@ app.use((req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
 });
 
-app.listen(PORT, '0.0.0.0', () => {
-  const localIp = getLocalIpAddress();
-  console.log(`SRR Filling Station Multi-Tenant PDB Server running!`);
-  console.log(`Local Browser: http://localhost:${PORT}`);
-  console.log(`Mobile App LAN: http://${localIp}:${PORT}`);
-});
+async function startServer() {
+  await storage.init();
+  app.listen(PORT, '0.0.0.0', () => {
+    const localIp = getLocalIpAddress();
+    console.log(`SRR Filling Station Multi-Tenant Cloud Server running on port ${PORT}!`);
+    console.log(`Storage Mode: ${storage.getProviderInfo().description}`);
+    console.log(`Local Browser: http://localhost:${PORT}`);
+    console.log(`Mobile App LAN: http://${localIp}:${PORT}`);
+  });
+}
+
+startServer();

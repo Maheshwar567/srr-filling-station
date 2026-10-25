@@ -16,5 +16,14 @@
     "location": "NH-44 Bypass",
     "dbFile": "balaji-iocl-fuel.json",
     "createdAt": "2026-10-24T07:03:36.667Z"
+  },
+  {
+    "id": "kalyan-iocl-bunk",
+    "name": "KALYAN IOCL BUNK",
+    "brand": "Indian Oil",
+    "oilCompany": "Indian Oil Corporation Ltd. (IOCL)",
+    "location": "Kalyandurg Highway",
+    "dbFile": "kalyan-iocl-bunk.json",
+    "createdAt": "2026-10-25T04:23:49.221Z"
   }
 ]

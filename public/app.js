@@ -2853,27 +2853,72 @@ function renderSummaryPumpAssignments() {
   }).join('');
 }
 
-// --- ORACLE PDB PROVISIONING ---
-function renderAdminPdbs() {
+// --- ORACLE PDB / CLOUD ISOLATED DATABASE PROVISIONING ---
+async function renderAdminPdbs() {
   const container = document.getElementById('pdbTenantsContainer');
+  const banner = document.getElementById('cloudDbStatusBanner');
   if (!container) return;
+
+  // Fetch current database provider info
+  try {
+    const res = await fetch('/api/database/status');
+    const info = await res.json();
+    if (banner) {
+      const isCloud = info.isCloud;
+      banner.innerHTML = `
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="inline-block w-2.5 h-2.5 rounded-full ${isCloud ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}"></span>
+              <h4 class="font-black text-sm text-white">${isCloud ? '☁️ Cloud Database Active' : '📂 Local Storage Mode'}</h4>
+              <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded ${isCloud ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/30' : 'bg-amber-950 text-amber-300 border border-amber-500/30'}">
+                ${info.mode.toUpperCase()}
+              </span>
+            </div>
+            <p class="text-xs text-slate-300 font-medium">${info.description}</p>
+          </div>
+          <div class="bg-slate-800/80 border border-slate-700 px-3 py-2 rounded-xl text-right">
+            <div class="text-[10px] font-black text-slate-400 uppercase tracking-wide">Multi-Tenant Isolation</div>
+            <div class="text-xs font-bold text-emerald-400">✓ 100% Separate Station DBs (Zero Relation)</div>
+          </div>
+        </div>
+      `;
+    }
+  } catch (e) {
+    console.warn('Failed to fetch DB status', e);
+  }
 
   container.innerHTML = STATE.tenants.map(t => {
     const isActive = t.id === STATE.activeTenant;
+    const dbIdentifier = t.schemaName
+      ? `PostgreSQL Schema: ${t.schemaName}`
+      : (t.dbName ? `MongoDB Database: ${t.dbName}` : `station_${t.id.replace(/-/g, '_')}`);
+
     return `
-      <div class="bg-white rounded-2xl shadow-md border ${isActive ? 'border-2 border-orange-500 ring-2 ring-orange-200' : 'border-slate-200'} p-5 space-y-3">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-black uppercase text-orange-600 bg-orange-50 px-2 py-0.5 rounded">${t.brand}</span>
-          ${isActive ? '<span class="text-[10px] font-black bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">ACTIVE PDB</span>' : ''}
+      <div class="bg-white rounded-2xl shadow-md border ${isActive ? 'border-2 border-orange-500 ring-2 ring-orange-200' : 'border-slate-200'} p-5 space-y-3 flex flex-col justify-between">
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-black uppercase text-orange-600 bg-orange-50 px-2 py-0.5 rounded border border-orange-200">${t.brand}</span>
+            ${isActive ? '<span class="text-[10px] font-black bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">ACTIVE DB</span>' : '<span class="text-[10px] font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">INDEPENDENT</span>'}
+          </div>
+          <div>
+            <h4 class="font-black text-slate-900 text-base">${t.name}</h4>
+            <div class="mt-1 text-xs text-indigo-700 bg-indigo-50 font-mono px-2 py-1 rounded border border-indigo-100">
+              🗄️ ${dbIdentifier}
+            </div>
+          </div>
+          <div class="text-xs text-slate-600 flex items-center gap-1">
+            <span>📍</span>
+            <span>${t.location || 'Highway Station'}</span>
+          </div>
+          <div class="text-[11px] text-emerald-700 font-medium bg-emerald-50 px-2 py-1 rounded">
+            🔒 Isolated Data • No relation to other stations
+          </div>
         </div>
-        <div>
-          <h4 class="font-black text-slate-900 text-base">${t.name}</h4>
-          <span class="text-xs text-slate-500 font-mono">DB File: data/pdb/${t.dbFile}</span>
-        </div>
-        <div class="text-xs text-slate-600">${t.oilCompany}</div>
-        <div class="pt-2 border-t border-slate-100 flex items-center justify-end">
-          <button onclick="switchOilPumpTenant('${t.id}')" class="text-xs font-bold ${isActive ? 'bg-slate-200 text-slate-700' : 'bg-slate-900 text-white hover:bg-black'} px-3 py-1.5 rounded-lg shadow">
-            ${isActive ? 'Currently Loaded' : 'Load This Database'}
+        <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
+          <span class="text-[10px] text-slate-400 font-mono">${t.id}</span>
+          <button onclick="switchOilPumpTenant('${t.id}')" class="text-xs font-bold ${isActive ? 'bg-slate-200 text-slate-700 cursor-default' : 'bg-slate-900 text-white hover:bg-black'} px-3 py-1.5 rounded-lg shadow">
+            ${isActive ? 'Currently Active' : 'Switch To This DB'}
           </button>
         </div>
       </div>

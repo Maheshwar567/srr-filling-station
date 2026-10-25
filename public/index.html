@@ -1497,11 +1497,15 @@
       <!-- SUB-TAB 6: PLUGGABLE DBS (PDBS) -->
       <div id="admSection-pdbs" class="space-y-4 hidden">
         <div class="flex justify-between items-center">
-          <h3 class="font-black text-slate-900 text-base">ప్లగ్గబుల్ డేటాబేస్‌లు (Oracle PDBs)</h3>
+          <div>
+            <h3 class="font-black text-slate-900 text-base">ప్లగ్గబుల్ డేటాబేస్‌లు (Pluggable Databases)</h3>
+            <p class="text-xs text-slate-500 font-medium">Each filling station runs its own dedicated database with 100% data isolation</p>
+          </div>
           <button onclick="openCreatePdbModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-xl shadow">
-            ➕ Provision New Oil Pump PDB
+            ➕ Provision New Station DB
           </button>
         </div>
+        <div id="cloudDbStatusBanner" class="p-4 bg-slate-900 text-white rounded-2xl shadow-lg border border-slate-700"></div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="pdbTenantsContainer"></div>
       </div>
 
