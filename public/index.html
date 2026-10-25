@@ -390,10 +390,47 @@
 
             </div>
 
+            <!-- Session / Break Type Selector -->
+            <div class="bg-amber-50 rounded-2xl border border-amber-300 p-4 space-y-2">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <label class="text-xs font-black text-amber-950 flex items-center gap-1.5">
+                    <span>🍱</span>
+                    <span>విరామం / సెషన్ రకం (Break / Reading Session Type):</span>
+                  </label>
+                  <p class="text-[11px] text-amber-800 font-medium">
+                    💡 <strong>ముగింపు రీడింగ్ (Close Reading)</strong> సేవ్ చేయగానే, అది ఆటోమేటిక్‌గా తదుపరి సెషన్‌కు ప్రారంభ రీడింగ్‌గా మారుతుంది!
+                  </p>
+                </div>
+                <select id="empReadingSessionTag" class="bg-white border-2 border-amber-500 rounded-xl px-3 py-2 text-xs font-black text-slate-900 shadow-sm focus:outline-none">
+                  <option value="Meals / Lunch Break">🍱 భోజనం విరామం (Meals / Lunch Break)</option>
+                  <option value="Dinner Break">🌙 డిన్నర్ విరామం (Dinner Break)</option>
+                  <option value="Tea Break">☕ టీ విరామం (Tea / Short Break)</option>
+                  <option value="Shift Final">🏁 షిఫ్ట్ ముగింపు / ఫైనల్ రీడింగ్ (Shift End Final Reading)</option>
+                  <option value="General Save">💾 సాధారణ సేవ్ (General Reading Save)</option>
+                </select>
+              </div>
+            </div>
+
             <!-- Big Save Button -->
             <button onclick="saveStationReadings()" class="w-full bg-gradient-to-r from-emerald-600 to-green-700 hover:from-emerald-700 hover:to-green-800 text-white font-black text-base py-3.5 px-6 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2 active:scale-98">
-              <span>💾 రీడింగ్ భద్రపరచు (SAVE METER READINGS)</span>
+              <span>💾 రీడింగ్ సేవ్ చేయి & విరామం నమోదు (SAVE READING SESSION)</span>
             </button>
+
+            <!-- Overall Shift Readings Banner (Joined Reading ➔ Final Reading) -->
+            <div id="empShiftOverallReadingsBanner" class="bg-slate-900 text-white rounded-2xl p-4 shadow-md space-y-2 border border-slate-700"></div>
+
+            <!-- Reading Sessions & Break History Table -->
+            <div class="pt-2">
+              <div class="flex items-center justify-between mb-2">
+                <h4 class="font-black text-slate-800 text-xs flex items-center gap-1.5">
+                  <span>📋</span>
+                  <span>ఈ షిఫ్ట్ రీడింగ్ సెషన్లు & భోజన విరామాలు (Shift Reading Sessions Log):</span>
+                </h4>
+                <span class="text-[10px] text-slate-500 font-bold" id="empSessionsCountBadge">0 sessions</span>
+              </div>
+              <div id="empReadingHistoryContainer" class="overflow-x-auto"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -1877,6 +1914,6 @@
     </div>
   </footer>
 
-  <script src="app.js?v=5"></script>
+  <script src="app.js?v=6"></script>
 </body>
 </html>

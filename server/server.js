@@ -798,20 +798,18 @@ app.get('/api/shifts', (req, res) => {
   res.json(data.shifts);
 });
 
-app.get('/api/shifts/active', (req, res) => {
-  const tenantId = getTenantId(req);
-  const data = storage.load(tenantId);
-  const date = req.query.date || getTodayString();
-  let shift = data.shifts.find(s => s.date === date);
+function getOrCreateShift(data, date) {
+  const shiftDate = date || getTodayString();
+  let shift = data.shifts.find(s => s.date === shiftDate);
 
   if (!shift) {
-    const latestRate = data.rates.find(r => r.date === date) || data.rates[data.rates.length - 1] || { petrol: 117.07, diesel: 105.23 };
+    const latestRate = data.rates.find(r => r.date === shiftDate) || data.rates[data.rates.length - 1] || { petrol: 117.07, diesel: 105.23 };
     const prevShift = data.shifts[data.shifts.length - 1];
-    const assignments = data.shiftAssignments?.[date] || {};
+    const assignments = data.shiftAssignments?.[shiftDate] || {};
 
     shift = {
-      id: `shift-${date}`,
-      date: date,
+      id: `shift-${shiftDate}`,
+      date: shiftDate,
       status: "active",
       petrolRate: latestRate.petrol,
       dieselRate: latestRate.diesel,
@@ -824,6 +822,7 @@ app.get('/api/shifts/active', (req, res) => {
             petrol: { code: "A1", open: prevShift?.stations?.S1?.meters?.petrol?.close || 0, close: 0, testing: 0, saleLitres: 0 },
             diesel: { code: "A2", open: prevShift?.stations?.S1?.meters?.diesel?.close || 0, close: 0, testing: 0, saleLitres: 0 }
           },
+          readingsHistory: [],
           collections: { cash: 0, upi: 0, card: 0, expenses: 0, expenseReason: "", notes: "" },
           status: "pending"
         },
@@ -835,6 +834,7 @@ app.get('/api/shifts/active', (req, res) => {
             petrol: { code: "B1", open: prevShift?.stations?.S2?.meters?.petrol?.close || 0, close: 0, testing: 0, saleLitres: 0 },
             diesel: { code: "B2", open: prevShift?.stations?.S2?.meters?.diesel?.close || 0, close: 0, testing: 0, saleLitres: 0 }
           },
+          readingsHistory: [],
           collections: { cash: 0, upi: 0, card: 0, expenses: 0, expenseReason: "", notes: "" },
           status: "pending"
         },
@@ -846,6 +846,7 @@ app.get('/api/shifts/active', (req, res) => {
             petrol: { code: "A1", open: prevShift?.stations?.S3?.meters?.petrol?.close || 0, close: 0, testing: 0, saleLitres: 0 },
             diesel: { code: "A2", open: prevShift?.stations?.S3?.meters?.diesel?.close || 0, close: 0, testing: 0, saleLitres: 0 }
           },
+          readingsHistory: [],
           collections: { cash: 0, upi: 0, card: 0, expenses: 0, expenseReason: "", notes: "" },
           status: "pending"
         },
@@ -857,60 +858,143 @@ app.get('/api/shifts/active', (req, res) => {
             petrol: { code: "B1", open: prevShift?.stations?.S4?.meters?.petrol?.close || 0, close: 0, testing: 0, saleLitres: 0 },
             diesel: { code: "B2", open: prevShift?.stations?.S4?.meters?.diesel?.close || 0, close: 0, testing: 0, saleLitres: 0 }
           },
+          readingsHistory: [],
           collections: { cash: 0, upi: 0, card: 0, expenses: 0, expenseReason: "", notes: "" },
           status: "pending"
         }
       }
     };
     data.shifts.push(shift);
-    storage.save(tenantId, data);
   }
+  return shift;
+}
 
+app.get('/api/shifts/active', (req, res) => {
+  const tenantId = getTenantId(req);
+  const data = storage.load(tenantId);
+  const date = req.query.date || getTodayString();
+  const shift = getOrCreateShift(data, date);
+  storage.save(tenantId, data);
   res.json(shift);
 });
 
 // Update Station Readings
 app.post('/api/shifts/station-readings', (req, res) => {
   const tenantId = getTenantId(req);
-  const { date, stationId, employeeName, meters } = req.body;
+  const { date, stationId, employeeName, meters, sessionTag, time } = req.body;
   if (!date || !stationId || !meters) {
     return res.status(400).json({ error: "Missing required shift fields" });
   }
 
   const data = storage.load(tenantId);
-  let shift = data.shifts.find(s => s.date === date);
-  if (!shift) {
-    return res.status(404).json({ error: "Shift not found for date " + date });
-  }
+  const shift = getOrCreateShift(data, date);
 
   if (!shift.stations[stationId]) {
-    shift.stations[stationId] = { stationId, meters: {}, collections: {} };
+    shift.stations[stationId] = { stationId, meters: {}, collections: {}, readingsHistory: [] };
   }
 
   const st = shift.stations[stationId];
   if (employeeName) st.employeeName = employeeName;
+  if (!st.readingsHistory) st.readingsHistory = [];
 
   const pCode = stationId === 'S1' || stationId === 'S3' ? 'A1' : 'B1';
-  const pOpen = Number(meters.petrol?.open || st.meters?.petrol?.open || 0);
-  const pClose = Number(meters.petrol?.close || st.meters?.petrol?.close || 0);
+  const pOpen = Number(meters.petrol?.open ?? (st.nextOpenPetrol || st.meters?.petrol?.open || 0));
+  const pClose = Number(meters.petrol?.close || 0);
   const pTesting = Number(meters.petrol?.testing || st.meters?.petrol?.testing || 0);
-  const pSale = pClose > pOpen ? Number((pClose - pOpen - pTesting).toFixed(2)) : (meters.petrol?.saleLitres || 0);
 
   const dCode = stationId === 'S1' || stationId === 'S3' ? 'A2' : 'B2';
-  const dOpen = Number(meters.diesel?.open || st.meters?.diesel?.open || 0);
-  const dClose = Number(meters.diesel?.close || st.meters?.diesel?.close || 0);
+  const dOpen = Number(meters.diesel?.open ?? (st.nextOpenDiesel || st.meters?.diesel?.open || 0));
+  const dClose = Number(meters.diesel?.close || 0);
   const dTesting = Number(meters.diesel?.testing || st.meters?.diesel?.testing || 0);
-  const dSale = dClose > dOpen ? Number((dClose - dOpen - dTesting).toFixed(2)) : (meters.diesel?.saleLitres || 0);
+
+  // 1. Record the initial joined meters for this staff at shift start if not yet set
+  if (!st.initialJoinedMeters || !st.initialJoinedMeters.petrol) {
+    st.initialJoinedMeters = {
+      petrol: { open: pOpen },
+      diesel: { open: dOpen },
+      joinedAt: time || new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
+    };
+  }
+
+  // 2. Record this save session in readingsHistory (Meals break, dinner break, shift final, etc.)
+  const legPetrolSale = pClose > pOpen ? Number((pClose - pOpen - pTesting).toFixed(2)) : 0;
+  const legDieselSale = dClose > dOpen ? Number((dClose - dOpen - dTesting).toFixed(2)) : 0;
+
+  const sessionEntry = {
+    id: `sess-${Date.now()}`,
+    sessionIndex: st.readingsHistory.length + 1,
+    time: time || new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
+    tag: sessionTag || (st.readingsHistory.length === 0 ? "Shift Start" : "Meals Break"),
+    employeeName: employeeName || st.employeeName || "Attendant",
+    petrol: { open: pOpen, close: pClose, testing: pTesting, saleLitres: legPetrolSale },
+    diesel: { open: dOpen, close: dClose, testing: dTesting, saleLitres: legDieselSale }
+  };
+  st.readingsHistory.push(sessionEntry);
+
+  // 3. User Requirement: "once the close reading will be given the that close reading will default comes in opening reading"
+  st.nextOpenPetrol = pClose > 0 ? pClose : pOpen;
+  st.nextOpenDiesel = dClose > 0 ? dClose : dOpen;
+
+  // 4. User Requirement: "when the shift comes end thn the final reading will be staff noted the joined reading and end/final reading only comes in picture"
+  const finalOpenPetrol = st.initialJoinedMeters.petrol.open;
+  const finalOpenDiesel = st.initialJoinedMeters.diesel.open;
+  const finalClosePetrol = pClose > 0 ? pClose : (st.meters?.petrol?.close || pOpen);
+  const finalCloseDiesel = dClose > 0 ? dClose : (st.meters?.diesel?.close || dOpen);
+  const netPetrolLitres = finalClosePetrol > finalOpenPetrol ? Number((finalClosePetrol - finalOpenPetrol - pTesting).toFixed(2)) : 0;
+  const netDieselLitres = finalCloseDiesel > finalOpenDiesel ? Number((finalCloseDiesel - finalOpenDiesel - dTesting).toFixed(2)) : 0;
 
   st.meters = {
-    petrol: { code: pCode, open: pOpen, close: pClose, testing: pTesting, saleLitres: pSale },
-    diesel: { code: dCode, open: dOpen, close: dClose, testing: dTesting, saleLitres: dSale }
+    petrol: { code: pCode, open: finalOpenPetrol, close: finalClosePetrol, testing: pTesting, saleLitres: netPetrolLitres },
+    diesel: { code: dCode, open: finalOpenDiesel, close: finalCloseDiesel, testing: dTesting, saleLitres: netDieselLitres }
   };
 
   if (pClose > 0 || dClose > 0) st.status = "readings-entered";
 
   storage.save(tenantId, data);
-  res.json({ success: true, station: st });
+  res.json({
+    success: true,
+    station: st,
+    session: sessionEntry,
+    nextOpen: { petrol: st.nextOpenPetrol, diesel: st.nextOpenDiesel }
+  });
+});
+
+// Delete a Reading Session Row
+app.delete('/api/shifts/station-readings/:id', (req, res) => {
+  const tenantId = getTenantId(req);
+  const { id } = req.params;
+  const { date, stationId } = req.query;
+
+  const data = storage.load(tenantId);
+  const shift = data.shifts.find(s => s.date === date);
+  if (!shift || !shift.stations[stationId]) {
+    return res.status(404).json({ error: "Shift or station record not found" });
+  }
+
+  const st = shift.stations[stationId];
+  if (!st.readingsHistory) st.readingsHistory = [];
+
+  const idx = st.readingsHistory.findIndex(s => s.id === id);
+  if (idx !== -1) {
+    st.readingsHistory.splice(idx, 1);
+  }
+
+  // Recalculate latest close and next open from remaining history
+  if (st.readingsHistory.length > 0) {
+    const lastSession = st.readingsHistory[st.readingsHistory.length - 1];
+    st.nextOpenPetrol = lastSession.petrol.close > 0 ? lastSession.petrol.close : lastSession.petrol.open;
+    st.nextOpenDiesel = lastSession.diesel.close > 0 ? lastSession.diesel.close : lastSession.diesel.open;
+    if (st.meters?.petrol) st.meters.petrol.close = lastSession.petrol.close;
+    if (st.meters?.diesel) st.meters.diesel.close = lastSession.diesel.close;
+  } else {
+    st.nextOpenPetrol = st.initialJoinedMeters?.petrol?.open || 0;
+    st.nextOpenDiesel = st.initialJoinedMeters?.diesel?.open || 0;
+    if (st.meters?.petrol) st.meters.petrol.close = 0;
+    if (st.meters?.diesel) st.meters.diesel.close = 0;
+  }
+
+  storage.save(tenantId, data);
+  res.json({ success: true, readingsHistory: st.readingsHistory, nextOpen: { petrol: st.nextOpenPetrol, diesel: st.nextOpenDiesel } });
 });
 
 // Shift Handover with Automated Shortage Tracking

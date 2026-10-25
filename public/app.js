@@ -13,6 +13,14 @@
  * - Multi-Tenant Pluggable Database (Oracle PDB concept)
  */
 
+function getTodayDateString() {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 const STATE = {
   currentUser: null, // { id, name, username, role, assignedStation }
   role: 'employee',
@@ -24,7 +32,7 @@ const STATE = {
   selectedEmployeeName: '',
   dutyAssignments: {},
   employeeTab: 'reading', // 'reading', 'testing', 'card', 'reminder', 'vehicle', 'handover'
-  selectedDate: '2026-10-23', // Shift date
+  selectedDate: getTodayDateString(), // Defaults to Today's Date
   adminTab: 'summary', // 'summary', 'fleet', 'reminders', 'employees', 'roster', 'pdbs', 'rates', 'tanks'
   rates: { petrol: 117.07, diesel: 105.23 },
   shift: null,
@@ -407,7 +415,7 @@ function routeUserView() {
 
       // Lock shift date to active shift for mgmt
       if (headerDateInput) {
-        headerDateInput.value = STATE.shift?.date || STATE.selectedDate || "2026-10-23";
+        headerDateInput.value = STATE.shift?.date || STATE.selectedDate || getTodayDateString();
         headerDateInput.disabled = true;
       }
     } else if (userRole === 'owner') {
@@ -783,20 +791,21 @@ function renderEmployeeView() {
   if (dCodeEl) dCodeEl.innerText = cfg.dieselCode;
 
   // Pre-fill meter readings
-  const pOpen = stData.meters?.petrol?.open ?? '';
-  const pClose = stData.meters?.petrol?.close ?? '';
-  const dOpen = stData.meters?.diesel?.open ?? '';
-  const dClose = stData.meters?.diesel?.close ?? '';
+  // User Requirement: "once the close reading will be given the that close reading will default comes in opening reading"
+  const pOpen = (stData.nextOpenPetrol !== undefined && stData.nextOpenPetrol !== null) ? stData.nextOpenPetrol : (stData.meters?.petrol?.open ?? '');
+  const pClose = ''; // Fresh for new entry
+  const dOpen = (stData.nextOpenDiesel !== undefined && stData.nextOpenDiesel !== null) ? stData.nextOpenDiesel : (stData.meters?.diesel?.open ?? '');
+  const dClose = ''; // Fresh for new entry
 
   const pOpenInput = document.getElementById('empPetrolOpen');
   const pCloseInput = document.getElementById('empPetrolClose');
   const dOpenInput = document.getElementById('empDieselOpen');
   const dCloseInput = document.getElementById('empDieselClose');
 
-  if (pOpenInput) pOpenInput.value = pOpen;
-  if (pCloseInput) pCloseInput.value = pClose ? pClose : '';
-  if (dOpenInput) dOpenInput.value = dOpen;
-  if (dCloseInput) dCloseInput.value = dClose ? dClose : '';
+  if (pOpenInput) pOpenInput.value = pOpen !== '' ? pOpen : 0;
+  if (pCloseInput) pCloseInput.value = pClose;
+  if (dOpenInput) dOpenInput.value = dOpen !== '' ? dOpen : 0;
+  if (dCloseInput) dCloseInput.value = dClose;
 
   // Testing litres (dedicated tab records)
   const pTesting = Number(stData.meters?.petrol?.testing || 0);
@@ -844,6 +853,7 @@ function renderEmployeeView() {
   if (upiTotDisp) upiTotDisp.innerText = `₹${totalUpi.toLocaleString('en-IN')}`;
 
   calculateEmployeeLiveLitres();
+  renderReadingSessionsHistory();
   renderTestingLog();
   renderCardSwipesLog();
   renderUpiList();
@@ -878,12 +888,157 @@ function calculateEmployeeLiveLitres() {
   calculateLiveHandoverTally();
 }
 
+// Render Reading Sessions & Break Log Table
+function renderReadingSessionsHistory() {
+  const container = document.getElementById('empReadingHistoryContainer');
+  const banner = document.getElementById('empShiftOverallReadingsBanner');
+  const badge = document.getElementById('empSessionsCountBadge');
+  if (!container) return;
+
+  const stId = STATE.selectedStation;
+  const stData = STATE.shift?.stations?.[stId] || {};
+  const history = stData.readingsHistory || [];
+
+  if (badge) badge.innerText = `${history.length} session${history.length === 1 ? '' : 's'}`;
+
+  // Render Overall Shift Readings Banner (Joined Reading ➔ Current/Final Reading)
+  if (banner) {
+    const joinedPetrol = stData.initialJoinedMeters?.petrol?.open ?? stData.meters?.petrol?.open ?? 0;
+    const joinedDiesel = stData.initialJoinedMeters?.diesel?.open ?? stData.meters?.diesel?.open ?? 0;
+    const currentClosePetrol = stData.meters?.petrol?.close || joinedPetrol;
+    const currentCloseDiesel = stData.meters?.diesel?.close || joinedDiesel;
+    const netPetrolL = stData.meters?.petrol?.saleLitres || 0;
+    const netDieselL = stData.meters?.diesel?.saleLitres || 0;
+    const joinedTime = stData.initialJoinedMeters?.joinedAt || 'Shift Start';
+
+    banner.innerHTML = `
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-700">
+        <div>
+          <span class="text-[10px] font-black uppercase tracking-wider text-amber-400">Shift Overview (ఈ షిఫ్ట్ మొత్తం సారాంశం)</span>
+          <h4 class="text-sm font-black text-white">స్టాఫ్ చేరిన రీడింగ్ ➔ ప్రస్తుత ముగింపు రీడింగ్</h4>
+        </div>
+        <div class="text-right">
+          <span class="text-[10px] text-slate-300 font-mono">చేరిన సమయం (Joined): <strong>${joinedTime}</strong></span>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-1">
+        <div class="bg-slate-800/90 p-3 rounded-xl border border-amber-500/40">
+          <div class="text-xs font-bold text-amber-300 flex items-center justify-between">
+            <span>⛽ పెట్రోల్ (${stData.meters?.petrol?.code || 'A1'})</span>
+            <span class="font-mono font-black text-amber-400 text-sm">${netPetrolL.toFixed(2)} L Net</span>
+          </div>
+          <div class="flex items-center justify-between mt-1 text-xs font-mono text-slate-300">
+            <span>Joined: <strong class="text-white">${joinedPetrol}</strong></span>
+            <span>➔</span>
+            <span>End: <strong class="text-amber-300 text-sm">${currentClosePetrol}</strong></span>
+          </div>
+        </div>
+        <div class="bg-slate-800/90 p-3 rounded-xl border border-blue-500/40">
+          <div class="text-xs font-bold text-blue-300 flex items-center justify-between">
+            <span>🛢️ డీజిల్ (${stData.meters?.diesel?.code || 'A2'})</span>
+            <span class="font-mono font-black text-blue-400 text-sm">${netDieselL.toFixed(2)} L Net</span>
+          </div>
+          <div class="flex items-center justify-between mt-1 text-xs font-mono text-slate-300">
+            <span>Joined: <strong class="text-white">${joinedDiesel}</strong></span>
+            <span>➔</span>
+            <span>End: <strong class="text-blue-300 text-sm">${currentCloseDiesel}</strong></span>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Render Table
+  if (history.length === 0) {
+    container.innerHTML = `
+      <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 text-center text-xs text-slate-500 font-medium">
+        ఇంకా ఎలాంటి విరామం రీడింగ్‌లు నమోదు కాలేదు. భోజనం/డిన్నర్ వెళ్లేటప్పుడు ముగింపు రీడింగ్ నమోదు చేసి సేవ్ చేయండి.
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = `
+    <table class="w-full text-left text-xs bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <thead class="bg-slate-100 text-slate-700 font-black border-b border-slate-200">
+        <tr>
+          <th class="py-2.5 px-3"># సెషన్</th>
+          <th class="py-2.5 px-3">సమయం & రకం</th>
+          <th class="py-2.5 px-3">పెట్రోల్ (Open ➔ Close)</th>
+          <th class="py-2.5 px-3">డీజిల్ (Open ➔ Close)</th>
+          <th class="py-2.5 px-3">సేల్ లీటర్లు</th>
+          <th class="py-2.5 px-3 text-right">చర్య</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        ${history.map((sess, idx) => `
+          <tr class="hover:bg-slate-50">
+            <td class="py-2.5 px-3 font-mono font-bold text-slate-600">#${idx + 1}</td>
+            <td class="py-2.5 px-3">
+              <span class="font-bold text-slate-900 block">${sess.tag}</span>
+              <span class="text-[10px] text-slate-500 font-mono">${sess.time}</span>
+            </td>
+            <td class="py-2.5 px-3 font-mono text-[11px]">
+              <span class="text-slate-600">${sess.petrol.open}</span> ➔ <span class="font-black text-amber-900">${sess.petrol.close}</span>
+              <div class="text-[10px] text-emerald-700 font-bold">${sess.petrol.saleLitres} L</div>
+            </td>
+            <td class="py-2.5 px-3 font-mono text-[11px]">
+              <span class="text-slate-600">${sess.diesel.open}</span> ➔ <span class="font-black text-blue-900">${sess.diesel.close}</span>
+              <div class="text-[10px] text-emerald-700 font-bold">${sess.diesel.saleLitres} L</div>
+            </td>
+            <td class="py-2.5 px-3 font-mono font-black text-slate-900">
+              ${(sess.petrol.saleLitres + sess.diesel.saleLitres).toFixed(2)} L
+            </td>
+            <td class="py-2.5 px-3 text-right">
+              <button onclick="deleteReadingSession('${sess.id}')" class="text-rose-600 hover:text-rose-800 text-xs font-bold hover:underline">
+                🗑️ Delete
+              </button>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+async function deleteReadingSession(sessionId) {
+  if (!confirm('ఈ రీడింగ్ సెషన్ రికార్డు డిలీట్ చేయాలా? (Delete this reading session?)')) return;
+  try {
+    const res = await fetch(`/api/shifts/station-readings/${sessionId}?pump=${STATE.activeTenant}&date=${STATE.selectedDate}&stationId=${STATE.selectedStation}`, {
+      method: 'DELETE'
+    });
+    const result = await res.json();
+    if (result.success) {
+      showToast('రీడింగ్ సెషన్ తొలగించబడింది');
+      loadAllData();
+    }
+  } catch (err) {
+    showToast('Failed to delete reading session', 'error');
+  }
+}
+
 async function saveStationReadings() {
   const pOpen = parseFloat(document.getElementById('empPetrolOpen').value) || 0;
   const pClose = parseFloat(document.getElementById('empPetrolClose').value) || 0;
   const dOpen = parseFloat(document.getElementById('empDieselOpen').value) || 0;
   const dClose = parseFloat(document.getElementById('empDieselClose').value) || 0;
 
+  if (pClose <= 0 && dClose <= 0) {
+    showToast('దయచేసి ముగింపు రీడింగ్ (Closing Reading) నమోదు చేయండి', 'error');
+    return;
+  }
+
+  if (pClose > 0 && pClose < pOpen) {
+    showToast('పెట్రోల్ ముగింపు రీడింగ్ ప్రారంభ రీడింగ్ కంటే తక్కువగా ఉండకూడదు', 'error');
+    return;
+  }
+
+  if (dClose > 0 && dClose < dOpen) {
+    showToast('డీజిల్ ముగింపు రీడింగ్ ప్రారంభ రీడింగ్ కంటే తక్కువగా ఉండకూడదు', 'error');
+    return;
+  }
+
+  const sessionTag = document.getElementById('empReadingSessionTag')?.value || 'Meals / Lunch Break';
   const stData = STATE.shift?.stations?.[STATE.selectedStation] || {};
   const pTest = Number(stData.meters?.petrol?.testing || 0);
   const dTest = Number(stData.meters?.diesel?.testing || 0);
@@ -892,6 +1047,8 @@ async function saveStationReadings() {
     date: STATE.selectedDate,
     stationId: STATE.selectedStation,
     employeeName: STATE.selectedEmployeeName,
+    sessionTag,
+    time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
     meters: {
       petrol: { open: pOpen, close: pClose, testing: pTest },
       diesel: { open: dOpen, close: dClose, testing: dTest }
@@ -906,8 +1063,16 @@ async function saveStationReadings() {
     });
     const result = await res.json();
     if (result.success) {
-      showToast(`Station ${STATE.selectedStation} readings saved!`);
+      showToast(`రీడింగ్ సేవ్ చేయబడింది! ముగింపు రీడింగ్ తదుపరి ప్రారంభ రీడింగ్‌గా సెట్ చేయబడింది.`);
+      // User Requirement: "once the close reading will be given the that close reading will default comes in opening reading"
+      document.getElementById('empPetrolOpen').value = result.nextOpen?.petrol ?? pClose;
+      document.getElementById('empPetrolClose').value = '';
+      document.getElementById('empDieselOpen').value = result.nextOpen?.diesel ?? dClose;
+      document.getElementById('empDieselClose').value = '';
+      calculateEmployeeLiveLitres();
       loadAllData();
+    } else {
+      showToast(result.error || 'Failed to save readings', 'error');
     }
   } catch (err) {
     console.error(err);

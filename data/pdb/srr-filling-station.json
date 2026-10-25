@@ -1,18 +1,40 @@
 {
+  "rates": [
+    {
+      "date": "2026-10-23",
+      "diesel": 105.23,
+      "petrol": 117.07,
+      "updatedAt": "2026-10-23T08:30:00.000Z"
+    },
+    {
+      "date": "2026-10-24",
+      "diesel": 105.23,
+      "petrol": 117.07,
+      "updatedAt": "2026-10-24T08:30:00.000Z"
+    }
+  ],
+  "tanks": [
+    {
+      "id": "tank-ms",
+      "fuel": "Petrol",
+      "name": "Petrol Tank (MS)",
+      "dipCm": 165,
+      "capacity": 20000,
+      "deliveries": [],
+      "currentStock": 14250
+    },
+    {
+      "id": "tank-hsd",
+      "fuel": "Diesel",
+      "name": "Diesel Tank (HSD)",
+      "dipCm": 198,
+      "capacity": 25000,
+      "deliveries": [],
+      "currentStock": 18900
+    }
+  ],
   "config": {
-    "stationId": "srr-filling-station",
-    "stationName": "SRR FILLING STATION",
     "brand": "Indian Oil",
-    "oilCompany": "Indian Oil Corporation Ltd. (IOCL)",
-    "location": "Highway Point",
-    "adminPin": "123",
-    "adminUsername": "admin",
-    "adminPassword": "123",
-    "mgmtUsername": "mgmt",
-    "mgmtPassword": "123",
-    "ownerUsername": "owner",
-    "ownerPassword": "123",
-    "developerPassword": "123",
     "pumps": [
       {
         "id": "Pump1",
@@ -24,13 +46,13 @@
             "pump": "Pump 1",
             "nozzles": [
               {
-                "fuel": "Petrol",
                 "code": "A1",
+                "fuel": "Petrol",
                 "label": "Petrol (A1)"
               },
               {
-                "fuel": "Diesel",
                 "code": "A2",
+                "fuel": "Diesel",
                 "label": "Diesel (A2)"
               }
             ]
@@ -41,13 +63,13 @@
             "pump": "Pump 1",
             "nozzles": [
               {
-                "fuel": "Petrol",
                 "code": "B1",
+                "fuel": "Petrol",
                 "label": "Petrol (B1)"
               },
               {
-                "fuel": "Diesel",
                 "code": "B2",
+                "fuel": "Diesel",
                 "label": "Diesel (B2)"
               }
             ]
@@ -64,13 +86,13 @@
             "pump": "Pump 2",
             "nozzles": [
               {
-                "fuel": "Petrol",
                 "code": "A1",
+                "fuel": "Petrol",
                 "label": "Petrol (A1)"
               },
               {
-                "fuel": "Diesel",
                 "code": "A2",
+                "fuel": "Diesel",
                 "label": "Diesel (A2)"
               }
             ]
@@ -81,578 +103,454 @@
             "pump": "Pump 2",
             "nozzles": [
               {
-                "fuel": "Petrol",
                 "code": "B1",
+                "fuel": "Petrol",
                 "label": "Petrol (B1)"
               },
               {
-                "fuel": "Diesel",
                 "code": "B2",
+                "fuel": "Diesel",
                 "label": "Diesel (B2)"
               }
             ]
           }
         ]
       }
-    ]
-  },
-  "rates": [
-    {
-      "date": "2026-10-23",
-      "petrol": 117.07,
-      "diesel": 105.23,
-      "updatedAt": "2026-10-23T08:30:00.000Z"
-    },
-    {
-      "date": "2026-10-24",
-      "petrol": 117.07,
-      "diesel": 105.23,
-      "updatedAt": "2026-10-24T08:30:00.000Z"
-    }
-  ],
-  "employees": [
-    {
-      "id": "emp1",
-      "name": "Ramesh Kumar",
-      "phone": "9848011223",
-      "fatherName": "K. Narayana Swamy",
-      "villageName": "Kalyandurg, Anantapur Dist",
-      "aadhaarNumber": "4589 1234 5678",
-      "emergencyContact": "9440123999 (Brother - Siva)",
-      "address": "Plot 14, Near IOCL Bunk, Main Road",
-      "role": "Attendant",
-      "joiningDate": "2024-01-10",
-      "active": true,
-      "username": "9848011223",
-      "password": "123"
-    },
-    {
-      "id": "emp2",
-      "name": "Suresh Reddy",
-      "phone": "9848022334",
-      "fatherName": "M. Ramachandra Reddy",
-      "villageName": "Beluguppa Village",
-      "aadhaarNumber": "6712 3456 7890",
-      "emergencyContact": "9848088771 (Wife - Lakshmi)",
-      "address": "Door 2-45, Brahmin Street, Beluguppa",
-      "role": "Attendant",
-      "joiningDate": "2024-03-15",
-      "active": true,
-      "username": "9848022334",
-      "password": "123"
-    },
-    {
-      "id": "emp3",
-      "name": "Venkatesh Rao",
-      "phone": "9848033445",
-      "fatherName": "G. Venkateswarlu",
-      "villageName": "Rayadurg Mandal",
-      "aadhaarNumber": "8899 4321 0987",
-      "emergencyContact": "9441122334 (Father)",
-      "address": "H.No 4-89, Near Old Bus Stand, Rayadurg",
-      "role": "Attendant",
-      "joiningDate": "2024-05-20",
-      "active": true,
-      "username": "9848033445",
-      "password": "123"
-    },
-    {
-      "id": "emp4",
-      "name": "Naresh Babu",
-      "phone": "9848044556",
-      "fatherName": "B. Venkataramana",
-      "villageName": "Atmakur Village",
-      "aadhaarNumber": "3344 5566 7788",
-      "emergencyContact": "9988112233 (Uncle - Prasad)",
-      "address": "3-12, Atmakur",
-      "role": "Attendant",
-      "joiningDate": "2024-08-01",
-      "active": true,
-      "username": "9848044556",
-      "password": "123"
-    },
-    {
-      "id": "emp5",
-      "name": "Rajesh Varma",
-      "phone": "9848055667",
-      "fatherName": "D. Satyanarayana",
-      "villageName": "Dharmavaram",
-      "aadhaarNumber": "9988 7766 5544",
-      "emergencyContact": "9701122334 (Brother)",
-      "address": "5-67, Weaver Colony, Dharmavaram",
-      "role": "Attendant",
-      "joiningDate": "2025-01-05",
-      "active": true,
-      "username": "9848055667",
-      "password": "123"
-    },
-    {
-      "id": "emp6",
-      "name": "Prasad Rao",
-      "phone": "9848066778",
-      "fatherName": "P. Subba Rao",
-      "villageName": "Guntakal",
-      "aadhaarNumber": "2233 4455 6677",
-      "emergencyContact": "9866112244 (Father)",
-      "address": "Railway Station Road, Guntakal",
-      "role": "Attendant",
-      "joiningDate": "2025-03-12",
-      "active": true,
-      "username": "9848066778",
-      "password": "123"
-    },
-    {
-      "id": "emp-1792838466290",
-      "name": "Mahesh reddy",
-      "username": "7799532888",
-      "password": "123",
-      "phone": "7799532888",
-      "fatherName": "Maheswar Reddy",
-      "villageName": "Ieeja",
-      "aadhaarNumber": "",
-      "emergencyContact": "",
-      "address": "Ieeja",
-      "role": "Attendant",
-      "joiningDate": "2026-10-24",
-      "active": true
-    },
-    {
-      "id": "emp-1792839909945",
-      "name": "Maheswar Reddy",
-      "username": "1234576890",
-      "password": "123",
-      "phone": "1234576890",
-      "fatherName": "S Maheswar Reddy",
-      "villageName": "Ieeja",
-      "aadhaarNumber": "",
-      "emergencyContact": "1234567788",
-      "address": "",
-      "role": "Attendant",
-      "joiningDate": "2026-10-24",
-      "active": true
-    },
-    {
-      "id": "emp-1792840783873",
-      "name": "Mahesh reddy",
-      "username": "7795628848",
-      "password": "123",
-      "phone": "7795628848",
-      "fatherName": "Raghav reddy",
-      "villageName": "Ieeja",
-      "aadhaarNumber": "",
-      "emergencyContact": "",
-      "address": "",
-      "role": "Attendant",
-      "joiningDate": "2026-10-24",
-      "active": true
-    },
-    {
-      "id": "emp-1792842606451",
-      "name": "Siva Shankar",
-      "username": "9900409848",
-      "password": "123",
-      "phone": "9900409848",
-      "fatherName": "Ramanaiah",
-      "villageName": "Rayadurg",
-      "aadhaarNumber": "",
-      "emergencyContact": "",
-      "address": "",
-      "role": "Attendant",
-      "joiningDate": "2026-10-24",
-      "active": true
-    }
-  ],
-  "shiftAssignments": {
-    "2026-10-23": {
-      "S1": {
-        "employeeName": "Ramesh Kumar",
-        "dutyPin": "1122"
-      },
-      "S2": {
-        "employeeName": "Suresh Reddy",
-        "dutyPin": "3344"
-      },
-      "S3": {
-        "employeeName": "Rajesh Varma",
-        "dutyPin": "5566"
-      },
-      "S4": {
-        "employeeName": "Prasad Rao",
-        "dutyPin": "7788"
-      }
-    },
-    "2026-10-24": {
-      "S1": {
-        "employeeName": "Ramesh Kumar",
-        "dutyPin": "1122"
-      },
-      "S2": {
-        "employeeName": "Suresh Reddy",
-        "dutyPin": "3344"
-      },
-      "S3": {
-        "employeeName": "Rajesh Varma",
-        "dutyPin": "5566"
-      },
-      "S4": {
-        "employeeName": "Prasad Rao",
-        "dutyPin": "7788"
-      }
-    }
+    ],
+    "adminPin": "123",
+    "location": "Highway Point",
+    "stationId": "srr-filling-station",
+    "oilCompany": "Indian Oil Corporation Ltd. (IOCL)",
+    "stationName": "SRR FILLING STATION",
+    "mgmtPassword": "123",
+    "mgmtUsername": "mgmt",
+    "adminPassword": "123",
+    "adminUsername": "admin",
+    "ownerPassword": "123",
+    "ownerUsername": "owner",
+    "developerPassword": "123"
   },
   "shifts": [
     {
       "id": "shift-2026-10-23",
       "date": "2026-10-23",
       "status": "completed",
-      "petrolRate": 117.07,
-      "dieselRate": 105.23,
       "stations": {
         "S1": {
-          "stationId": "S1",
-          "employeeName": "Ramesh Kumar",
           "pump": "Pump 1",
           "meters": {
-            "petrol": {
-              "code": "A1",
-              "open": 1000,
-              "close": 1100,
-              "testing": 5,
-              "saleLitres": 95
-            },
             "diesel": {
               "code": "A2",
               "open": 2000,
               "close": 2080,
-              "testing": 5,
-              "saleLitres": 75
-            }
-          },
-          "collections": {
-            "cash": 7659,
-            "upi": 0,
-            "card": 0,
-            "expenses": 0,
-            "expenseReason": "",
-            "notes": "Handover shortage test"
-          },
-          "status": "submitted",
-          "submittedAt": "2026-10-24T09:05:00.000Z",
-          "testingRecords": [
-            {
-              "id": "tst-1792834552312",
-              "time": "03:05 PM",
-              "fuelType": "Petrol",
-              "litres": 5,
-              "reason": "Daily calibration check poured back to tank"
+              "testing": 0,
+              "saleLitres": 80
             },
-            {
-              "id": "tst-1792834565011",
-              "time": "03:06 PM",
-              "fuelType": "Diesel",
-              "litres": 5,
-              "reason": "Daily calibration check poured back to tank"
+            "petrol": {
+              "code": "A1",
+              "open": 1000,
+              "close": 1100,
+              "testing": 0,
+              "saleLitres": 100
             }
-          ],
+          },
+          "status": "readings-entered",
+          "shortage": 1000,
+          "grossSale": 19014,
+          "stationId": "S1",
           "cardSwipes": [
             {
               "id": "csw-1792834525202",
               "date": "2026-10-24",
-              "dateTime": "2026-10-24T09:35:00.000Z",
               "time": "03:05 PM",
               "amount": 1000,
+              "slipNo": "",
               "machine": "IOCL POS",
-              "slipNo": ""
+              "dateTime": "2026-10-24T09:35:00.000Z"
             }
           ],
-          "expensesList": [],
+          "collections": {
+            "upi": 0,
+            "card": 0,
+            "cash": 7659,
+            "notes": "Handover shortage test",
+            "expenses": 0,
+            "expenseReason": ""
+          },
+          "submittedAt": "2026-10-24T09:05:00.000Z",
           "upiPayments": [],
-          "grossSale": 19014,
-          "totalDeductions": 10355,
+          "employeeName": "Ramesh Kumar",
           "expectedCash": 8659,
-          "shortage": 1000
+          "expensesList": [],
+          "testingRecords": [],
+          "totalDeductions": 10355
         },
         "S2": {
-          "stationId": "S2",
-          "employeeName": "Suresh Reddy",
           "pump": "Pump 1",
           "meters": {
-            "petrol": {
-              "code": "B1",
-              "open": 98400.1,
-              "close": 99150.3,
-              "testing": 5,
-              "saleLitres": 745.2
-            },
             "diesel": {
               "code": "B2",
               "open": 187200,
               "close": 187880.5,
               "testing": 5,
               "saleLitres": 675.5
+            },
+            "petrol": {
+              "code": "B1",
+              "open": 98400.1,
+              "close": 99150.3,
+              "testing": 5,
+              "saleLitres": 745.2
             }
           },
+          "status": "submitted",
+          "stationId": "S2",
+          "cardSwipes": [],
           "collections": {
-            "cash": 112000,
             "upi": 39000,
             "card": 6000,
+            "cash": 112000,
+            "notes": "",
             "expenses": 250,
-            "expenseReason": "Receipt paper",
-            "notes": ""
+            "expenseReason": "Receipt paper"
           },
-          "status": "submitted",
           "submittedAt": "2026-10-24T09:08:00.000Z",
+          "upiPayments": [],
+          "employeeName": "Suresh Reddy",
+          "expensesList": [],
           "testingRecords": [
             {
               "id": "tst-init-p-S2",
               "time": "09:00 AM",
-              "fuelType": "Petrol",
               "litres": 5,
-              "reason": "Daily calibration check"
+              "reason": "Daily calibration check",
+              "fuelType": "Petrol"
             },
             {
               "id": "tst-init-d-S2",
               "time": "09:00 AM",
-              "fuelType": "Diesel",
               "litres": 5,
-              "reason": "Daily calibration check"
+              "reason": "Daily calibration check",
+              "fuelType": "Diesel"
             }
-          ],
-          "cardSwipes": [],
-          "expensesList": [],
-          "upiPayments": []
+          ]
         },
         "S3": {
-          "stationId": "S3",
-          "employeeName": "Rajesh Varma",
           "pump": "Pump 2",
           "meters": {
-            "petrol": {
-              "code": "A1",
-              "open": 310200,
-              "close": 310955.41,
-              "testing": 5,
-              "saleLitres": 750.41
-            },
             "diesel": {
               "code": "A2",
               "open": 412500.1,
               "close": 413165.69,
               "testing": 5,
               "saleLitres": 660.59
+            },
+            "petrol": {
+              "code": "A1",
+              "open": 310200,
+              "close": 310955.41,
+              "testing": 5,
+              "saleLitres": 750.41
             }
           },
+          "status": "readings-entered",
+          "stationId": "S3",
+          "cardSwipes": [],
           "collections": {
-            "cash": 118000,
             "upi": 32000,
             "card": 4500,
+            "cash": 118000,
+            "notes": "",
             "expenses": 200,
-            "expenseReason": "Water cans",
-            "notes": ""
+            "expenseReason": "Water cans"
           },
-          "status": "readings-entered",
           "submittedAt": "2026-10-24T09:12:00.000Z",
+          "upiPayments": [],
+          "employeeName": "Rajesh Varma",
+          "expensesList": [],
           "testingRecords": [
             {
               "id": "tst-init-p-S3",
               "time": "09:00 AM",
-              "fuelType": "Petrol",
               "litres": 5,
-              "reason": "Daily calibration check"
+              "reason": "Daily calibration check",
+              "fuelType": "Petrol"
             },
             {
               "id": "tst-init-d-S3",
               "time": "09:00 AM",
-              "fuelType": "Diesel",
               "litres": 5,
-              "reason": "Daily calibration check"
+              "reason": "Daily calibration check",
+              "fuelType": "Diesel"
             }
-          ],
-          "cardSwipes": [],
-          "expensesList": [],
-          "upiPayments": []
+          ]
         },
         "S4": {
-          "stationId": "S4",
-          "employeeName": "Prasad Rao",
           "pump": "Pump 2",
           "meters": {
-            "petrol": {
-              "code": "B1",
-              "open": 154100,
-              "close": 154854,
-              "testing": 5,
-              "saleLitres": 749
-            },
             "diesel": {
               "code": "B2",
               "open": 221300,
               "close": 221978,
               "testing": 5,
               "saleLitres": 673
+            },
+            "petrol": {
+              "code": "B1",
+              "open": 154100,
+              "close": 154854,
+              "testing": 5,
+              "saleLitres": 749
             }
           },
+          "status": "submitted",
+          "stationId": "S4",
+          "cardSwipes": [],
           "collections": {
-            "cash": 115000,
             "upi": 37500,
             "card": 5500,
+            "cash": 115000,
+            "notes": "",
             "expenses": 150,
-            "expenseReason": "Nozzle tip",
-            "notes": ""
+            "expenseReason": "Nozzle tip"
           },
-          "status": "submitted",
           "submittedAt": "2026-10-24T09:15:00.000Z",
+          "upiPayments": [],
+          "employeeName": "Prasad Rao",
+          "expensesList": [],
           "testingRecords": [
             {
               "id": "tst-init-p-S4",
               "time": "09:00 AM",
-              "fuelType": "Petrol",
               "litres": 5,
-              "reason": "Daily calibration check"
+              "reason": "Daily calibration check",
+              "fuelType": "Petrol"
             },
             {
               "id": "tst-init-d-S4",
               "time": "09:00 AM",
-              "fuelType": "Diesel",
               "litres": 5,
-              "reason": "Daily calibration check"
+              "reason": "Daily calibration check",
+              "fuelType": "Diesel"
             }
-          ],
-          "cardSwipes": [],
-          "expensesList": [],
-          "upiPayments": []
+          ]
         }
-      }
+      },
+      "dieselRate": 105.23,
+      "petrolRate": 117.07
     },
     {
       "id": "shift-2026-10-24",
       "date": "2026-10-24",
       "status": "active",
-      "petrolRate": 117.07,
-      "dieselRate": 105.23,
       "stations": {
         "S1": {
-          "stationId": "S1",
-          "employeeName": "Ramesh Kumar",
           "pump": "Pump 1",
           "meters": {
-            "petrol": {
-              "code": "A1",
-              "open": 121300.1,
-              "close": 0,
-              "testing": 0,
-              "saleLitres": 0
-            },
             "diesel": {
               "code": "A2",
               "open": 245710.2,
               "close": 0,
               "testing": 0,
               "saleLitres": 0
-            }
-          },
-          "collections": {
-            "cash": 0,
-            "upi": 0,
-            "card": 0,
-            "expenses": 0,
-            "expenseReason": "",
-            "notes": ""
-          },
-          "status": "in-progress",
-          "testingRecords": [],
-          "cardSwipes": [],
-          "expensesList": [],
-          "upiPayments": []
-        },
-        "S2": {
-          "stationId": "S2",
-          "employeeName": "Suresh Reddy",
-          "pump": "Pump 1",
-          "meters": {
+            },
             "petrol": {
-              "code": "B1",
-              "open": 99150.3,
+              "code": "A1",
+              "open": 121300.1,
               "close": 0,
               "testing": 0,
               "saleLitres": 0
-            },
+            }
+          },
+          "status": "in-progress",
+          "stationId": "S1",
+          "cardSwipes": [],
+          "collections": {
+            "upi": 0,
+            "card": 0,
+            "cash": 0,
+            "notes": "",
+            "expenses": 0,
+            "expenseReason": ""
+          },
+          "upiPayments": [],
+          "employeeName": "Ramesh Kumar",
+          "expensesList": [],
+          "testingRecords": []
+        },
+        "S2": {
+          "pump": "Pump 1",
+          "meters": {
             "diesel": {
               "code": "B2",
               "open": 187880.5,
               "close": 0,
               "testing": 0,
               "saleLitres": 0
-            }
-          },
-          "collections": {
-            "cash": 0,
-            "upi": 0,
-            "card": 0,
-            "expenses": 0,
-            "expenseReason": "",
-            "notes": ""
-          },
-          "status": "in-progress",
-          "testingRecords": [],
-          "cardSwipes": [],
-          "expensesList": [],
-          "upiPayments": []
-        },
-        "S3": {
-          "stationId": "S3",
-          "employeeName": "Rajesh Varma",
-          "pump": "Pump 2",
-          "meters": {
+            },
             "petrol": {
-              "code": "A1",
-              "open": 310955.41,
+              "code": "B1",
+              "open": 99150.3,
               "close": 0,
               "testing": 0,
               "saleLitres": 0
-            },
+            }
+          },
+          "status": "in-progress",
+          "stationId": "S2",
+          "cardSwipes": [],
+          "collections": {
+            "upi": 0,
+            "card": 0,
+            "cash": 0,
+            "notes": "",
+            "expenses": 0,
+            "expenseReason": ""
+          },
+          "upiPayments": [],
+          "employeeName": "Suresh Reddy",
+          "expensesList": [],
+          "testingRecords": []
+        },
+        "S3": {
+          "pump": "Pump 2",
+          "meters": {
             "diesel": {
               "code": "A2",
               "open": 413165.69,
               "close": 0,
               "testing": 0,
               "saleLitres": 0
-            }
-          },
-          "collections": {
-            "cash": 0,
-            "upi": 0,
-            "card": 0,
-            "expenses": 0,
-            "expenseReason": "",
-            "notes": ""
-          },
-          "status": "in-progress",
-          "testingRecords": [],
-          "cardSwipes": [],
-          "expensesList": [],
-          "upiPayments": []
-        },
-        "S4": {
-          "stationId": "S4",
-          "employeeName": "Prasad Rao",
-          "pump": "Pump 2",
-          "meters": {
+            },
             "petrol": {
-              "code": "B1",
-              "open": 154854,
+              "code": "A1",
+              "open": 310955.41,
               "close": 0,
               "testing": 0,
               "saleLitres": 0
-            },
+            }
+          },
+          "status": "in-progress",
+          "stationId": "S3",
+          "cardSwipes": [],
+          "collections": {
+            "upi": 0,
+            "card": 0,
+            "cash": 0,
+            "notes": "",
+            "expenses": 0,
+            "expenseReason": ""
+          },
+          "upiPayments": [],
+          "employeeName": "Rajesh Varma",
+          "expensesList": [],
+          "testingRecords": []
+        },
+        "S4": {
+          "pump": "Pump 2",
+          "meters": {
             "diesel": {
               "code": "B2",
               "open": 221978,
               "close": 0,
               "testing": 0,
               "saleLitres": 0
+            },
+            "petrol": {
+              "code": "B1",
+              "open": 154854,
+              "close": 0,
+              "testing": 0,
+              "saleLitres": 0
             }
           },
+          "status": "in-progress",
+          "stationId": "S4",
+          "cardSwipes": [],
+          "collections": {
+            "upi": 0,
+            "card": 0,
+            "cash": 0,
+            "notes": "",
+            "expenses": 0,
+            "expenseReason": ""
+          },
+          "upiPayments": [],
+          "employeeName": "Prasad Rao",
+          "expensesList": [],
+          "testingRecords": []
+        }
+      },
+      "dieselRate": 105.23,
+      "petrolRate": 117.07
+    },
+    {
+      "id": "shift-2026-10-25",
+      "date": "2026-10-25",
+      "status": "active",
+      "petrolRate": 117.07,
+      "dieselRate": 105.23,
+      "stations": {
+        "S1": {
+          "stationId": "S1",
+          "employeeName": "Mahesh",
+          "pump": "Pump 1",
+          "meters": {
+            "petrol": {
+              "code": "A1",
+              "open": 1000,
+              "close": 1600,
+              "testing": 0,
+              "saleLitres": 600
+            },
+            "diesel": {
+              "code": "A2",
+              "open": 2000,
+              "close": 2900,
+              "testing": 0,
+              "saleLitres": 900
+            }
+          },
+          "readingsHistory": [
+            {
+              "id": "sess-1792907718525",
+              "sessionIndex": 1,
+              "time": "11:25 AM",
+              "tag": "Meals Break",
+              "employeeName": "Mahesh",
+              "petrol": {
+                "open": 1000,
+                "close": 1250,
+                "testing": 0,
+                "saleLitres": 250
+              },
+              "diesel": {
+                "open": 2000,
+                "close": 2400,
+                "testing": 0,
+                "saleLitres": 400
+              }
+            },
+            {
+              "id": "sess-1792907718673",
+              "sessionIndex": 2,
+              "time": "11:25 AM",
+              "tag": "Dinner Break",
+              "employeeName": "Mahesh",
+              "petrol": {
+                "open": 1250,
+                "close": 1600,
+                "testing": 0,
+                "saleLitres": 350
+              },
+              "diesel": {
+                "open": 2400,
+                "close": 2900,
+                "testing": 0,
+                "saleLitres": 500
+              }
+            }
+          ],
           "collections": {
             "cash": 0,
             "upi": 0,
@@ -661,13 +559,265 @@
             "expenseReason": "",
             "notes": ""
           },
-          "status": "in-progress",
-          "testingRecords": [],
-          "cardSwipes": [],
-          "expensesList": [],
-          "upiPayments": []
+          "status": "readings-entered",
+          "initialJoinedMeters": {
+            "petrol": {
+              "open": 1000
+            },
+            "diesel": {
+              "open": 2000
+            },
+            "joinedAt": "11:25 AM"
+          },
+          "nextOpenPetrol": 1600,
+          "nextOpenDiesel": 2900
+        },
+        "S2": {
+          "stationId": "S2",
+          "employeeName": "",
+          "pump": "Pump 1",
+          "meters": {
+            "petrol": {
+              "code": "B1",
+              "open": 0,
+              "close": 0,
+              "testing": 0,
+              "saleLitres": 0
+            },
+            "diesel": {
+              "code": "B2",
+              "open": 0,
+              "close": 0,
+              "testing": 0,
+              "saleLitres": 0
+            }
+          },
+          "readingsHistory": [],
+          "collections": {
+            "cash": 0,
+            "upi": 0,
+            "card": 0,
+            "expenses": 0,
+            "expenseReason": "",
+            "notes": ""
+          },
+          "status": "pending"
+        },
+        "S3": {
+          "stationId": "S3",
+          "employeeName": "",
+          "pump": "Pump 2",
+          "meters": {
+            "petrol": {
+              "code": "A1",
+              "open": 0,
+              "close": 0,
+              "testing": 0,
+              "saleLitres": 0
+            },
+            "diesel": {
+              "code": "A2",
+              "open": 0,
+              "close": 0,
+              "testing": 0,
+              "saleLitres": 0
+            }
+          },
+          "readingsHistory": [],
+          "collections": {
+            "cash": 0,
+            "upi": 0,
+            "card": 0,
+            "expenses": 0,
+            "expenseReason": "",
+            "notes": ""
+          },
+          "status": "pending"
+        },
+        "S4": {
+          "stationId": "S4",
+          "employeeName": "",
+          "pump": "Pump 2",
+          "meters": {
+            "petrol": {
+              "code": "B1",
+              "open": 0,
+              "close": 0,
+              "testing": 0,
+              "saleLitres": 0
+            },
+            "diesel": {
+              "code": "B2",
+              "open": 0,
+              "close": 0,
+              "testing": 0,
+              "saleLitres": 0
+            }
+          },
+          "readingsHistory": [],
+          "collections": {
+            "cash": 0,
+            "upi": 0,
+            "card": 0,
+            "expenses": 0,
+            "expenseReason": "",
+            "notes": ""
+          },
+          "status": "pending"
         }
       }
+    }
+  ],
+  "employees": [
+    {
+      "id": "emp1",
+      "name": "Ramesh Kumar",
+      "role": "Attendant",
+      "phone": "9848011223",
+      "active": true,
+      "address": "Plot 14, Near IOCL Bunk, Main Road",
+      "password": "123",
+      "username": "9848011223",
+      "fatherName": "K. Narayana Swamy",
+      "joiningDate": "2024-01-10",
+      "villageName": "Kalyandurg, Anantapur Dist",
+      "aadhaarNumber": "4589 1234 5678",
+      "emergencyContact": "9440123999 (Brother - Siva)"
+    },
+    {
+      "id": "emp2",
+      "name": "Suresh Reddy",
+      "role": "Attendant",
+      "phone": "9848022334",
+      "active": true,
+      "address": "Door 2-45, Brahmin Street, Beluguppa",
+      "password": "123",
+      "username": "9848022334",
+      "fatherName": "M. Ramachandra Reddy",
+      "joiningDate": "2024-03-15",
+      "villageName": "Beluguppa Village",
+      "aadhaarNumber": "6712 3456 7890",
+      "emergencyContact": "9848088771 (Wife - Lakshmi)"
+    },
+    {
+      "id": "emp3",
+      "name": "Venkatesh Rao",
+      "role": "Attendant",
+      "phone": "9848033445",
+      "active": true,
+      "address": "H.No 4-89, Near Old Bus Stand, Rayadurg",
+      "password": "123",
+      "username": "9848033445",
+      "fatherName": "G. Venkateswarlu",
+      "joiningDate": "2024-05-20",
+      "villageName": "Rayadurg Mandal",
+      "aadhaarNumber": "8899 4321 0987",
+      "emergencyContact": "9441122334 (Father)"
+    },
+    {
+      "id": "emp4",
+      "name": "Naresh Babu",
+      "role": "Attendant",
+      "phone": "9848044556",
+      "active": true,
+      "address": "3-12, Atmakur",
+      "password": "123",
+      "username": "9848044556",
+      "fatherName": "B. Venkataramana",
+      "joiningDate": "2024-08-01",
+      "villageName": "Atmakur Village",
+      "aadhaarNumber": "3344 5566 7788",
+      "emergencyContact": "9988112233 (Uncle - Prasad)"
+    },
+    {
+      "id": "emp5",
+      "name": "Rajesh Varma",
+      "role": "Attendant",
+      "phone": "9848055667",
+      "active": true,
+      "address": "5-67, Weaver Colony, Dharmavaram",
+      "password": "123",
+      "username": "9848055667",
+      "fatherName": "D. Satyanarayana",
+      "joiningDate": "2025-01-05",
+      "villageName": "Dharmavaram",
+      "aadhaarNumber": "9988 7766 5544",
+      "emergencyContact": "9701122334 (Brother)"
+    },
+    {
+      "id": "emp6",
+      "name": "Prasad Rao",
+      "role": "Attendant",
+      "phone": "9848066778",
+      "active": true,
+      "address": "Railway Station Road, Guntakal",
+      "password": "123",
+      "username": "9848066778",
+      "fatherName": "P. Subba Rao",
+      "joiningDate": "2025-03-12",
+      "villageName": "Guntakal",
+      "aadhaarNumber": "2233 4455 6677",
+      "emergencyContact": "9866112244 (Father)"
+    },
+    {
+      "id": "emp-1792838466290",
+      "name": "Mahesh reddy",
+      "role": "Attendant",
+      "phone": "7799532888",
+      "active": true,
+      "address": "Ieeja",
+      "password": "123",
+      "username": "7799532888",
+      "fatherName": "Maheswar Reddy",
+      "joiningDate": "2026-10-24",
+      "villageName": "Ieeja",
+      "aadhaarNumber": "",
+      "emergencyContact": ""
+    },
+    {
+      "id": "emp-1792839909945",
+      "name": "Maheswar Reddy",
+      "role": "Attendant",
+      "phone": "1234576890",
+      "active": true,
+      "address": "",
+      "password": "123",
+      "username": "1234576890",
+      "fatherName": "S Maheswar Reddy",
+      "joiningDate": "2026-10-24",
+      "villageName": "Ieeja",
+      "aadhaarNumber": "",
+      "emergencyContact": "1234567788"
+    },
+    {
+      "id": "emp-1792840783873",
+      "name": "Mahesh reddy",
+      "role": "Attendant",
+      "phone": "7795628848",
+      "active": true,
+      "address": "",
+      "password": "123",
+      "username": "7795628848",
+      "fatherName": "Raghav reddy",
+      "joiningDate": "2026-10-24",
+      "villageName": "Ieeja",
+      "aadhaarNumber": "",
+      "emergencyContact": ""
+    },
+    {
+      "id": "emp-1792842606451",
+      "name": "Siva Shankar",
+      "role": "Attendant",
+      "phone": "9900409848",
+      "active": true,
+      "address": "",
+      "password": "123",
+      "username": "9900409848",
+      "fatherName": "Ramanaiah",
+      "joiningDate": "2026-10-24",
+      "villageName": "Rayadurg",
+      "aadhaarNumber": "",
+      "emergencyContact": ""
     }
   ],
   "reminders": [
@@ -675,252 +825,270 @@
       "id": "rem-101",
       "date": "2026-10-23",
       "time": "11:20 AM",
-      "stationId": "S1",
-      "employeeName": "Ramesh Kumar",
-      "customerName": "K. Mohan Reddy",
-      "phone": "9988776655",
-      "vehicleNumber": "AP 21 TC 4488",
-      "fuelType": "Diesel",
-      "amount": 2500,
       "notes": "Went to ATM, will pay in 30 minutes",
+      "phone": "9988776655",
+      "amount": 2500,
       "status": "pending",
+      "fuelType": "Diesel",
       "clearedAt": null,
-      "clearedMode": null
+      "stationId": "S1",
+      "clearedMode": null,
+      "customerName": "K. Mohan Reddy",
+      "employeeName": "Ramesh Kumar",
+      "vehicleNumber": "AP 21 TC 4488"
     },
     {
       "id": "rem-102",
       "date": "2026-10-24",
       "time": "10:15 AM",
-      "stationId": "S1",
-      "employeeName": "Rajesh Varma",
-      "customerName": "Venkata Raman",
-      "phone": "9440123456",
-      "vehicleNumber": "AP 09 CD 1234",
-      "fuelType": "Petrol",
-      "amount": 1500,
       "notes": "Card machine link failed, will send UPI in 1 hour",
+      "phone": "9440123456",
+      "amount": 1500,
       "status": "pending",
+      "fuelType": "Petrol",
       "clearedAt": null,
-      "clearedMode": null
-    }
-  ],
-  "vehicleLedger": [
-    {
-      "id": "vlog-1",
-      "date": "2026-10-20",
-      "time": "08:15 AM",
       "stationId": "S1",
-      "employeeName": "Ramesh Kumar",
-      "vehicleNumber": "AP 21 TC 4488",
-      "driverName": "Chandra Shekar",
-      "driverPhone": "9988776655",
-      "fuelType": "Diesel",
-      "litres": 47.51,
-      "rate": 105.23,
-      "amount": 5000,
-      "slipNo": "SL-881",
-      "notes": "Tractor - Regular fleet account",
-      "status": "unsettled"
-    },
-    {
-      "id": "vlog-2",
-      "date": "2026-10-22",
-      "time": "02:30 PM",
-      "stationId": "S3",
-      "employeeName": "Venkatesh Rao",
-      "vehicleNumber": "AP 21 TC 4488",
-      "driverName": "Chandra Shekar",
-      "driverPhone": "9988776655",
-      "fuelType": "Diesel",
-      "litres": 50,
-      "rate": 105.23,
-      "amount": 5262,
-      "slipNo": "SL-914",
-      "notes": "Tractor - Second load trip",
-      "status": "unsettled"
-    },
-    {
-      "id": "vlog-3",
-      "date": "2026-10-23",
-      "time": "09:40 AM",
-      "stationId": "S1",
-      "employeeName": "Ramesh Kumar",
-      "vehicleNumber": "AP 21 TC 4488",
-      "driverName": "Chandra Shekar",
-      "driverPhone": "9988776655",
-      "fuelType": "Diesel",
-      "litres": 47.51,
-      "rate": 105.23,
-      "amount": 5000,
-      "slipNo": "SL-965",
-      "notes": "Tractor - Field work",
-      "status": "unsettled"
-    },
-    {
-      "id": "vlog-4",
-      "date": "2026-10-23",
-      "time": "03:45 PM",
-      "stationId": "S3",
-      "employeeName": "Venkatesh Rao",
-      "vehicleNumber": "TS 08 UB 7712",
-      "driverName": "Balaji Transport Lorry",
-      "driverPhone": "9849098765",
-      "fuelType": "Diesel",
-      "litres": 95.03,
-      "rate": 105.23,
-      "amount": 10000,
-      "slipNo": "SL-982",
-      "notes": "Lorry fleet account",
-      "status": "unsettled"
-    },
-    {
-      "id": "vlog-1792828449802",
-      "date": "2026-10-24",
-      "time": "01:24 PM",
-      "stationId": "S1",
-      "employeeName": "Attendant",
-      "vehicleNumber": "AP21TC4488",
-      "driverName": "",
-      "driverPhone": "9848011223",
-      "mobileNumber": "9848011223",
-      "fuelType": "Diesel",
-      "litres": 9.5,
-      "rate": 0,
-      "amount": 1000,
-      "slipNo": "",
-      "notes": "",
-      "status": "unsettled"
-    },
-    {
-      "id": "vlog-1792828997602",
-      "date": "2026-10-23",
-      "time": "01:33 PM",
-      "stationId": "S1",
-      "employeeName": "Ramesh Kumar",
-      "vehicleNumber": "AP 21 TC 4488",
-      "driverName": "Chandra Shekar",
-      "driverPhone": "9848011223",
-      "mobileNumber": "9848011223",
-      "fuelType": "Diesel",
-      "litres": 20,
-      "rate": 0,
-      "amount": 2105,
-      "slipNo": "SL-1001",
-      "notes": "",
-      "status": "unsettled"
+      "clearedMode": null,
+      "customerName": "Venkata Raman",
+      "employeeName": "Rajesh Varma",
+      "vehicleNumber": "AP 09 CD 1234"
     }
   ],
   "attendance": [
     {
       "id": "att-1",
       "date": "2026-10-23",
-      "employeeId": "emp1",
-      "employeeName": "Ramesh Kumar",
-      "station": "S1",
       "shift": "9AM-9AM",
-      "status": "present"
+      "status": "present",
+      "station": "S1",
+      "employeeId": "emp1",
+      "employeeName": "Ramesh Kumar"
     },
     {
       "id": "att-2",
       "date": "2026-10-23",
-      "employeeId": "emp2",
-      "employeeName": "Suresh Reddy",
-      "station": "S2",
       "shift": "9AM-9AM",
-      "status": "present"
+      "status": "present",
+      "station": "S2",
+      "employeeId": "emp2",
+      "employeeName": "Suresh Reddy"
     },
     {
       "id": "att-3",
       "date": "2026-10-23",
-      "employeeId": "emp3",
-      "employeeName": "Venkatesh Rao",
-      "station": "S3",
       "shift": "9AM-9AM",
-      "status": "present"
+      "status": "present",
+      "station": "S3",
+      "employeeId": "emp3",
+      "employeeName": "Venkatesh Rao"
     },
     {
       "id": "att-4",
       "date": "2026-10-23",
-      "employeeId": "emp4",
-      "employeeName": "Naresh Babu",
-      "station": "S4",
       "shift": "9AM-9AM",
-      "status": "present"
+      "status": "present",
+      "station": "S4",
+      "employeeId": "emp4",
+      "employeeName": "Naresh Babu"
     },
     {
       "id": "att-5",
       "date": "2026-10-24",
-      "employeeId": "emp5",
-      "employeeName": "Rajesh Varma",
-      "station": "S1",
       "shift": "9AM-9AM",
-      "status": "present"
+      "status": "present",
+      "station": "S1",
+      "employeeId": "emp5",
+      "employeeName": "Rajesh Varma"
     },
     {
       "id": "att-6",
       "date": "2026-10-24",
-      "employeeId": "emp6",
-      "employeeName": "Prasad Rao",
-      "station": "S2",
       "shift": "9AM-9AM",
-      "status": "present"
+      "status": "present",
+      "station": "S2",
+      "employeeId": "emp6",
+      "employeeName": "Prasad Rao"
     },
     {
       "id": "att-7",
       "date": "2026-10-24",
-      "employeeId": "emp1",
-      "employeeName": "Ramesh Kumar",
-      "station": "S3",
       "shift": "9AM-9AM",
-      "status": "present"
+      "status": "present",
+      "station": "S3",
+      "employeeId": "emp1",
+      "employeeName": "Ramesh Kumar"
     },
     {
       "id": "att-8",
       "date": "2026-10-24",
-      "employeeId": "emp2",
-      "employeeName": "Suresh Reddy",
-      "station": "S4",
       "shift": "9AM-9AM",
-      "status": "present"
-    }
-  ],
-  "tanks": [
-    {
-      "id": "tank-ms",
-      "name": "Petrol Tank (MS)",
-      "fuel": "Petrol",
-      "capacity": 20000,
-      "currentStock": 14250,
-      "dipCm": 165,
-      "deliveries": []
-    },
-    {
-      "id": "tank-hsd",
-      "name": "Diesel Tank (HSD)",
-      "fuel": "Diesel",
-      "capacity": 25000,
-      "currentStock": 18900,
-      "dipCm": 198,
-      "deliveries": []
+      "status": "present",
+      "station": "S4",
+      "employeeId": "emp2",
+      "employeeName": "Suresh Reddy"
     }
   ],
   "employeeDues": [
     {
       "id": "due-1792836604426",
       "date": "2026-10-23",
-      "stationId": "S1",
-      "employeeName": "Ramesh Kumar",
-      "grossAmount": 19014,
-      "totalDeductions": 10355,
-      "expectedCash": 8659,
-      "actualCash": 7659,
-      "shortageAmount": 1000,
-      "status": "settled",
       "notes": "Handover shortage test",
+      "status": "settled",
       "createdAt": "2026-10-24T10:10:04.426Z",
       "settledAt": "2026-10-24T10:10:04.445Z",
+      "stationId": "S1",
+      "actualCash": 7659,
+      "grossAmount": 19014,
       "settledMode": "Cash Recovery",
-      "settledNotes": "Recovered next morning from Ramesh"
+      "employeeName": "Ramesh Kumar",
+      "expectedCash": 8659,
+      "settledNotes": "Recovered next morning from Ramesh",
+      "shortageAmount": 1000,
+      "totalDeductions": 10355
     }
-  ]
+  ],
+  "vehicleLedger": [
+    {
+      "id": "vlog-1",
+      "date": "2026-10-20",
+      "rate": 105.23,
+      "time": "08:15 AM",
+      "notes": "Tractor - Regular fleet account",
+      "amount": 5000,
+      "litres": 47.51,
+      "slipNo": "SL-881",
+      "status": "unsettled",
+      "fuelType": "Diesel",
+      "stationId": "S1",
+      "driverName": "Chandra Shekar",
+      "driverPhone": "9988776655",
+      "employeeName": "Ramesh Kumar",
+      "vehicleNumber": "AP 21 TC 4488"
+    },
+    {
+      "id": "vlog-2",
+      "date": "2026-10-22",
+      "rate": 105.23,
+      "time": "02:30 PM",
+      "notes": "Tractor - Second load trip",
+      "amount": 5262,
+      "litres": 50,
+      "slipNo": "SL-914",
+      "status": "unsettled",
+      "fuelType": "Diesel",
+      "stationId": "S3",
+      "driverName": "Chandra Shekar",
+      "driverPhone": "9988776655",
+      "employeeName": "Venkatesh Rao",
+      "vehicleNumber": "AP 21 TC 4488"
+    },
+    {
+      "id": "vlog-3",
+      "date": "2026-10-23",
+      "rate": 105.23,
+      "time": "09:40 AM",
+      "notes": "Tractor - Field work",
+      "amount": 5000,
+      "litres": 47.51,
+      "slipNo": "SL-965",
+      "status": "unsettled",
+      "fuelType": "Diesel",
+      "stationId": "S1",
+      "driverName": "Chandra Shekar",
+      "driverPhone": "9988776655",
+      "employeeName": "Ramesh Kumar",
+      "vehicleNumber": "AP 21 TC 4488"
+    },
+    {
+      "id": "vlog-4",
+      "date": "2026-10-23",
+      "rate": 105.23,
+      "time": "03:45 PM",
+      "notes": "Lorry fleet account",
+      "amount": 10000,
+      "litres": 95.03,
+      "slipNo": "SL-982",
+      "status": "unsettled",
+      "fuelType": "Diesel",
+      "stationId": "S3",
+      "driverName": "Balaji Transport Lorry",
+      "driverPhone": "9849098765",
+      "employeeName": "Venkatesh Rao",
+      "vehicleNumber": "TS 08 UB 7712"
+    },
+    {
+      "id": "vlog-1792828449802",
+      "date": "2026-10-24",
+      "rate": 0,
+      "time": "01:24 PM",
+      "notes": "",
+      "amount": 1000,
+      "litres": 9.5,
+      "slipNo": "",
+      "status": "unsettled",
+      "fuelType": "Diesel",
+      "stationId": "S1",
+      "driverName": "",
+      "driverPhone": "9848011223",
+      "employeeName": "Attendant",
+      "mobileNumber": "9848011223",
+      "vehicleNumber": "AP21TC4488"
+    },
+    {
+      "id": "vlog-1792828997602",
+      "date": "2026-10-23",
+      "rate": 0,
+      "time": "01:33 PM",
+      "notes": "",
+      "amount": 2105,
+      "litres": 20,
+      "slipNo": "SL-1001",
+      "status": "unsettled",
+      "fuelType": "Diesel",
+      "stationId": "S1",
+      "driverName": "Chandra Shekar",
+      "driverPhone": "9848011223",
+      "employeeName": "Ramesh Kumar",
+      "mobileNumber": "9848011223",
+      "vehicleNumber": "AP 21 TC 4488"
+    }
+  ],
+  "shiftAssignments": {
+    "2026-10-23": {
+      "S1": {
+        "dutyPin": "1122",
+        "employeeName": "Ramesh Kumar"
+      },
+      "S2": {
+        "dutyPin": "3344",
+        "employeeName": "Suresh Reddy"
+      },
+      "S3": {
+        "dutyPin": "5566",
+        "employeeName": "Rajesh Varma"
+      },
+      "S4": {
+        "dutyPin": "7788",
+        "employeeName": "Prasad Rao"
+      }
+    },
+    "2026-10-24": {
+      "S1": {
+        "dutyPin": "1122",
+        "employeeName": "Ramesh Kumar"
+      },
+      "S2": {
+        "dutyPin": "3344",
+        "employeeName": "Suresh Reddy"
+      },
+      "S3": {
+        "dutyPin": "5566",
+        "employeeName": "Rajesh Varma"
+      },
+      "S4": {
+        "dutyPin": "7788",
+        "employeeName": "Prasad Rao"
+      }
+    }
+  }
 }

@@ -44,12 +44,12 @@ function calculateShiftSummary(shift, rates) {
       return;
     }
 
-    const pOpen = Number(st.meters?.petrol?.open || 0);
+    const pOpen = Number(st.initialJoinedMeters?.petrol?.open ?? st.meters?.petrol?.open ?? 0);
     const pClose = Number(st.meters?.petrol?.close || 0);
     const pTesting = Number(st.meters?.petrol?.testing || 0);
     const pSale = pClose > pOpen ? Number((pClose - pOpen - pTesting).toFixed(2)) : (st.meters?.petrol?.saleLitres || 0);
 
-    const dOpen = Number(st.meters?.diesel?.open || 0);
+    const dOpen = Number(st.initialJoinedMeters?.diesel?.open ?? st.meters?.diesel?.open ?? 0);
     const dClose = Number(st.meters?.diesel?.close || 0);
     const dTesting = Number(st.meters?.diesel?.testing || 0);
     const dSale = dClose > dOpen ? Number((dClose - dOpen - dTesting).toFixed(2)) : (st.meters?.diesel?.saleLitres || 0);
