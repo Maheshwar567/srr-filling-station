@@ -117,70 +117,44 @@
           </div>
         </div>
 
-        <!-- Role Mode Switcher (Staff PIN-only vs Management Password-only) -->
-        <div class="flex p-1 bg-slate-100 rounded-2xl border border-slate-200">
-          <button type="button" id="loginModeBtnStaff" onclick="setLoginMode('staff')" class="flex-1 py-2 rounded-xl text-xs font-black transition-all bg-orange-600 text-white shadow-sm flex items-center justify-center gap-1.5">
-            <span>👷</span><span id="txtLoginTabStaff">Staff / Employee</span>
-          </button>
-          <button type="button" id="loginModeBtnMgmt" onclick="setLoginMode('mgmt')" class="flex-1 py-2 rounded-xl text-xs font-bold transition-all text-slate-700 hover:text-black flex items-center justify-center gap-1.5">
-            <span>👔</span><span id="txtLoginTabMgmt">Management / Owner</span>
-          </button>
-        </div>
-
+        <!-- Unified Clean Sign In Form (No Staff/Mgmt Toggle Buttons) -->
+        <!-- User requirement: "dont show staff / management login options on login screen give just login page like enter username and password screens (duty pin for staff)" -->
         <form id="loginForm" onsubmit="handleLoginSubmit(event)" class="space-y-4">
           <div>
             <label class="text-xs font-bold text-slate-700 block mb-1" id="lblLoginUser">
-              Employee Username / First Name (ఉద్యోగి పేరు):
+              యూజర్‌నేమ్ / సిబ్బంది పేరు (Username / Name):
             </label>
             <div class="relative">
-              <span class="absolute left-3 top-2.5 text-slate-400">👤</span>
-              <input type="text" id="loginUsernameInput" oninput="onLoginUsernameChange(this.value)" required placeholder="e.g. emp, ramesh, or suresh" class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl pl-9 pr-3 py-2 text-sm font-bold text-slate-900 focus:border-orange-500 focus:outline-none focus:bg-white shadow-sm">
+              <span class="absolute left-3.5 top-3 text-slate-400">👤</span>
+              <input type="text" id="loginUsernameInput" required placeholder="e.g. emp, ramesh, suresh, mgmt, owner" class="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl pl-10 pr-3 py-2.5 text-sm font-bold text-slate-900 focus:border-orange-500 focus:outline-none focus:bg-white shadow-sm">
             </div>
           </div>
 
-          <!-- Password Field: VISIBLE FOR MGMT / OWNER / ADMIN ONLY; HIDDEN FOR STAFF -->
-          <div id="loginPasswordContainer" class="hidden">
-            <label class="text-xs font-bold text-slate-700 block mb-1" id="lblLoginPass">
-              Password (పాస్‌వర్డ్):
-            </label>
-            <div class="relative">
-              <span class="absolute left-3 top-2.5 text-slate-400">🔒</span>
-              <input type="password" id="loginPasswordInput" placeholder="Enter password (default: 123)" class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl pl-9 pr-10 py-2 text-sm font-bold text-slate-900 focus:border-orange-500 focus:outline-none focus:bg-white shadow-sm">
-              <button type="button" onclick="togglePasswordVisibility('loginPasswordInput')" class="absolute right-3 top-2.5 text-slate-400 hover:text-slate-700">👁️</button>
-            </div>
-            <p class="text-[10px] text-slate-500 mt-1">* Management / Owner / Admin password is <strong>123</strong>.</p>
-          </div>
-
-          <!-- Staff Duty PIN / OTP Field: VISIBLE FOR STAFF ONLY; HIDDEN FOR MGMT / OWNER / ADMIN -->
-          <div id="loginDutyPinContainer" class="bg-amber-50/70 border border-amber-300 rounded-xl p-2.5 space-y-1">
-            <div class="flex items-center justify-between">
-              <label class="text-xs font-black text-amber-950 flex items-center gap-1" id="lblLoginPin">
-                <span>🔑</span>
-                <span>Duty PIN / OTP (డ్యూటీ పిన్):</span>
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="text-xs font-bold text-slate-700 block" id="lblLoginPass">
+                పాస్‌వర్డ్ / డ్యూటీ పిన్ (Password / Duty PIN):
               </label>
-              <span class="text-[10px] font-bold text-amber-800 bg-amber-200 px-1.5 py-0.2 rounded">Staff Only</span>
+              <span class="text-[10px] text-amber-800 font-bold bg-amber-100 px-2 py-0.5 rounded-full border border-amber-200">PIN or Password</span>
             </div>
             <div class="relative">
-              <span class="absolute left-3 top-2 text-slate-400">🔢</span>
-              <input type="text" maxlength="6" id="loginDutyPinInput" placeholder="Duty PIN (e.g. 1122 for S1, 3344 for S2)" class="w-full bg-white border border-amber-400 rounded-lg pl-8 pr-3 py-1.5 text-xs font-mono font-black text-amber-950 tracking-wider focus:outline-none focus:border-amber-600 shadow-sm">
+              <span class="absolute left-3.5 top-3 text-slate-400">🔒</span>
+              <input type="password" id="loginPasswordInput" required placeholder="Enter Duty PIN or Password" class="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl pl-10 pr-11 py-2.5 text-sm font-bold text-slate-900 focus:border-orange-500 focus:outline-none focus:bg-white shadow-sm">
+              <button type="button" onclick="togglePasswordVisibility('loginPasswordInput')" class="absolute right-3.5 top-2.5 text-slate-400 hover:text-slate-700 p-1" title="Show/Hide">👁️</button>
             </div>
-            <p class="text-[10px] text-amber-900 font-medium">
-              * Staff logs in with Duty PIN / OTP assigned by Manager/Owner during pump allocation.<br>
-              (No password is required for staff).
-            </p>
+            <div class="mt-1.5 flex flex-col gap-0.5 text-[11px] text-slate-500 font-medium bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+              <span class="flex items-center gap-1.5">👷 <span><strong>సిబ్బంది (Staff):</strong> డ్యూటీ పిన్ (Duty PIN: e.g. 1122, 3344)</span></span>
+              <span class="flex items-center gap-1.5">👔 <span><strong>మేనేజ్‌మెంట్ / ఓనర్:</strong> పాస్‌వర్డ్ లేదా పిన్ (Default: 123)</span></span>
+            </div>
           </div>
 
           <p id="loginErrorMessage" class="text-xs text-rose-600 font-bold hidden"></p>
 
-          <button type="submit" id="btnLoginSubmit" class="w-full bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-black text-sm py-3 rounded-xl shadow-lg transition-all active:scale-98">
-            Sign In (లాగిన్ చేయండి)
+          <button type="submit" id="btnLoginSubmit" class="w-full bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-black text-sm py-3.5 rounded-2xl shadow-xl transition-all active:scale-98 flex items-center justify-center gap-2">
+            <span>లాగిన్ చేయండి (SIGN IN)</span>
+            <span>➔</span>
           </button>
         </form>
-
-        <div class="pt-3 border-t border-slate-100 text-center text-[11px] text-slate-600 font-medium space-y-0.5">
-          <div id="loginHelpStaff">Staff: Enter First Name (e.g. <strong class="font-mono text-slate-900">emp</strong>) + Duty PIN (e.g. <strong class="font-mono text-amber-700">1122</strong>)</div>
-          <div id="loginHelpMgmt" class="text-[10px] text-slate-500">Mgmt / Owner: <strong class="font-mono">mgmt</strong> / <strong class="font-mono">owner</strong> • Password: <strong class="text-amber-700 font-mono font-black">123</strong> (No PIN)</div>
-        </div>
       </div>
     </div>
 
@@ -1670,73 +1644,177 @@
         </div>
       </div>
 
-      <!-- SUB-TAB: DUTY & SALARY DAYS (USER REQUESTED: "and when month end comes to give salary how many days that emp has done work in station") -->
+      <!-- SUB-TAB: DUTY & SALARY DAYS (USER REQUESTED: "in mgmt screen - > when during salary caluclation give start and end date, emp name and when enters emp name thn it should auto pick how many days he worked.. per day default is 750 and dont make read only this and then caluclate option. give in table in rows like below: Start date, end date, emp name, no'of days worked, so on..,") -->
       <div id="admSection-attendance" class="space-y-4 hidden">
-        <div class="bg-gradient-to-r from-blue-900 to-indigo-950 text-white p-5 rounded-3xl shadow-lg space-y-2">
+        <!-- Banner -->
+        <div class="bg-gradient-to-r from-blue-900 via-indigo-950 to-slate-900 text-white p-4 sm:p-5 rounded-3xl shadow-lg space-y-2">
           <div class="flex flex-wrap items-center justify-between gap-3">
             <div class="flex items-center gap-3">
               <span class="text-3xl">📅</span>
               <div>
-                <h3 class="font-black text-lg" id="attHeaderTitle">నెలవారీ డ్యూటీ హాజరు & జీతాల లెక్క (Month-End Duty Days & Salary Calculation)</h3>
-                <p class="text-xs text-blue-200" id="attHeaderSubtitle">Track exactly how many days each employee worked at the station during the month for salary payout</p>
+                <h3 class="font-black text-base sm:text-lg" id="attHeaderTitle">డ్యూటీ హాజరు & జీతాల లెక్కలు (Duty Attendance & Salary Calculation)</h3>
+                <p class="text-xs text-blue-200" id="attHeaderSubtitle">సిబ్బంది పని చేసిన రోజులు మరియు జీతం లెక్కించండి • రోజువారీ డీఫాల్ట్ రేటు ₹750 (Auto-calculates days worked between start & end date)</p>
               </div>
             </div>
             <div class="flex items-center gap-2">
-              <label class="text-xs font-bold text-blue-200">Month:</label>
-              <input type="month" id="attMonthSelector" value="2026-10" onchange="loadDutyAttendanceData()" class="bg-white text-slate-900 font-mono font-bold text-xs px-3 py-1.5 rounded-xl shadow focus:outline-none">
-              <button onclick="loadDutyAttendanceData()" class="bg-amber-400 hover:bg-amber-300 text-slate-900 font-bold text-xs px-3.5 py-1.5 rounded-xl shadow flex items-center gap-1 transition-all active:scale-95">
-                <span>🔄</span>
-                <span>Calculate</span>
+              <button onclick="calculateSalaryForAllEmployees()" class="bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs px-3.5 py-2 rounded-xl shadow flex items-center gap-1.5 transition-all active:scale-95">
+                <span>⚡</span>
+                <span>అందరి సిబ్బందికి లెక్కించు (Calculate All)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Interactive Salary Calculation Card -->
+        <div class="bg-white rounded-2xl shadow-md border-2 border-indigo-200 p-4 sm:p-5 space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+            <div class="flex items-center gap-2">
+              <span class="text-lg">🧮</span>
+              <h4 class="font-black text-slate-900 text-sm">జీతం కాలిక్యులేటర్ (Salary Calculator Tool)</h4>
+            </div>
+            <span class="text-[11px] text-slate-500 font-bold">Auto-Picks Days Worked From Shift Logs</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
+            <!-- 1. Start Date -->
+            <div>
+              <label class="text-xs font-bold text-slate-700 block mb-1">
+                ప్రారంభ తేదీ (Start Date) *:
+              </label>
+              <input type="date" id="salCalcStartDate" onchange="onSalaryInputsChange()" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 text-xs font-mono font-bold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 shadow-sm">
+            </div>
+
+            <!-- 2. End Date -->
+            <div>
+              <label class="text-xs font-bold text-slate-700 block mb-1">
+                ముగింపు తేదీ (End Date) *:
+              </label>
+              <input type="date" id="salCalcEndDate" onchange="onSalaryInputsChange()" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 text-xs font-mono font-bold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 shadow-sm">
+            </div>
+
+            <!-- 3. Employee Name -->
+            <div class="lg:col-span-2">
+              <label class="text-xs font-bold text-slate-700 block mb-1">
+                సిబ్బంది పేరు (Employee Name) *:
+              </label>
+              <select id="salCalcEmpSelect" onchange="onSalaryInputsChange()" class="w-full bg-slate-50 border-2 border-indigo-400 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 shadow-sm">
+                <!-- Populated dynamically -->
+              </select>
+            </div>
+
+            <!-- 4. No. of Days Worked (Auto-picked & Editable) -->
+            <div>
+              <label class="text-xs font-bold text-amber-950 block mb-1">
+                పని చేసిన రోజులు (Days Worked) *:
+              </label>
+              <div class="relative">
+                <input type="number" step="0.5" id="salCalcDaysWorked" oninput="updateSalaryLivePreview()" placeholder="0" class="w-full bg-amber-50 border-2 border-amber-400 rounded-xl pl-3 pr-2 py-1.5 text-base font-mono font-black text-amber-950 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 shadow-sm">
+              </div>
+              <span class="text-[10px] text-amber-800 font-bold block mt-0.5">💡 Auto-picked from shifts</span>
+            </div>
+
+            <!-- 5. Per Day Rate (Default 750, NOT read only) -->
+            <div>
+              <label class="text-xs font-bold text-slate-800 block mb-1">
+                రోజు రేటు (Per Day ₹) *:
+              </label>
+              <div class="relative">
+                <span class="absolute left-2.5 top-2 text-slate-400 font-bold text-xs">₹</span>
+                <input type="number" id="salCalcDailyRate" value="750" oninput="updateSalaryLivePreview()" class="w-full bg-white border-2 border-emerald-500 rounded-xl pl-6 pr-2 py-1.5 text-base font-mono font-black text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-400 shadow-sm">
+              </div>
+              <span class="text-[10px] text-emerald-700 font-bold block mt-0.5">✓ Default ₹750 (Editable)</span>
+            </div>
+          </div>
+
+          <!-- Secondary Row: Dues deduction, Preview Net Salary, and Calculate Button -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-6 gap-3 pt-1 border-t border-slate-100 items-end">
+            <div>
+              <label class="text-xs font-bold text-rose-800 block mb-1">
+                బాకీ కటింగ్ (Dues Cut ₹):
+              </label>
+              <div class="relative">
+                <span class="absolute left-2.5 top-2 text-slate-400 font-bold text-xs">₹</span>
+                <input type="number" id="salCalcDuesCut" value="0" oninput="updateSalaryLivePreview()" class="w-full bg-rose-50 border border-rose-300 rounded-xl pl-6 pr-2 py-1.5 text-xs font-mono font-black text-rose-900 focus:bg-white focus:outline-none">
+              </div>
+            </div>
+
+            <div>
+              <label class="text-xs font-bold text-slate-700 block mb-1">
+                రిమార్క్స్ (Notes):
+              </label>
+              <input type="text" id="salCalcNotes" placeholder="e.g. అక్టోబర్ నెల జీతం" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs text-slate-900 focus:bg-white focus:outline-none">
+            </div>
+
+            <div class="bg-indigo-50 p-2.5 rounded-xl border border-indigo-200">
+              <span class="text-[10px] text-indigo-700 font-bold block uppercase">అంచనా నికర జీతం (Net Salary):</span>
+              <span class="text-xl font-mono font-black text-indigo-950" id="salCalcPreviewNet">₹0</span>
+            </div>
+
+            <div class="lg:col-span-3 flex gap-2">
+              <button onclick="calculateAndAddSalaryRecord()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs py-2.5 px-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5 active:scale-98">
+                <span>🧮</span>
+                <span>లెక్కించి పట్టికలో చేర్చు (Calculate & Save To Table)</span>
               </button>
             </div>
           </div>
         </div>
 
         <!-- 3 Summary Metrics -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-          <div class="bg-white p-4 rounded-2xl border-2 border-blue-200 shadow-sm space-y-1">
-            <span class="text-xs font-bold text-slate-500 uppercase" id="attLblStaffCount">స్టేషన్ సిబ్బంది సంఖ్య (Total Station Staff)</span>
-            <div class="text-2xl font-mono font-black text-blue-900" id="attMetricStaffCount">0</div>
-            <span class="text-[11px] text-blue-700 font-bold block">Registered Attendants</span>
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3.5">
+          <div class="bg-white p-3.5 rounded-2xl border-2 border-blue-200 shadow-sm space-y-0.5">
+            <span class="text-[11px] font-bold text-slate-500 uppercase">సిబ్బంది సంఖ్య (Staff)</span>
+            <div class="text-xl font-mono font-black text-blue-900" id="salMetricStaffCount">0</div>
           </div>
-          <div class="bg-white p-4 rounded-2xl border-2 border-emerald-200 shadow-sm space-y-1">
-            <span class="text-xs font-bold text-slate-500 uppercase" id="attLblTotalDays">ఈ నెల మొత్తం డ్యూటీ దినాలు (Total Duty Days)</span>
-            <div class="text-2xl font-mono font-black text-emerald-600" id="attMetricTotalDays">0</div>
-            <span class="text-[11px] text-emerald-800 font-bold block">Cumulative Shifts Worked</span>
+          <div class="bg-white p-3.5 rounded-2xl border-2 border-amber-200 shadow-sm space-y-0.5">
+            <span class="text-[11px] font-bold text-slate-500 uppercase">మొత్తం పనిదినాలు (Duty Days)</span>
+            <div class="text-xl font-mono font-black text-amber-900" id="salMetricTotalDays">0 Days</div>
           </div>
-          <div class="bg-white p-4 rounded-2xl border-2 border-amber-200 shadow-sm space-y-1">
-            <span class="text-xs font-bold text-slate-500 uppercase" id="attLblActiveDates">కార్యకలాపాలు సాగిన రోజులు (Active Station Days)</span>
-            <div class="text-2xl font-mono font-black text-amber-900" id="attMetricActiveDates">0</div>
-            <span class="text-[11px] text-slate-500 font-bold block">Operating Days in Month</span>
+          <div class="bg-white p-3.5 rounded-2xl border-2 border-rose-200 shadow-sm space-y-0.5">
+            <span class="text-[11px] font-bold text-slate-500 uppercase">బాకీల మినహాయింపు (Dues Cut)</span>
+            <div class="text-xl font-mono font-black text-rose-700" id="salMetricTotalDues">-₹0</div>
+          </div>
+          <div class="bg-gradient-to-r from-emerald-600 to-green-700 text-white p-3.5 rounded-2xl shadow-md space-y-0.5">
+            <span class="text-[11px] font-bold text-emerald-100 uppercase">మొత్తం చెల్లించవలసిన జీతం (Total Net Pay)</span>
+            <div class="text-2xl font-mono font-black text-white" id="salMetricTotalNet">₹0</div>
           </div>
         </div>
 
-        <!-- Attendance & Salary Days Table -->
+        <!-- Attendance & Salary Calculation Records Table (Rows as requested by user) -->
         <div class="bg-white rounded-2xl shadow-md border-2 border-slate-200 p-4 space-y-3">
           <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
             <div>
-              <h4 class="font-extrabold text-slate-900 text-sm" id="attTableTitle">సిబ్బంది పనిదినాలు & జీతం లెక్కలు (Employee Duty Days & Month-End Salary)</h4>
-              <p class="text-[11px] text-slate-500">Days worked are automatically aggregated from shift pump allocations and closed shift reports</p>
+              <h4 class="font-extrabold text-slate-900 text-sm">జీతాల చెల్లింపుల పట్టిక (Salary Calculation Sheet Table)</h4>
+              <p class="text-[11px] text-slate-500">Rows showing start date, end date, employee name, days worked, per day rate, and net salary</p>
             </div>
-            <input type="text" id="attSearchInput" oninput="filterDutyAttendanceTable()" placeholder="Search staff name..." class="bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1 text-xs font-semibold">
+            <div class="flex items-center gap-2">
+              <input type="text" id="salSearchInput" oninput="filterSalaryRecordsTable()" placeholder="Search employee..." class="bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1 text-xs font-semibold">
+              <button onclick="printSalarySheet()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs px-3 py-1 rounded-lg shadow flex items-center gap-1">
+                <span>🖨️</span>
+                <span>Print Table</span>
+              </button>
+            </div>
           </div>
 
           <div class="overflow-x-auto">
-            <table class="w-full text-xs text-left border-collapse">
+            <table class="w-full text-xs text-left border-collapse" id="adminSalaryTable">
               <thead>
                 <tr class="bg-slate-100 text-slate-800 uppercase font-black text-[11px] border-b-2 border-slate-200">
-                  <th class="p-3">Employee Name (సిబ్బంది పేరు)</th>
-                  <th class="p-3">Mobile No</th>
-                  <th class="p-3 text-center">Days Worked (పని చేసిన రోజులు)</th>
-                  <th class="p-3">Shift Dates (డ్యూటీ చేసిన తేదీలు)</th>
-                  <th class="p-3">Pump Stations</th>
-                  <th class="p-3">Shortage Dues (బాకీ కటింగ్ ₹)</th>
-                  <th class="p-3 text-right">Net Salary Est. (అంచనా జీతం ₹)</th>
+                  <th class="p-2.5">Start Date</th>
+                  <th class="p-2.5">End Date</th>
+                  <th class="p-2.5">Emp Name</th>
+                  <th class="p-2.5 text-center">No'of Days Worked</th>
+                  <th class="p-2.5 text-right">Per Day (₹)</th>
+                  <th class="p-2.5 text-right">Gross Salary (₹)</th>
+                  <th class="p-2.5 text-right">Deductions (₹)</th>
+                  <th class="p-2.5 text-right font-black">Net Salary (₹)</th>
+                  <th class="p-2.5 text-center">Status</th>
+                  <th class="p-2.5 text-center">Actions</th>
                 </tr>
               </thead>
-              <tbody id="adminAttendanceSalaryTableBody" class="divide-y divide-slate-100 font-medium">
-                <tr><td colspan="7" class="p-4 text-center text-slate-400">Loading attendance records...</td></tr>
+              <tbody id="adminSalaryRecordsTableBody" class="divide-y divide-slate-100 font-medium">
+                <tr><td colspan="10" class="p-4 text-center text-slate-400">Loading salary records...</td></tr>
               </tbody>
+              <tfoot id="adminSalaryTableFoot"></tfoot>
             </table>
           </div>
         </div>

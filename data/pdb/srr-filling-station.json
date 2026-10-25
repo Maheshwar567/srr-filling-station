@@ -581,6 +581,14 @@
             }
           ],
           "totalDeductions": 3000,
+          "adminVerification": {
+            "notes": "Checked and matched meter readings",
+            "adminUpi": 2000,
+            "verified": true,
+            "adminCash": 50000,
+            "verifiedAt": "2026-10-25T06:49:40.160Z",
+            "verifiedBy": "Bunk Owner"
+          },
           "initialJoinedMeters": {
             "diesel": {
               "open": 2000
@@ -589,14 +597,6 @@
               "open": 1000
             },
             "joinedAt": "11:25 AM"
-          },
-          "adminVerification": {
-            "verified": true,
-            "verifiedBy": "Bunk Owner",
-            "verifiedAt": "2026-10-25T06:49:40.160Z",
-            "adminCash": 50000,
-            "adminUpi": 2000,
-            "notes": "Checked and matched meter readings"
           }
         },
         "S2": {
@@ -1154,5 +1154,6 @@
         "employeeName": "Naresh Babu"
       }
     }
-  }
+  },
+  "salaryRecords": []
 }

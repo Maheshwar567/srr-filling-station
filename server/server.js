@@ -128,11 +128,13 @@ app.post('/api/auth/login', (req, res) => {
 
   const isMaster123 = cleanPass === "123" || cleanPass === "1234";
 
-  // 1. Check Developer / Superadmin Login (Has PDB management) - Password Only, No PIN
+  const cred = cleanPass || cleanDutyPin;
+
+  // 1. Check Developer / Superadmin Login (Has PDB management)
   const devPass = data.config.developerPassword || data.config.devPassword || "123";
   if (cleanUser === "developer" || cleanUser === "dev") {
-    if (!cleanPass) return res.status(400).json({ error: "Password is required for Developer login (default: 123)" });
-    if (cleanPass === devPass || isMaster123) {
+    if (!cred) return res.status(400).json({ error: "Password is required for Developer login (default: 123)" });
+    if (cred === devPass || cred === "123" || isMaster123) {
       return res.json({
         success: true,
         role: 'developer',
@@ -150,12 +152,13 @@ app.post('/api/auth/login', (req, res) => {
     return res.status(401).json({ error: "Invalid developer password (default: 123)" });
   }
 
-  // 2. Check Bunk Owner Login (Full Financials & Historical Archives; NO PDBs) - Password Only, No PIN
+  // 2. Check Bunk Owner Login (Full Financials & Historical Archives; NO PDBs) - Password or PIN
   const ownerUser = (data.config.ownerUsername || "owner").toLowerCase();
   const ownerPass = data.config.ownerPassword || "123";
+  const ownerPin = data.config.ownerPin || "1234";
   if (cleanUser === ownerUser || cleanUser === "owner" || cleanUser === "bunk owner" || cleanUser === "bunkowner") {
-    if (!cleanPass) return res.status(400).json({ error: "Password is required for Owner login (default: 123)" });
-    if (cleanPass === ownerPass || isMaster123) {
+    if (!cred) return res.status(400).json({ error: "Password or PIN is required for Owner login (default: 123)" });
+    if (cred === ownerPass || cred === ownerPin || cred === "123" || cred === "1234" || isMaster123) {
       return res.json({
         success: true,
         role: 'owner',
@@ -170,15 +173,17 @@ app.post('/api/auth/login', (req, res) => {
         isHistoricalAllowed: true
       });
     }
-    return res.status(401).json({ error: "Invalid owner password (default: 123)" });
+    return res.status(401).json({ error: "Invalid owner password or PIN (default: 123)" });
   }
 
-  // 3. Check Bunk Management / Manager Login (Today's Operations Only; NO Historical Finance; NO PDBs) - Password Only, No PIN
+  // 3. Check Bunk Management / Manager Login (Today's Operations Only; NO Historical Finance; NO PDBs) - Password or PIN
+  // User requirement: "also for mgmt login the owner should give pin instead password for security reasons"
   const mgmtUser = (data.config.mgmtUsername || "mgmt").toLowerCase();
   const mgmtPass = data.config.mgmtPassword || "123";
+  const mgmtPin = data.config.mgmtPin || "1234";
   if (cleanUser === mgmtUser || cleanUser === "mgmt" || cleanUser === "manager" || cleanUser === "management") {
-    if (!cleanPass) return res.status(400).json({ error: "Password is required for Management login (default: 123)" });
-    if (cleanPass === mgmtPass || isMaster123) {
+    if (!cred) return res.status(400).json({ error: "Password or PIN is required for Management login (default: 123)" });
+    if (cred === mgmtPass || cred === mgmtPin || cred === "123" || cred === "1234" || isMaster123) {
       return res.json({
         success: true,
         role: 'mgmt',
@@ -193,15 +198,15 @@ app.post('/api/auth/login', (req, res) => {
         isHistoricalAllowed: false
       });
     }
-    return res.status(401).json({ error: "Invalid management password (default: 123)" });
+    return res.status(401).json({ error: "Invalid management password or PIN (default: 123)" });
   }
 
-  // 4. Check Backward-Compatible Admin Login - Password Only, No PIN
+  // 4. Check Backward-Compatible Admin Login - Password or PIN
   const adminUser = (data.config.adminUsername || "admin").toLowerCase();
   const adminPass = data.config.adminPassword || data.config.adminPin || "123";
   if (cleanUser === adminUser || cleanUser === "admin" || cleanUser === "administrator") {
-    if (!cleanPass) return res.status(400).json({ error: "Password is required for Admin login (default: 123)" });
-    if (cleanPass === adminPass || isMaster123) {
+    if (!cred) return res.status(400).json({ error: "Password is required for Admin login (default: 123)" });
+    if (cred === adminPass || cred === "123" || cred === "1234" || isMaster123) {
       return res.json({
         success: true,
         role: 'developer',
@@ -220,8 +225,7 @@ app.post('/api/auth/login', (req, res) => {
   }
 
   // 5. Check Staff / Employee Logins:
-  // User requirement: "and step4 pin needed even after the password also"
-  // Attendant enters: Username, Password (123), AND Duty PIN (given by mgmt/owner during pump allocation)
+  // Attendant enters: Username/Name + Duty PIN (or entered password/PIN)
   const targetDate = date || getTodayString();
   const defaultPins = { S1: "1122", S2: "3344", S3: "5566", S4: "7788" };
   const assignments = data.shiftAssignments?.[targetDate] || data.shiftAssignments?.["2026-10-23"] || {};
@@ -269,15 +273,15 @@ app.post('/api/auth/login', (req, res) => {
 
     stationDutyPin = assignments[assignedStation]?.dutyPin || defaultPins[assignedStation] || '1122';
 
-    // Staff authentication: Duty PIN / OTP ONLY (no password required)
-    // User requirement: "pin only for emp log (remove password option for emp keep only pin/otp given by mgmt/owner)"
-    if (!cleanDutyPin) {
+    // Staff authentication: Duty PIN / OTP entered in password or PIN input
+    const enteredPin = cleanDutyPin || cleanPass;
+    if (!enteredPin) {
       return res.status(401).json({
         error: `Duty PIN is required for staff login! (డ్యూటీ పిన్ నమోదు చేయండి - e.g. ${stationDutyPin})`
       });
     }
 
-    const isPinMatch = cleanDutyPin === String(stationDutyPin) || cleanDutyPin === "123" || cleanDutyPin === "1122" || (emp?.dutyPin && cleanDutyPin === String(emp.dutyPin));
+    const isPinMatch = enteredPin === String(stationDutyPin) || enteredPin === "123" || enteredPin === "1122" || (emp?.dutyPin && enteredPin === String(emp.dutyPin));
     if (!isPinMatch) {
       return res.status(401).json({
         error: `Invalid Duty PIN for station ${assignedStation}. Please enter the correct PIN assigned by Management/Owner (డ్యూటీ పిన్ తప్పుగా ఉంది: e.g. ${stationDutyPin}).`
@@ -1221,11 +1225,21 @@ app.post('/api/employee-dues/settle-all', (req, res) => {
 });
 
 // Month-End Duty Attendance & Salary Calculator
-// User requirement: "and when month end comes to give salary how many days that emp has done work in station"
+// User requirement: "in mgmt screen - > when during salary caluclation give start and end date, emp name and when enters emp name thn it should auto pick how many days he worked.. per day default is 750 and dont make read only this and then caluclate option"
 app.get('/api/duty-attendance', (req, res) => {
   const tenantId = getTenantId(req);
   const data = storage.load(tenantId);
   const targetMonth = req.query.month || (getTodayString().slice(0, 7)); // e.g. "2026-10"
+  const startDate = req.query.startDate;
+  const endDate = req.query.endDate;
+  const defaultDailyWage = parseFloat(req.query.dailyWage) || 750;
+
+  const isDateInRange = (dateStr) => {
+    if (startDate && endDate) {
+      return dateStr >= startDate && dateStr <= endDate;
+    }
+    return dateStr.startsWith(targetMonth);
+  };
 
   const employees = data.employees || [];
   const shiftAssignments = data.shiftAssignments || {};
@@ -1234,10 +1248,10 @@ app.get('/api/duty-attendance', (req, res) => {
 
   const allDates = new Set();
   Object.keys(shiftAssignments).forEach(d => {
-    if (d.startsWith(targetMonth)) allDates.add(d);
+    if (isDateInRange(d)) allDates.add(d);
   });
   shifts.forEach(s => {
-    if (s.date && s.date.startsWith(targetMonth)) allDates.add(s.date);
+    if (s.date && isDateInRange(s.date)) allDates.add(s.date);
   });
 
   const attendanceList = employees.map(emp => {
@@ -1248,9 +1262,9 @@ app.get('/api/duty-attendance', (req, res) => {
     const datesWorked = new Set();
     const stationCounts = { S1: 0, S2: 0, S3: 0, S4: 0 };
 
-    // Check shiftAssignments for this month
+    // Check shiftAssignments for this date range
     Object.entries(shiftAssignments).forEach(([dateStr, stationsMap]) => {
-      if (dateStr.startsWith(targetMonth)) {
+      if (isDateInRange(dateStr)) {
         Object.entries(stationsMap).forEach(([stKey, asgn]) => {
           if (asgn && asgn.employeeName) {
             const asgnName = asgn.employeeName.trim().toLowerCase();
@@ -1263,9 +1277,9 @@ app.get('/api/duty-attendance', (req, res) => {
       }
     });
 
-    // Check completed shifts for this month
+    // Check completed shifts for this date range
     shifts.forEach(s => {
-      if (s.date && s.date.startsWith(targetMonth) && s.stations) {
+      if (s.date && isDateInRange(s.date) && s.stations) {
         Object.entries(s.stations).forEach(([stKey, stObj]) => {
           if (stObj && stObj.employeeName) {
             const stName = stObj.employeeName.trim().toLowerCase();
@@ -1285,8 +1299,8 @@ app.get('/api/duty-attendance', (req, res) => {
 
     const sortedDates = Array.from(datesWorked).sort();
     const daysWorked = sortedDates.length;
-    const dailyWage = emp.dailyWage || 600; // standard daily petrol bunk attendant wage
-    const totalEarnings = daysWorked * dailyWage;
+    const dailyWage = emp.dailyWage || defaultDailyWage; // Default: 750
+    const totalEarnings = Math.round(daysWorked * dailyWage);
     const netPayable = Math.max(0, totalEarnings - empPendingDues);
 
     return {
@@ -1309,6 +1323,8 @@ app.get('/api/duty-attendance', (req, res) => {
 
   res.json({
     month: targetMonth,
+    startDate: startDate || `${targetMonth}-01`,
+    endDate: endDate || `${targetMonth}-31`,
     attendanceList,
     summary: {
       totalEmployees: employees.length,
@@ -1316,6 +1332,64 @@ app.get('/api/duty-attendance', (req, res) => {
       activeDatesCount: allDates.size
     }
   });
+});
+
+// ----------------------------------------------------
+// SALARY CALCULATION RECORDS API (PERSISTENT SALARY SHEETS)
+// User requirement: "in mgmt screen - > when during salary caluclation give start and end date, emp name, no'of days worked, per day default is 750, and give in table in rows like below Start date, end date, emp name, no'of days worked so on..,"
+// ----------------------------------------------------
+app.get('/api/salary-records', (req, res) => {
+  const tenantId = getTenantId(req);
+  const data = storage.load(tenantId);
+  res.json(data.salaryRecords || []);
+});
+
+app.post('/api/salary-records', (req, res) => {
+  const tenantId = getTenantId(req);
+  const data = storage.load(tenantId);
+  if (!data.salaryRecords) data.salaryRecords = [];
+
+  const record = {
+    id: `sal-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+    startDate: req.body.startDate || getTodayString(),
+    endDate: req.body.endDate || getTodayString(),
+    employeeId: req.body.employeeId || "",
+    employeeName: req.body.employeeName || "Attendant",
+    daysWorked: Number(req.body.daysWorked || 0),
+    dailyRate: Number(req.body.dailyRate || 750),
+    grossSalary: Math.round(Number(req.body.daysWorked || 0) * Number(req.body.dailyRate || 750)),
+    deductions: Number(req.body.deductions || 0),
+    netSalary: Math.round(Number(req.body.daysWorked || 0) * Number(req.body.dailyRate || 750)) - Number(req.body.deductions || 0),
+    status: req.body.status || 'pending',
+    notes: req.body.notes || '',
+    calculatedBy: req.body.calculatedBy || 'Management',
+    createdAt: new Date().toISOString()
+  };
+
+  data.salaryRecords.unshift(record);
+  storage.save(tenantId, data);
+  res.json({ success: true, record });
+});
+
+app.put('/api/salary-records/:id', (req, res) => {
+  const tenantId = getTenantId(req);
+  const data = storage.load(tenantId);
+  if (!data.salaryRecords) data.salaryRecords = [];
+  const idx = data.salaryRecords.findIndex(s => s.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: "Salary record not found" });
+
+  data.salaryRecords[idx] = { ...data.salaryRecords[idx], ...req.body };
+  storage.save(tenantId, data);
+  res.json({ success: true, record: data.salaryRecords[idx] });
+});
+
+app.delete('/api/salary-records/:id', (req, res) => {
+  const tenantId = getTenantId(req);
+  const data = storage.load(tenantId);
+  if (!data.salaryRecords) data.salaryRecords = [];
+  data.salaryRecords = data.salaryRecords.filter(s => s.id !== req.params.id);
+  storage.save(tenantId, data);
+  res.json({ success: true });
 });
 
 app.post('/api/employee-dues/:id/settle', (req, res) => {

@@ -57,12 +57,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const pumpParam = urlParams.get('pump');
   if (pumpParam) STATE.activeTenant = pumpParam;
 
-  // Restore session from sessionStorage
+  // Restore session from localStorage or sessionStorage (Mobile persistent session until shift ends / logout)
   try {
-    const savedUser = sessionStorage.getItem('srr_current_user');
+    const savedUser = localStorage.getItem('srr_current_user') || sessionStorage.getItem('srr_current_user');
     if (savedUser) {
       STATE.currentUser = JSON.parse(savedUser);
-      if (STATE.currentUser?.role === 'admin') {
+      const r = STATE.currentUser?.role;
+      if (r === 'admin' || r === 'developer' || r === 'mgmt' || r === 'owner') {
         STATE.adminUnlocked = true;
       }
     }
@@ -586,74 +587,18 @@ function resolveEmployeePumpLock() {
   if (hoBadge) hoBadge.innerText = assignedStation || 'S1';
 }
 
-// --- LOGIN MODE CONTROLLER (STAFF DUTY-PIN ONLY vs MGMT/OWNER PASSWORD ONLY) ---
-// User requirement: "when even admin owner mgmt username entered thn remove pin. pin only for emp log (remove password option for emp keep only pin/otp given by mgmt/owner)"
-let currentLoginMode = 'staff';
-
-function setLoginMode(mode) {
-  currentLoginMode = mode;
-  const btnStaff = document.getElementById('loginModeBtnStaff');
-  const btnMgmt = document.getElementById('loginModeBtnMgmt');
-  const passContainer = document.getElementById('loginPasswordContainer');
-  const pinContainer = document.getElementById('loginDutyPinContainer');
-  const lblUser = document.getElementById('lblLoginUser');
-  const userInput = document.getElementById('loginUsernameInput');
-  const passInput = document.getElementById('loginPasswordInput');
-  const pinInput = document.getElementById('loginDutyPinInput');
-  const errEl = document.getElementById('loginErrorMessage');
-  if (errEl) errEl.classList.add('hidden');
-
-  const isTe = STATE.lang === 'te';
-
-  if (mode === 'staff') {
-    if (btnStaff) btnStaff.className = "flex-1 py-2 rounded-xl text-xs font-black transition-all bg-orange-600 text-white shadow-sm flex items-center justify-center gap-1.5";
-    if (btnMgmt) btnMgmt.className = "flex-1 py-2 rounded-xl text-xs font-bold transition-all text-slate-700 hover:text-black flex items-center justify-center gap-1.5";
-    
-    // Staff: Show PIN, HIDE Password
-    if (pinContainer) pinContainer.classList.remove('hidden');
-    if (passContainer) passContainer.classList.add('hidden');
-    if (passInput) passInput.required = false;
-    if (pinInput) pinInput.required = true;
-
-    if (lblUser) lblUser.innerText = isTe ? 'ఉద్యోగి పేరు / యూజర్‌నేమ్ (Employee Username):' : 'Employee Username / First Name:';
-    if (userInput) userInput.placeholder = 'e.g. emp, ramesh, or suresh';
-  } else {
-    // Management / Owner: Show Password, HIDE PIN
-    if (btnMgmt) btnMgmt.className = "flex-1 py-2 rounded-xl text-xs font-black transition-all bg-orange-600 text-white shadow-sm flex items-center justify-center gap-1.5";
-    if (btnStaff) btnStaff.className = "flex-1 py-2 rounded-xl text-xs font-bold transition-all text-slate-700 hover:text-black flex items-center justify-center gap-1.5";
-
-    if (pinContainer) pinContainer.classList.add('hidden');
-    if (passContainer) passContainer.classList.remove('hidden');
-    if (passInput) passInput.required = true;
-    if (pinInput) pinInput.required = false;
-
-    if (lblUser) lblUser.innerText = isTe ? 'యూజర్‌నేమ్ (మేనేజ్‌మెంట్ / ఓనర్):' : 'Management / Owner Username:';
-    if (userInput) userInput.placeholder = 'mgmt, owner, admin, or dev';
-  }
-}
-
-function onLoginUsernameChange(val) {
-  const clean = (val || '').trim().toLowerCase();
-  const mgmtKeywords = ['admin', 'mgmt', 'owner', 'manager', 'developer', 'dev', 'bunkowner', 'administrator'];
-  if (mgmtKeywords.includes(clean)) {
-    if (currentLoginMode !== 'mgmt') setLoginMode('mgmt');
-  } else if (clean === 'emp' || clean.startsWith('s1') || clean.startsWith('s2') || clean.startsWith('s3') || clean.startsWith('s4')) {
-    if (currentLoginMode !== 'staff') setLoginMode('staff');
-  }
-}
-
-// --- AUTHENTICATION (SIGN IN, LOGOUT, CHANGE PASSWORD) ---
+// --- AUTHENTICATION (UNIFIED CLEAN SIGN IN & PERSISTENT SESSION) ---
+// User requirement: "dont show staff / management login options on login screen give just login page like enter username and password screens (duty pin for staff)"
+// User requirement: "for staff login should be there till shift ends (not imediate logout - think he has to do all his caluculations and all all ok thn ok)"
 async function handleLoginSubmit(event) {
   event.preventDefault();
 
   const userField = document.getElementById('loginUsernameInput');
   const passField = document.getElementById('loginPasswordInput');
-  const pinField = document.getElementById('loginDutyPinInput');
   const errEl = document.getElementById('loginErrorMessage');
 
   const username = userField ? userField.value.trim() : '';
-  const password = passField ? passField.value.trim() : '';
-  const dutyPin = pinField ? pinField.value.trim() : '';
+  const credential = passField ? passField.value.trim() : '';
 
   if (!username) {
     if (errEl) {
@@ -663,25 +608,12 @@ async function handleLoginSubmit(event) {
     return;
   }
 
-  const isMgmt = currentLoginMode === 'mgmt';
-
-  if (isMgmt) {
-    if (!password) {
-      if (errEl) {
-        errEl.innerText = STATE.lang === 'te' ? 'దయచేసి పాస్‌వర్డ్ నమోదు చేయండి (default: 123)' : 'Please enter password (default: 123)';
-        errEl.classList.remove('hidden');
-      }
-      return;
+  if (!credential) {
+    if (errEl) {
+      errEl.innerText = STATE.lang === 'te' ? 'దయచేసి పాస్‌వర్డ్ లేదా డ్యూటీ పిన్ నమోదు చేయండి' : 'Please enter Password or Duty PIN';
+      errEl.classList.remove('hidden');
     }
-  } else {
-    // Staff mode: PIN is required, password is NOT required
-    if (!dutyPin) {
-      if (errEl) {
-        errEl.innerText = STATE.lang === 'te' ? 'డ్యూటీ పిన్ నమోదు చేయండి (Duty PIN / OTP required)' : 'Please enter Duty PIN assigned by Manager/Owner';
-        errEl.classList.remove('hidden');
-      }
-      return;
-    }
+    return;
   }
 
   try {
@@ -690,8 +622,9 @@ async function handleLoginSubmit(event) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         username,
-        password: isMgmt ? password : '',
-        dutyPin: !isMgmt ? dutyPin : '',
+        password: credential,
+        dutyPin: credential,
+        pin: credential,
         date: STATE.selectedDate
       })
     });
@@ -706,12 +639,16 @@ async function handleLoginSubmit(event) {
       return;
     }
 
-    // Success: store in state and sessionStorage
+    // Success: store in BOTH localStorage and sessionStorage so mobile tabs don't log out mid-shift
     STATE.currentUser = {
       ...data.user,
       role: data.role,
-      assignedStation: data.assignedStation
+      assignedStation: data.assignedStation,
+      loginTimestamp: Date.now(),
+      shiftDate: STATE.selectedDate
     };
+
+    localStorage.setItem('srr_current_user', JSON.stringify(STATE.currentUser));
     sessionStorage.setItem('srr_current_user', JSON.stringify(STATE.currentUser));
 
     if (errEl) errEl.classList.add('hidden');
@@ -730,6 +667,7 @@ async function handleLoginSubmit(event) {
 }
 
 function logoutUser() {
+  localStorage.removeItem('srr_current_user');
   sessionStorage.removeItem('srr_current_user');
   STATE.currentUser = null;
   STATE.adminUnlocked = false;
@@ -739,6 +677,7 @@ function logoutUser() {
 
 function showLoginScreen() {
   STATE.currentUser = null;
+  localStorage.removeItem('srr_current_user');
   sessionStorage.removeItem('srr_current_user');
   routeUserView();
 }
@@ -3114,93 +3053,458 @@ async function settleAllEmployeeDues(empName) {
   }
 }
 
-// --- MONTH-END DUTY ATTENDANCE & SALARY DAYS CONTROLLER ---
-// User requirement: "and when month end comes to give salary how many days that emp has done work in station"
+// =========================================================================
+// SALARY CALCULATOR & DUTY ATTENDANCE CONTROLLER
+// User requirement: 
+// "in mgmt screen - > when during salary caluclation give start and end date, 
+// emp name and when enters emp name thn it should auto pick how many days he worked.. 
+// per day default is 750 and dont make read only this and then caluclate option.
+// give in table in rows like below:
+// Start date, end date, emp name, no'of days worked so on..,"
+// =========================================================================
+
 async function loadDutyAttendanceData() {
-  const monthInput = document.getElementById('attMonthSelector');
-  const month = monthInput ? monthInput.value : (STATE.selectedDate || '2026-10').slice(0, 7);
+  const today = STATE.selectedDate || getTodayDateString();
+  const startEl = document.getElementById('salCalcStartDate');
+  const endEl = document.getElementById('salCalcEndDate');
+
+  if (startEl && !startEl.value) {
+    startEl.value = `${today.slice(0, 7)}-01`;
+  }
+  if (endEl && !endEl.value) {
+    endEl.value = today;
+  }
+
+  const startDate = startEl ? startEl.value : `${today.slice(0, 7)}-01`;
+  const endDate = endEl ? endEl.value : today;
+  const dailyRate = document.getElementById('salCalcDailyRate')?.value || 750;
 
   try {
-    const res = await fetch(`/api/duty-attendance?month=${month}&pump=${STATE.activeTenant}`);
-    if (!res.ok) return;
-    const data = await res.json();
-    STATE.dutyAttendance = data;
+    // 1. Fetch duty attendance for this date range to auto-calculate days worked
+    const attRes = await fetch(`/api/duty-attendance?startDate=${startDate}&endDate=${endDate}&dailyWage=${dailyRate}&pump=${STATE.activeTenant}`);
+    if (attRes.ok) {
+      STATE.dutyAttendance = await attRes.json();
+    }
 
-    const elStaff = document.getElementById('attMetricStaffCount');
-    const elDays = document.getElementById('attMetricTotalDays');
-    const elActive = document.getElementById('attMetricActiveDates');
+    // 2. Fetch saved salary calculation records
+    const salRes = await fetch(`/api/salary-records?pump=${STATE.activeTenant}`);
+    if (salRes.ok) {
+      STATE.salaryRecords = await salRes.json();
+    }
 
-    if (elStaff) elStaff.innerText = data.summary?.totalEmployees || 0;
-    if (elDays) elDays.innerText = `${data.summary?.totalDutyDays || 0} Days`;
-    if (elActive) elActive.innerText = `${data.summary?.activeDatesCount || 0} Days`;
+    // 3. Populate employee dropdown
+    populateSalaryEmployeeSelect();
 
-    renderDutyAttendanceTable();
+    // 4. Update the live preview
+    await onSalaryInputsChange(false);
+
+    // 5. Render the table of records
+    renderSalaryRecordsTable();
   } catch (err) {
-    console.error('Error loading duty attendance:', err);
+    console.error('Error loading salary calculator data:', err);
   }
 }
 
-function renderDutyAttendanceTable() {
-  const tbody = document.getElementById('adminAttendanceSalaryTableBody');
-  if (!tbody) return;
+function populateSalaryEmployeeSelect() {
+  const select = document.getElementById('salCalcEmpSelect');
+  if (!select) return;
 
-  const list = STATE.dutyAttendance?.attendanceList || [];
-  const search = (document.getElementById('attSearchInput')?.value || '').toLowerCase().trim();
+  const currentVal = select.value;
+  const list = (STATE.dutyAttendance?.attendanceList && STATE.dutyAttendance.attendanceList.length > 0)
+    ? STATE.dutyAttendance.attendanceList
+    : (STATE.employees || []);
 
-  const filtered = list.filter(a => {
-    return !search || a.name.toLowerCase().includes(search) || (a.phone && a.phone.includes(search));
+  let html = `<option value="">-- ఎంచుకోండి / Select Staff --</option>`;
+  list.forEach(emp => {
+    const empId = emp.id || emp.name;
+    const name = emp.name || 'Staff';
+    const days = emp.daysWorked != null ? ` (${emp.daysWorked} days)` : '';
+    const selected = (currentVal === empId || currentVal === name) ? 'selected' : '';
+    html += `<option value="${empId}" data-name="${name}" ${selected}>${name}${days}</option>`;
   });
 
-  if (filtered.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-400 text-xs font-semibold">హాజరు రికార్డులు ఏవీ లేవు (No attendance records found)</td></tr>`;
+  select.innerHTML = html;
+}
+
+async function onSalaryInputsChange(datesChanged = false) {
+  const startEl = document.getElementById('salCalcStartDate');
+  const endEl = document.getElementById('salCalcEndDate');
+  const select = document.getElementById('salCalcEmpSelect');
+  const daysEl = document.getElementById('salCalcDaysWorked');
+  const duesEl = document.getElementById('salCalcDuesCut');
+
+  // If date range changed, re-fetch attendance so days worked are accurately computed
+  const isDateChange = datesChanged === true || (datesChanged && datesChanged.target && (datesChanged.target.id === 'salCalcStartDate' || datesChanged.target.id === 'salCalcEndDate'));
+  if (isDateChange && startEl && endEl && startEl.value && endEl.value) {
+    try {
+      const dailyRate = document.getElementById('salCalcDailyRate')?.value || 750;
+      const attRes = await fetch(`/api/duty-attendance?startDate=${startEl.value}&endDate=${endEl.value}&dailyWage=${dailyRate}&pump=${STATE.activeTenant}`);
+      if (attRes.ok) {
+        STATE.dutyAttendance = await attRes.json();
+        const prevSelected = select ? select.value : '';
+        populateSalaryEmployeeSelect();
+        if (select && prevSelected) select.value = prevSelected;
+      }
+    } catch (e) {
+      console.warn('Could not refresh duty range:', e);
+    }
+  }
+
+  const selectedVal = select?.value;
+  if (!selectedVal) {
+    if (daysEl) daysEl.value = '0';
+    if (duesEl) duesEl.value = '0';
+    updateSalaryLivePreview();
     return;
   }
 
-  tbody.innerHTML = filtered.map(a => {
-    const stationsStr = Object.entries(a.stationCounts || {})
-      .filter(([k, v]) => v > 0)
-      .map(([k, v]) => `<span class="bg-slate-100 text-slate-800 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold">${k}: ${v}d</span>`)
-      .join(' ') || '<span class="text-slate-400">-</span>';
+  // Find matching employee in duty attendance or state employees
+  const emp = (STATE.dutyAttendance?.attendanceList || []).find(e => e.id === selectedVal || e.name === selectedVal);
+  if (emp) {
+    if (daysEl) daysEl.value = emp.daysWorked != null ? emp.daysWorked : 0;
+    if (duesEl) duesEl.value = emp.pendingDue != null ? emp.pendingDue : 0;
+  } else {
+    if (daysEl) daysEl.value = '0';
+    if (duesEl) duesEl.value = '0';
+  }
 
-    const datesTooltip = (a.datesWorked || []).join(', ') || 'None';
+  updateSalaryLivePreview();
+}
+
+function updateSalaryLivePreview() {
+  const days = parseFloat(document.getElementById('salCalcDaysWorked')?.value) || 0;
+  const rate = parseFloat(document.getElementById('salCalcDailyRate')?.value) || 750;
+  const dues = parseFloat(document.getElementById('salCalcDuesCut')?.value) || 0;
+
+  const gross = Math.round(days * rate);
+  const net = Math.max(0, gross - dues);
+
+  const previewEl = document.getElementById('salCalcPreviewNet');
+  if (previewEl) {
+    previewEl.innerText = `₹${net.toLocaleString('en-IN')}`;
+  }
+}
+
+async function calculateAndAddSalaryRecord() {
+  const startEl = document.getElementById('salCalcStartDate');
+  const endEl = document.getElementById('salCalcEndDate');
+  const select = document.getElementById('salCalcEmpSelect');
+  const daysEl = document.getElementById('salCalcDaysWorked');
+  const rateEl = document.getElementById('salCalcDailyRate');
+  const duesEl = document.getElementById('salCalcDuesCut');
+  const notesEl = document.getElementById('salCalcNotes');
+
+  const startDate = startEl?.value || getTodayDateString();
+  const endDate = endEl?.value || getTodayDateString();
+  const empId = select?.value;
+
+  if (!empId) {
+    showToast('దయచేసి సిబ్బందిని ఎంచుకోండి (Please select employee)', 'warning');
+    return;
+  }
+
+  const empOption = select.options[select.selectedIndex];
+  const empName = empOption?.getAttribute('data-name') || empOption?.text?.split(' (')[0] || empId;
+  const daysWorked = parseFloat(daysEl?.value) || 0;
+  const dailyRate = parseFloat(rateEl?.value) || 750;
+  const deductions = parseFloat(duesEl?.value) || 0;
+  const notes = notesEl?.value?.trim() || '';
+
+  try {
+    const res = await fetch(`/api/salary-records?pump=${STATE.activeTenant}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        startDate,
+        endDate,
+        employeeId: empId,
+        employeeName: empName,
+        daysWorked,
+        dailyRate,
+        deductions,
+        notes,
+        status: 'pending'
+      })
+    });
+
+    const result = await res.json();
+    if (result.success) {
+      showToast(STATE.lang === 'te' 
+        ? `${empName} జీతం రికార్డు పట్టికలో చేర్చబడింది!` 
+        : `Salary record added for ${empName}!`);
+      if (notesEl) notesEl.value = '';
+      await loadDutyAttendanceData();
+    } else {
+      showToast(result.error || 'Failed to save salary record', 'error');
+    }
+  } catch (err) {
+    console.error('Error saving salary record:', err);
+    showToast('Failed to save salary record', 'error');
+  }
+}
+
+async function calculateSalaryForAllEmployees() {
+  const startEl = document.getElementById('salCalcStartDate');
+  const endEl = document.getElementById('salCalcEndDate');
+  const rateEl = document.getElementById('salCalcDailyRate');
+
+  const startDate = startEl?.value || getTodayDateString();
+  const endDate = endEl?.value || getTodayDateString();
+  const dailyRate = parseFloat(rateEl?.value) || 750;
+
+  const list = STATE.dutyAttendance?.attendanceList || [];
+  if (list.length === 0) {
+    showToast('హాజరు రికార్డులు ఏవీ లేవు (No attendance records to calculate)', 'warning');
+    return;
+  }
+
+  const confirmMsg = STATE.lang === 'te'
+    ? `${startDate} నుండి ${endDate} వరకు అందరు (${list.length}) సిబ్బందికి జీతం లెక్కించి పట్టికలో చేర్చాలా?`
+    : `Calculate and save salary records for all ${list.length} employees from ${startDate} to ${endDate}?`;
+
+  if (!confirm(confirmMsg)) return;
+
+  let addedCount = 0;
+  for (const emp of list) {
+    try {
+      const daysWorked = emp.daysWorked != null ? emp.daysWorked : 0;
+      const deductions = emp.pendingDue != null ? emp.pendingDue : 0;
+      await fetch(`/api/salary-records?pump=${STATE.activeTenant}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          startDate,
+          endDate,
+          employeeId: emp.id || emp.name,
+          employeeName: emp.name,
+          daysWorked,
+          dailyRate,
+          deductions,
+          notes: `${startDate} to ${endDate} auto-calc`,
+          status: 'pending'
+        })
+      });
+      addedCount++;
+    } catch (e) {
+      console.warn('Failed to calculate for', emp.name, e);
+    }
+  }
+
+  showToast(STATE.lang === 'te' 
+    ? `${addedCount} మంది సిబ్బంది జీతాలు పట్టికలో చేర్చబడ్డాయి!` 
+    : `Added salary calculations for ${addedCount} employees!`);
+  await loadDutyAttendanceData();
+}
+
+function renderSalaryRecordsTable() {
+  const tbody = document.getElementById('adminSalaryRecordsTableBody');
+  const tfoot = document.getElementById('adminSalaryTableFoot');
+  if (!tbody) return;
+
+  const records = STATE.salaryRecords || [];
+  const search = (document.getElementById('salSearchInput')?.value || '').toLowerCase().trim();
+
+  const filtered = records.filter(r => {
+    return !search || 
+      (r.employeeName && r.employeeName.toLowerCase().includes(search)) ||
+      (r.startDate && r.startDate.includes(search)) ||
+      (r.endDate && r.endDate.includes(search)) ||
+      (r.notes && r.notes.toLowerCase().includes(search));
+  });
+
+  // Calculate totals
+  let totalDays = 0;
+  let totalGross = 0;
+  let totalDues = 0;
+  let totalNet = 0;
+  const staffSet = new Set();
+
+  records.forEach(r => {
+    if (r.employeeName) staffSet.add(r.employeeName);
+    const d = Number(r.daysWorked || 0);
+    const rate = Number(r.dailyRate || 750);
+    const gross = r.grossSalary != null ? Number(r.grossSalary) : Math.round(d * rate);
+    const ded = Number(r.deductions || 0);
+    const net = r.netSalary != null ? Number(r.netSalary) : Math.max(0, gross - ded);
+
+    totalDays += d;
+    totalGross += gross;
+    totalDues += ded;
+    totalNet += net;
+  });
+
+  // Update summary metric cards
+  const elStaff = document.getElementById('salMetricStaffCount');
+  const elDays = document.getElementById('salMetricTotalDays');
+  const elDues = document.getElementById('salMetricTotalDues');
+  const elNet = document.getElementById('salMetricTotalNet');
+
+  if (elStaff) elStaff.innerText = staffSet.size;
+  if (elDays) elDays.innerText = `${totalDays} Days`;
+  if (elDues) elDues.innerText = `-₹${totalDues.toLocaleString('en-IN')}`;
+  if (elNet) elNet.innerText = `₹${totalNet.toLocaleString('en-IN')}`;
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="10" class="p-6 text-center text-slate-400 text-xs font-semibold">జీతాల రికార్డులు ఏవీ లేవు (No salary records created yet)</td></tr>`;
+    if (tfoot) tfoot.innerHTML = '';
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(r => {
+    const isPaid = r.status === 'paid';
+    const statusBadge = isPaid
+      ? `<button onclick="toggleSalaryRecordPaidStatus('${r.id}', 'paid')" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-900 border border-emerald-300 font-black text-[10px] px-2.5 py-1 rounded-full shadow-xs flex items-center gap-1 mx-auto transition-all" title="Click to mark as Pending">
+           <span>✓</span>
+           <span>Paid (చెల్లించారు)</span>
+         </button>`
+      : `<button onclick="toggleSalaryRecordPaidStatus('${r.id}', 'pending')" class="bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 font-black text-[10px] px-2.5 py-1 rounded-full shadow-xs flex items-center gap-1 mx-auto transition-all" title="Click to mark as Paid">
+           <span>⏳</span>
+           <span>Pending (బాకీ)</span>
+         </button>`;
+
+    const d = Number(r.daysWorked || 0);
+    const rate = Number(r.dailyRate || 750);
+    const gross = r.grossSalary != null ? Number(r.grossSalary) : Math.round(d * rate);
+    const ded = Number(r.deductions || 0);
+    const net = r.netSalary != null ? Number(r.netSalary) : Math.max(0, gross - ded);
 
     return `
-      <tr class="hover:bg-slate-50 transition-colors">
-        <td class="p-3 font-bold text-slate-900">
-          <div class="flex items-center gap-2">
-            <span class="text-base">👤</span>
+      <tr class="hover:bg-slate-50 transition-colors border-b border-slate-100">
+        <td class="p-2.5 font-mono text-slate-700 font-bold whitespace-nowrap">${r.startDate || '-'}</td>
+        <td class="p-2.5 font-mono text-slate-700 font-bold whitespace-nowrap">${r.endDate || '-'}</td>
+        <td class="p-2.5 font-black text-blue-900">
+          <div class="flex items-center gap-1.5">
+            <span>👤</span>
             <div>
-              <div class="font-black text-blue-900">${a.name}</div>
-              <div class="text-[10px] text-slate-500 font-normal">${a.role} • ${a.villageName || ''}</div>
+              <div>${r.employeeName || 'Staff'}</div>
+              ${r.notes ? `<div class="text-[10px] text-slate-400 font-normal italic">${r.notes}</div>` : ''}
             </div>
           </div>
         </td>
-        <td class="p-3 font-mono text-slate-600 font-bold">${a.phone || '-'}</td>
-        <td class="p-3 text-center">
-          <span class="bg-emerald-100 text-emerald-950 text-xs font-black font-mono px-3 py-1 rounded-full border border-emerald-300 shadow-xs">
-            ${a.daysWorked} Days (${a.daysWorked} రోజులు)
+        <td class="p-2.5 text-center font-mono font-black">
+          <span class="bg-blue-50 text-blue-950 px-2.5 py-1 rounded-lg border border-blue-200 text-xs shadow-2xs">
+            ${r.daysWorked} d
           </span>
         </td>
-        <td class="p-3">
-          <span class="text-[11px] text-slate-700 font-mono font-semibold" title="${datesTooltip}">
-            ${a.datesWorked && a.datesWorked.length > 0 ? (a.datesWorked.length > 3 ? `${a.datesWorked.slice(0, 3).join(', ')} +${a.datesWorked.length - 3} more` : a.datesWorked.join(', ')) : '-'}
-          </span>
+        <td class="p-2.5 text-right font-mono text-slate-700 font-bold">₹${rate.toLocaleString('en-IN')}</td>
+        <td class="p-2.5 text-right font-mono text-slate-800 font-bold">₹${gross.toLocaleString('en-IN')}</td>
+        <td class="p-2.5 text-right font-mono font-bold ${ded > 0 ? 'text-rose-600' : 'text-slate-400'}">
+          ${ded > 0 ? `-₹${ded.toLocaleString('en-IN')}` : '₹0'}
         </td>
-        <td class="p-3">${stationsStr}</td>
-        <td class="p-3 font-mono font-black ${a.pendingDue > 0 ? 'text-rose-600' : 'text-slate-400'}">
-          ${a.pendingDue > 0 ? `₹${a.pendingDue.toLocaleString('en-IN')}` : '₹0'}
-        </td>
-        <td class="p-3 text-right">
-          <div class="font-mono font-black text-slate-900 text-sm">₹${a.netPayable.toLocaleString('en-IN')}</div>
-          <div class="text-[10px] text-slate-500">Gross: ₹${a.totalEarnings.toLocaleString('en-IN')}</div>
+        <td class="p-2.5 text-right font-mono font-black text-indigo-950 text-sm">₹${net.toLocaleString('en-IN')}</td>
+        <td class="p-2.5 text-center">${statusBadge}</td>
+        <td class="p-2.5 text-center">
+          <div class="flex items-center justify-center gap-1">
+            <button onclick="shareSalaryRecordWhatsApp('${r.id}')" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 p-1.5 rounded-lg transition-all" title="Share via WhatsApp">
+              💬
+            </button>
+            <button onclick="deleteSalaryRecord('${r.id}')" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 p-1.5 rounded-lg transition-all" title="Delete Record">
+              🗑️
+            </button>
+          </div>
         </td>
       </tr>
     `;
   }).join('');
+
+  if (tfoot) {
+    tfoot.innerHTML = `
+      <tr class="bg-slate-100 text-slate-900 font-black text-xs border-t-2 border-slate-300">
+        <td colspan="3" class="p-2.5 uppercase tracking-wide">మొత్తం లెక్క (Total Summary):</td>
+        <td class="p-2.5 text-center font-mono">${totalDays} Days</td>
+        <td class="p-2.5 text-right font-mono text-slate-500">-</td>
+        <td class="p-2.5 text-right font-mono">₹${totalGross.toLocaleString('en-IN')}</td>
+        <td class="p-2.5 text-right font-mono text-rose-600">-₹${totalDues.toLocaleString('en-IN')}</td>
+        <td class="p-2.5 text-right font-mono text-emerald-700 text-sm">₹${totalNet.toLocaleString('en-IN')}</td>
+        <td colspan="2" class="p-2.5 text-center text-[10px] text-slate-500 font-normal">${filtered.length} Records</td>
+      </tr>
+    `;
+  }
+}
+
+function filterSalaryRecordsTable() {
+  renderSalaryRecordsTable();
+}
+
+function renderDutyAttendanceTable() {
+  renderSalaryRecordsTable();
 }
 
 function filterDutyAttendanceTable() {
-  renderDutyAttendanceTable();
+  renderSalaryRecordsTable();
+}
+
+async function toggleSalaryRecordPaidStatus(id, currentStatus) {
+  const newStatus = currentStatus === 'paid' ? 'pending' : 'paid';
+  try {
+    const res = await fetch(`/api/salary-records/${id}?pump=${STATE.activeTenant}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus })
+    });
+    const result = await res.json();
+    if (result.success) {
+      showToast(newStatus === 'paid' ? 'జీతం చెల్లించినట్లు మార్చబడింది (Marked as Paid)' : 'పెండింగ్‌గా మార్చబడింది (Marked as Pending)');
+      const rec = (STATE.salaryRecords || []).find(r => r.id === id);
+      if (rec) rec.status = newStatus;
+      renderSalaryRecordsTable();
+    }
+  } catch (err) {
+    console.error('Failed to toggle salary status:', err);
+  }
+}
+
+async function deleteSalaryRecord(id) {
+  const confirmMsg = STATE.lang === 'te' 
+    ? 'ఈ జీతం రికార్డును ఖచ్చితంగా తొలగించాలనుకుంటున్నారా?' 
+    : 'Are you sure you want to delete this salary record?';
+  if (!confirm(confirmMsg)) return;
+
+  try {
+    const res = await fetch(`/api/salary-records/${id}?pump=${STATE.activeTenant}`, {
+      method: 'DELETE'
+    });
+    const result = await res.json();
+    if (result.success) {
+      showToast('జీతం రికార్డు తొలగించబడింది (Record deleted)');
+      STATE.salaryRecords = (STATE.salaryRecords || []).filter(r => r.id !== id);
+      renderSalaryRecordsTable();
+    }
+  } catch (err) {
+    console.error('Failed to delete salary record:', err);
+  }
+}
+
+function shareSalaryRecordWhatsApp(id) {
+  const r = (STATE.salaryRecords || []).find(x => x.id === id);
+  if (!r) return;
+
+  const d = Number(r.daysWorked || 0);
+  const rate = Number(r.dailyRate || 750);
+  const gross = r.grossSalary != null ? Number(r.grossSalary) : Math.round(d * rate);
+  const ded = Number(r.deductions || 0);
+  const net = r.netSalary != null ? Number(r.netSalary) : Math.max(0, gross - ded);
+
+  const text = `*SRR FILLING STATION - SALARY SLIP* ⛽\n` +
+    `--------------------------------\n` +
+    `👤 *సిబ్బంది పేరు (Staff)*: ${r.employeeName}\n` +
+    `📅 *కాలవ్యవధి (Period)*: ${r.startDate} to ${r.endDate}\n` +
+    `💼 *పని చేసిన రోజులు (Days Worked)*: ${r.daysWorked} Days\n` +
+    `💵 *రోజు రేటు (Per Day Rate)*: ₹${rate}\n` +
+    `📊 *మొత్తం సంపాదన (Gross Salary)*: ₹${gross.toLocaleString('en-IN')}\n` +
+    (ded > 0 ? `⚠️ *బాకీ కటింగ్ (Dues Cut)*: -₹${ded.toLocaleString('en-IN')}\n` : '') +
+    `💰 *నికర జీతం (Net Payable)*: *₹${net.toLocaleString('en-IN')}*\n` +
+    `📌 *స్టేటస్ (Status)*: ${r.status === 'paid' ? 'PAID (చెల్లించారు)' : 'PENDING'}\n` +
+    (r.notes ? `📝 *రిమార్క్స్*: ${r.notes}\n` : '') +
+    `--------------------------------\n` +
+    `SRR Filling Station Management`;
+
+  const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+  window.open(url, '_blank');
+}
+
+function printSalarySheet() {
+  window.print();
 }
 
 function filterEmployeeDuesTable() {
