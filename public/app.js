@@ -318,9 +318,10 @@ async function loadAllData() {
       }
     } catch (e) {}
 
-    // Synchronize employees table and duty roster
+    // Synchronize employees table, duty roster, and salary employee dropdown
     renderAdminEmployeesTable();
     renderAdminDutyRoster();
+    populateSalaryEmployeeSelect();
 
     // Determine and enforce active view routing
     routeUserView();
@@ -526,8 +527,12 @@ function routeUserView() {
     renderAdminDashboard();
     renderAdminEmployeesTable();
     renderAdminDutyRoster();
+    populateSalaryEmployeeSelect();
     if (STATE.adminTab === 'handover') {
       renderAdminHandoverDashboard();
+    }
+    if (STATE.adminTab === 'attendance') {
+      loadDutyAttendanceData();
     }
     return;
   }
@@ -1999,6 +2004,7 @@ function switchAdminTab(tabKey) {
     loadEmployeeDues();
   }
   if (tabKey === 'attendance') {
+    populateSalaryEmployeeSelect();
     loadDutyAttendanceData();
   }
   if (tabKey === 'fleet') {
@@ -3080,47 +3086,77 @@ async function loadDutyAttendanceData() {
   const dailyRate = document.getElementById('salCalcDailyRate')?.value || 750;
 
   try {
-    // 1. Fetch duty attendance for this date range to auto-calculate days worked
-    const attRes = await fetch(`/api/duty-attendance?startDate=${startDate}&endDate=${endDate}&dailyWage=${dailyRate}&pump=${STATE.activeTenant}`);
+    // 1. Populate dropdown immediately from employee directory so it is never empty
+    await populateSalaryEmployeeSelect();
+
+    // 2. Fetch duty attendance for this date range to auto-calculate days worked
+    const attRes = await fetch(`/api/duty-attendance?startDate=${startDate}&endDate=${endDate}&dailyWage=${dailyRate}&pump=${STATE.activeTenant || 'srr-filling-station'}`);
     if (attRes.ok) {
       STATE.dutyAttendance = await attRes.json();
     }
 
-    // 2. Fetch saved salary calculation records
-    const salRes = await fetch(`/api/salary-records?pump=${STATE.activeTenant}`);
+    // 3. Fetch saved salary calculation records
+    const salRes = await fetch(`/api/salary-records?pump=${STATE.activeTenant || 'srr-filling-station'}`);
     if (salRes.ok) {
       STATE.salaryRecords = await salRes.json();
     }
 
-    // 3. Populate employee dropdown
-    populateSalaryEmployeeSelect();
+    // 4. Re-populate employee dropdown with updated days worked badges
+    await populateSalaryEmployeeSelect();
 
-    // 4. Update the live preview
+    // 5. Update the live preview
     await onSalaryInputsChange(false);
 
-    // 5. Render the table of records
+    // 6. Render the table of records
     renderSalaryRecordsTable();
   } catch (err) {
     console.error('Error loading salary calculator data:', err);
   }
 }
 
-function populateSalaryEmployeeSelect() {
+async function populateSalaryEmployeeSelect() {
   const select = document.getElementById('salCalcEmpSelect');
   if (!select) return;
 
+  // 1. Ensure master employees list is loaded
+  if (!STATE.employees || STATE.employees.length === 0) {
+    try {
+      const res = await fetch(`/api/employees?pump=${STATE.activeTenant || 'srr-filling-station'}`);
+      if (res.ok) {
+        STATE.employees = await res.json();
+      }
+    } catch (e) {
+      console.warn('Error fetching employees for salary dropdown:', e);
+    }
+  }
+
   const currentVal = select.value;
-  const list = (STATE.dutyAttendance?.attendanceList && STATE.dutyAttendance.attendanceList.length > 0)
-    ? STATE.dutyAttendance.attendanceList
-    : (STATE.employees || []);
+  const empList = (STATE.employees && STATE.employees.length > 0) 
+    ? STATE.employees 
+    : (STATE.dutyAttendance?.attendanceList || []);
+  const attList = STATE.dutyAttendance?.attendanceList || [];
+
+  if (empList.length === 0) {
+    // Fallback if network issue
+    return;
+  }
 
   let html = `<option value="">-- ఎంచుకోండి / Select Staff --</option>`;
-  list.forEach(emp => {
+
+  empList.forEach(emp => {
     const empId = emp.id || emp.name;
     const name = emp.name || 'Staff';
-    const days = emp.daysWorked != null ? ` (${emp.daysWorked} days)` : '';
+    const cleanName = name.trim().toLowerCase();
+
+    // Find attendance info if available in duty attendance response
+    const att = attList.find(a => 
+      (a.id && (a.id === empId || a.id === emp.name)) || 
+      (a.name && (a.name.trim().toLowerCase() === cleanName || a.name.trim().toLowerCase().includes(cleanName) || cleanName.includes(a.name.trim().toLowerCase())))
+    );
+
+    const daysText = (att && att.daysWorked != null && att.daysWorked > 0) ? ` (${att.daysWorked} days)` : '';
     const selected = (currentVal === empId || currentVal === name) ? 'selected' : '';
-    html += `<option value="${empId}" data-name="${name}" ${selected}>${name}${days}</option>`;
+    html += `<option value="${empId}" data-id="${empId}" data-name="${name}" ${selected}>${name}${daysText}</option>`;
   });
 
   select.innerHTML = html;
@@ -3138,11 +3174,11 @@ async function onSalaryInputsChange(datesChanged = false) {
   if (isDateChange && startEl && endEl && startEl.value && endEl.value) {
     try {
       const dailyRate = document.getElementById('salCalcDailyRate')?.value || 750;
-      const attRes = await fetch(`/api/duty-attendance?startDate=${startEl.value}&endDate=${endEl.value}&dailyWage=${dailyRate}&pump=${STATE.activeTenant}`);
+      const attRes = await fetch(`/api/duty-attendance?startDate=${startEl.value}&endDate=${endEl.value}&dailyWage=${dailyRate}&pump=${STATE.activeTenant || 'srr-filling-station'}`);
       if (attRes.ok) {
         STATE.dutyAttendance = await attRes.json();
         const prevSelected = select ? select.value : '';
-        populateSalaryEmployeeSelect();
+        await populateSalaryEmployeeSelect();
         if (select && prevSelected) select.value = prevSelected;
       }
     } catch (e) {
@@ -3158,14 +3194,29 @@ async function onSalaryInputsChange(datesChanged = false) {
     return;
   }
 
-  // Find matching employee in duty attendance or state employees
-  const emp = (STATE.dutyAttendance?.attendanceList || []).find(e => e.id === selectedVal || e.name === selectedVal);
-  if (emp) {
-    if (daysEl) daysEl.value = emp.daysWorked != null ? emp.daysWorked : 0;
-    if (duesEl) duesEl.value = emp.pendingDue != null ? emp.pendingDue : 0;
+  const opt = select.options[select.selectedIndex];
+  const empId = opt?.getAttribute('data-id') || selectedVal;
+  const empName = opt?.getAttribute('data-name') || opt?.text?.split(' (')[0]?.trim() || selectedVal;
+  const cleanName = empName.trim().toLowerCase();
+
+  // Find matching employee in duty attendance
+  const attEmp = (STATE.dutyAttendance?.attendanceList || []).find(e => 
+    (e.id && (e.id === empId || e.id === selectedVal)) || 
+    (e.name && (e.name.trim().toLowerCase() === cleanName || e.name.trim().toLowerCase().includes(cleanName) || cleanName.includes(e.name.trim().toLowerCase())))
+  );
+
+  if (attEmp) {
+    if (daysEl) daysEl.value = attEmp.daysWorked != null ? attEmp.daysWorked : 0;
+    if (duesEl) duesEl.value = attEmp.pendingDue != null ? attEmp.pendingDue : 0;
   } else {
     if (daysEl) daysEl.value = '0';
-    if (duesEl) duesEl.value = '0';
+
+    // Check if there are pending dues in STATE.employeeDues
+    const pendingDue = (STATE.employeeDues || [])
+      .filter(d => (d.status === 'pending' || d.status === 'unsettled') && d.employeeName && d.employeeName.trim().toLowerCase() === cleanName)
+      .reduce((s, d) => s + (d.shortageAmount || 0), 0);
+
+    if (duesEl) duesEl.value = pendingDue || 0;
   }
 
   updateSalaryLivePreview();
@@ -3196,22 +3247,23 @@ async function calculateAndAddSalaryRecord() {
 
   const startDate = startEl?.value || getTodayDateString();
   const endDate = endEl?.value || getTodayDateString();
-  const empId = select?.value;
+  const selectedVal = select?.value;
 
-  if (!empId) {
+  if (!selectedVal) {
     showToast('దయచేసి సిబ్బందిని ఎంచుకోండి (Please select employee)', 'warning');
     return;
   }
 
-  const empOption = select.options[select.selectedIndex];
-  const empName = empOption?.getAttribute('data-name') || empOption?.text?.split(' (')[0] || empId;
+  const opt = select.options[select.selectedIndex];
+  const empId = opt?.getAttribute('data-id') || selectedVal;
+  const empName = opt?.getAttribute('data-name') || opt?.text?.split(' (')[0]?.trim() || selectedVal;
   const daysWorked = parseFloat(daysEl?.value) || 0;
   const dailyRate = parseFloat(rateEl?.value) || 750;
   const deductions = parseFloat(duesEl?.value) || 0;
   const notes = notesEl?.value?.trim() || '';
 
   try {
-    const res = await fetch(`/api/salary-records?pump=${STATE.activeTenant}`, {
+    const res = await fetch(`/api/salary-records?pump=${STATE.activeTenant || 'srr-filling-station'}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -3252,31 +3304,52 @@ async function calculateSalaryForAllEmployees() {
   const endDate = endEl?.value || getTodayDateString();
   const dailyRate = parseFloat(rateEl?.value) || 750;
 
-  const list = STATE.dutyAttendance?.attendanceList || [];
-  if (list.length === 0) {
-    showToast('హాజరు రికార్డులు ఏవీ లేవు (No attendance records to calculate)', 'warning');
+  // Use full employee list so all employees in directory are calculated
+  const empList = (STATE.employees && STATE.employees.length > 0)
+    ? STATE.employees
+    : (STATE.dutyAttendance?.attendanceList || []);
+
+  if (empList.length === 0) {
+    showToast('సిబ్బంది జాబితా ఖాళీగా ఉంది (No employees found to calculate)', 'warning');
     return;
   }
 
   const confirmMsg = STATE.lang === 'te'
-    ? `${startDate} నుండి ${endDate} వరకు అందరు (${list.length}) సిబ్బందికి జీతం లెక్కించి పట్టికలో చేర్చాలా?`
-    : `Calculate and save salary records for all ${list.length} employees from ${startDate} to ${endDate}?`;
+    ? `${startDate} నుండి ${endDate} వరకు అందరు (${empList.length}) సిబ్బందికి జీతం లెక్కించి పట్టికలో చేర్చాలా?`
+    : `Calculate and save salary records for all ${empList.length} employees from ${startDate} to ${endDate}?`;
 
   if (!confirm(confirmMsg)) return;
 
+  const attList = STATE.dutyAttendance?.attendanceList || [];
+
   let addedCount = 0;
-  for (const emp of list) {
+  for (const emp of empList) {
     try {
-      const daysWorked = emp.daysWorked != null ? emp.daysWorked : 0;
-      const deductions = emp.pendingDue != null ? emp.pendingDue : 0;
-      await fetch(`/api/salary-records?pump=${STATE.activeTenant}`, {
+      const empId = emp.id || emp.name;
+      const empName = emp.name;
+      const cleanName = empName.trim().toLowerCase();
+
+      const att = attList.find(a => 
+        (a.id && (a.id === empId || a.id === emp.name)) || 
+        (a.name && (a.name.trim().toLowerCase() === cleanName || a.name.trim().toLowerCase().includes(cleanName) || cleanName.includes(a.name.trim().toLowerCase())))
+      );
+
+      const daysWorked = att && att.daysWorked != null ? att.daysWorked : 0;
+      let deductions = att && att.pendingDue != null ? att.pendingDue : 0;
+      if (!deductions && STATE.employeeDues) {
+        deductions = STATE.employeeDues
+          .filter(d => (d.status === 'pending' || d.status === 'unsettled') && d.employeeName && d.employeeName.trim().toLowerCase() === cleanName)
+          .reduce((s, d) => s + (d.shortageAmount || 0), 0);
+      }
+
+      await fetch(`/api/salary-records?pump=${STATE.activeTenant || 'srr-filling-station'}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           startDate,
           endDate,
-          employeeId: emp.id || emp.name,
-          employeeName: emp.name,
+          employeeId: empId,
+          employeeName: empName,
           daysWorked,
           dailyRate,
           deductions,
@@ -3758,6 +3831,9 @@ function renderAdminEmployeesTable() {
       </td>
     </tr>
   `).join('');
+
+  // Keep salary calculator dropdown updated with directory
+  populateSalaryEmployeeSelect();
 }
 
 function openEmpProfileModal(empId) {
