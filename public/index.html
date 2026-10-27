@@ -891,7 +891,11 @@
       <div class="flex flex-wrap items-center justify-between gap-2.5 border-b border-slate-200 pb-2.5">
         <div class="flex flex-wrap gap-1.5" id="adminTabsNav">
           <button onclick="switchAdminTab('summary')" id="admTab-summary" class="admin-tab-btn active px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all bg-orange-600 text-white shadow">
-            📄 Daily Sales Slip
+            <span>📊 Overview (సమ్మరీ)</span>
+          </button>
+          <button onclick="switchAdminTab('whatsapp')" id="admTab-whatsapp" class="admin-tab-btn px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 flex items-center gap-1.5">
+            <span class="text-emerald-600 font-black">💬</span>
+            <span id="tabLabel-whatsapp">WhatsApp Sheet (వాట్సాప్ నివేదిక)</span>
           </button>
           <button onclick="switchAdminTab('handover')" id="admTab-handover" class="admin-tab-btn px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 flex items-center gap-1.5">
             <span>💵</span>
@@ -1001,34 +1005,27 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
-          <!-- Slip Box -->
-          <div class="lg:col-span-5 bg-gradient-to-b from-amber-50 to-orange-50/40 p-6 rounded-3xl border-2 border-amber-300 shadow-md space-y-4">
-            <div class="flex items-center justify-between border-b border-amber-200 pb-3">
-              <span class="text-xs font-black uppercase text-amber-900" id="slipTenantBadge">SRR FILLING STATION</span>
-              <span class="text-xs font-mono font-bold bg-amber-200 px-2 py-0.5 rounded text-amber-900" id="sumShiftDate">23-10-2026</span>
+        <!-- Total Revenue Cards & Reconciliation (Full-width clean dashboard layout) -->
+        <div class="space-y-4">
+          <!-- WhatsApp Quick Action Banner -->
+          <div class="bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800 text-white p-4 sm:p-5 rounded-3xl shadow-lg flex flex-wrap items-center justify-between gap-3 border border-emerald-500/30">
+            <div class="flex items-center gap-3">
+              <span class="text-3xl sm:text-4xl">💬</span>
+              <div>
+                <h4 class="font-black text-sm sm:text-base">వాట్సాప్ ఫైనల్ షీట్ నివేదిక (WhatsApp Final Shift Sheet)</h4>
+                <p class="text-xs text-emerald-100">S1, S2, S3, S4 స్టేషన్ల లెక్కలు, మీటర్లు, కలెక్షన్లు అన్నీ ఒకే షీట్‌లో వాట్సాప్‌కు పంపండి</p>
+              </div>
             </div>
-
-            <!-- Exact Slip Format -->
-            <pre id="preSlipText" class="font-mono text-sm sm:text-base font-black text-slate-900 bg-white p-4 rounded-2xl border border-amber-200 shadow-inner whitespace-pre leading-relaxed select-all">Loading Slip...</pre>
-
-            <div class="flex items-center gap-2 pt-2">
-              <button onclick="copySlipToClipboard()" class="flex-1 bg-slate-900 hover:bg-black text-white font-bold text-xs py-2.5 px-3 rounded-xl shadow flex items-center justify-center gap-1.5 transition-all">
-                <span id="copyIcon">📋</span>
-                <span id="copyText">Copy Slip</span>
-              </button>
-              <button onclick="shareSlipWhatsApp()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2.5 px-3 rounded-xl shadow flex items-center justify-center gap-1.5 transition-all">
-                <span>💬</span>
-                <span>WhatsApp</span>
-              </button>
-              <button onclick="printDailySlip()" class="bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 font-bold text-xs p-2.5 rounded-xl shadow transition-all" title="Print Slip">
-                🖨️
+            <div class="flex items-center gap-2">
+              <button onclick="switchAdminTab('whatsapp')" class="bg-white hover:bg-emerald-50 text-emerald-900 font-extrabold text-xs sm:text-sm px-4 py-2.5 rounded-xl shadow-md flex items-center gap-2 active:scale-95 transition-all">
+                <span>💬 వాట్సాప్ షీట్ చూడండి (Open WhatsApp Sheet)</span>
+                <span>➔</span>
               </button>
             </div>
           </div>
 
-          <!-- Total Revenue Cards & Reconciliation -->
-          <div class="lg:col-span-7 space-y-4">
+          <!-- Grand Total Banner & Totals Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <!-- Grand Total Banner -->
             <div class="bg-gradient-to-r from-orange-600 to-amber-600 text-white p-6 rounded-3xl shadow-lg flex items-center justify-between">
               <div>
@@ -1038,41 +1035,40 @@
               <span class="text-4xl opacity-80">⛽</span>
             </div>
 
-            <!-- Petrol & Diesel Subtotals -->
-            <div class="grid grid-cols-2 gap-3.5">
-              <div class="bg-white p-4 rounded-2xl border-2 border-amber-200 shadow-sm space-y-1">
-                <span class="text-xs font-bold text-amber-900 uppercase">పెట్రోల్ (Petrol - MS)</span>
-                <div class="text-xl sm:text-2xl font-mono font-black text-orange-600" id="cardPetrolAmt">₹3,55,835</div>
-                <div class="text-xs font-mono text-slate-500 font-semibold" id="cardPetrolVol">3039.51 Litres</div>
-              </div>
-
-              <div class="bg-white p-4 rounded-2xl border-2 border-blue-200 shadow-sm space-y-1">
-                <span class="text-xs font-bold text-blue-900 uppercase">డీజిల్ (Diesel - HSD)</span>
-                <div class="text-xl sm:text-2xl font-mono font-black text-blue-600" id="cardDieselAmt">₹2,85,572</div>
-                <div class="text-xs font-mono text-slate-500 font-semibold" id="cardDieselVol">2713.79 Litres</div>
-              </div>
+            <!-- Petrol Subtotal -->
+            <div class="bg-white p-5 rounded-3xl border-2 border-amber-200 shadow-sm space-y-1">
+              <span class="text-xs font-bold text-amber-900 uppercase">పెట్రోల్ (Petrol - MS)</span>
+              <div class="text-2xl sm:text-3xl font-mono font-black text-orange-600" id="cardPetrolAmt">₹3,55,835</div>
+              <div class="text-xs font-mono text-slate-500 font-semibold" id="cardPetrolVol">3039.51 Litres</div>
             </div>
 
-            <!-- Bunk Collections Tally (Cash, UPI, Card, Expenses) -->
-            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-              <h4 class="font-extrabold text-slate-900 text-xs uppercase tracking-wider">షిఫ్ట్ కలెక్షన్ల విభజన (Collection Breakdown)</h4>
-              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs">
-                <div class="bg-emerald-50 p-2.5 rounded-xl border border-emerald-200">
-                  <span class="text-slate-500 block text-[10px] font-bold">చేతి నగదు (Cash)</span>
-                  <span class="font-mono font-black text-emerald-800 text-sm" id="recTotalCash">₹0</span>
-                </div>
-                <div class="bg-blue-50 p-2.5 rounded-xl border border-blue-200">
-                  <span class="text-slate-500 block text-[10px] font-bold">ఆన్‌లైన్ (UPI)</span>
-                  <span class="font-mono font-black text-blue-800 text-sm" id="recTotalUpi">₹0</span>
-                </div>
-                <div class="bg-purple-50 p-2.5 rounded-xl border border-purple-200">
-                  <span class="text-slate-500 block text-[10px] font-bold">కార్డ్ (Card POS)</span>
-                  <span class="font-mono font-black text-purple-800 text-sm" id="recTotalCard">₹0</span>
-                </div>
-                <div class="bg-rose-50 p-2.5 rounded-xl border border-rose-200">
-                  <span class="text-slate-500 block text-[10px] font-bold">ఖర్చులు (Expenses)</span>
-                  <span class="font-mono font-black text-rose-800 text-sm" id="recTotalExpenses">₹0</span>
-                </div>
+            <!-- Diesel Subtotal -->
+            <div class="bg-white p-5 rounded-3xl border-2 border-blue-200 shadow-sm space-y-1">
+              <span class="text-xs font-bold text-blue-900 uppercase">డీజిల్ (Diesel - HSD)</span>
+              <div class="text-2xl sm:text-3xl font-mono font-black text-blue-600" id="cardDieselAmt">₹2,85,572</div>
+              <div class="text-xs font-mono text-slate-500 font-semibold" id="cardDieselVol">2713.79 Litres</div>
+            </div>
+          </div>
+
+          <!-- Bunk Collections Tally (Cash, UPI, Card, Expenses) -->
+          <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-3">
+            <h4 class="font-extrabold text-slate-900 text-xs uppercase tracking-wider">షిఫ్ట్ కలెక్షన్ల విభజన (Collection Breakdown)</h4>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center text-xs">
+              <div class="bg-emerald-50 p-3 rounded-2xl border border-emerald-200">
+                <span class="text-slate-500 block text-[10px] font-bold">చేతి నగదు (Cash)</span>
+                <span class="font-mono font-black text-emerald-800 text-base" id="recTotalCash">₹0</span>
+              </div>
+              <div class="bg-blue-50 p-3 rounded-2xl border border-blue-200">
+                <span class="text-slate-500 block text-[10px] font-bold">ఆన్‌లైన్ (UPI)</span>
+                <span class="font-mono font-black text-blue-800 text-base" id="recTotalUpi">₹0</span>
+              </div>
+              <div class="bg-purple-50 p-3 rounded-2xl border border-purple-200">
+                <span class="text-slate-500 block text-[10px] font-bold">కార్డ్ (Card POS)</span>
+                <span class="font-mono font-black text-purple-800 text-base" id="recTotalCard">₹0</span>
+              </div>
+              <div class="bg-rose-50 p-3 rounded-2xl border border-rose-200">
+                <span class="text-slate-500 block text-[10px] font-bold">ఖర్చులు (Expenses)</span>
+                <span class="font-mono font-black text-rose-800 text-base" id="recTotalExpenses">₹0</span>
               </div>
             </div>
           </div>
@@ -1088,6 +1084,138 @@
             </button>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5" id="stationBreakdownContainer"></div>
+        </div>
+      </div>
+
+      <!-- ============================================================== -->
+      <!-- SUB-TAB: WHATSAPP FINAL SHEET REPORT (S1, S2, S3, S4 & TOTALS) -->
+      <!-- User requirement: "dont show this slip on screen - lets create a tab like whatsapp (what ever calucltions done s1 s2 s3 s4 - all will be shown in whatsapp final sheet thn we send that message)" -->
+      <!-- ============================================================== -->
+      <div id="admSection-whatsapp" class="space-y-5 hidden">
+        <!-- Top Green WhatsApp Banner -->
+        <div class="bg-gradient-to-r from-emerald-800 via-teal-900 to-slate-900 text-white p-5 rounded-3xl shadow-lg flex flex-wrap items-center justify-between gap-4">
+          <div class="flex items-center gap-3.5">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-2xl shadow-inner">
+              💬
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="font-black text-lg sm:text-xl text-white">వాట్సాప్ ఫైనల్ షీట్ నివేదిక (WhatsApp Final Sheet)</h3>
+                <span class="text-[10px] bg-emerald-500 text-white font-black px-2 py-0.5 rounded-full uppercase tracking-wider">Live S1-S4</span>
+              </div>
+              <p class="text-xs text-emerald-200/90 mt-0.5">S1, S2, S3, S4 స్టేషన్ల లెక్కలు, మీటర్లు, కలెక్షన్లు & తుది నివేదికను వాట్సాప్‌కు సులభంగా పంపండి</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-mono font-bold bg-emerald-950/80 border border-emerald-500/40 px-3 py-1.5 rounded-xl text-emerald-300" id="waShiftDateBadge">27-10-2026</span>
+            <button onclick="renderWhatsAppSheetTab()" class="bg-white/10 hover:bg-white/20 text-white border border-white/20 px-3 py-1.5 rounded-xl text-xs font-bold transition-all" title="Refresh">
+              🔄 రీఫ్రెష్
+            </button>
+          </div>
+        </div>
+
+        <!-- Format Selector & Action Toolbar -->
+        <div class="bg-white p-4 rounded-3xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-3">
+          <!-- Toggle Format: Full Sheet vs Compact Slip -->
+          <div class="flex items-center bg-slate-100 p-1 rounded-2xl border border-slate-200 text-xs font-black">
+            <button id="waModeFullBtn" onclick="switchWhatsAppMode('full')" class="px-3.5 py-2 rounded-xl transition-all bg-emerald-600 text-white shadow">
+              📌 పూర్తి నివేదిక (Full S1-S4 Sheet)
+            </button>
+            <button id="waModeCompactBtn" onclick="switchWhatsAppMode('compact')" class="px-3.5 py-2 rounded-xl transition-all text-slate-600 hover:text-slate-900">
+              📄 సంక్షిప్త రసీదు (Compact Slip)
+            </button>
+          </div>
+
+          <!-- Main Actions -->
+          <div class="flex items-center gap-2">
+            <button onclick="shareFullWhatsAppSheet()" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-black text-xs sm:text-sm py-2.5 px-4 rounded-xl shadow-md flex items-center gap-2 transition-all">
+              <span class="text-base">💬</span>
+              <span>వాట్సాప్‌లో పంపు (Send via WhatsApp)</span>
+            </button>
+            <button onclick="copyWhatsAppSheetToClipboard()" class="bg-slate-900 hover:bg-black active:scale-95 text-white font-black text-xs sm:text-sm py-2.5 px-4 rounded-xl shadow-md flex items-center gap-2 transition-all">
+              <span id="copyWhatsAppIcon">📋</span>
+              <span id="copyWhatsAppBtnText">సందేశం కాపీ చేయి (Copy Message)</span>
+            </button>
+            <button onclick="window.print()" class="bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-800 border border-slate-300 font-black text-xs sm:text-sm py-2.5 px-3 rounded-xl shadow-sm transition-all" title="Print Sheet">
+              🖨️ ప్రింట్
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          <!-- WhatsApp Chat Message Preview Box (lg:col-span-6) -->
+          <div class="lg:col-span-6 bg-[#ECE5DD] p-5 sm:p-6 rounded-3xl border-2 border-emerald-300 shadow-md space-y-3">
+            <div class="flex items-center justify-between border-b border-emerald-300/60 pb-2">
+              <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
+                <span class="text-xs font-black uppercase text-slate-800">WhatsApp Message Format</span>
+              </div>
+              <span class="text-[11px] text-slate-500 font-bold">Ready to Send</span>
+            </div>
+
+            <!-- Monospace styled WhatsApp Message Bubble -->
+            <pre id="waSheetMessagePre" class="font-mono text-xs sm:text-sm font-bold text-slate-900 bg-[#DCF8C6]/80 p-4 rounded-2xl border border-emerald-300/80 shadow-sm whitespace-pre leading-relaxed select-all overflow-x-auto max-h-[580px]">వాట్సాప్ నివేదిక లోడ్ అవుతోంది (Loading WhatsApp Sheet)...</pre>
+          </div>
+
+          <!-- Visual Calculation Cards (lg:col-span-6) -->
+          <div class="lg:col-span-6 space-y-4">
+            <!-- 4 Station Cards Grid -->
+            <div class="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200 shadow-sm space-y-3">
+              <h4 class="font-black text-slate-900 text-xs sm:text-sm uppercase tracking-wider flex items-center justify-between">
+                <span>⛽ 4 స్టేషన్ల లెక్కల కార్డులు (S1 to S4 Stations)</span>
+                <span class="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-bold">Auto-Calculated</span>
+              </h4>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="waStationCardsContainer">
+                <!-- Populated dynamically by renderWhatsAppSheetTab() -->
+              </div>
+            </div>
+
+            <!-- Grand Total & Reconciliation Summary Card -->
+            <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white p-5 rounded-3xl shadow-lg space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-700 pb-3">
+                <span class="text-xs font-extrabold uppercase text-amber-400">మొత్తం సేల్ & రికన్సిలియేషన్ (Grand Total & Reconciliation)</span>
+                <span class="text-xl">💰</span>
+              </div>
+
+              <div class="grid grid-cols-2 gap-3 text-xs">
+                <div class="bg-white/10 p-3 rounded-xl border border-white/10">
+                  <span class="text-slate-300 block text-[10px]">పెట్రోల్ మొత్తం (Petrol)</span>
+                  <div class="text-base font-mono font-black text-amber-300" id="waTotalPetrolAmt">₹0</div>
+                  <div class="text-[10px] text-slate-400 font-mono" id="waTotalPetrolLitres">0.00 L</div>
+                </div>
+                <div class="bg-white/10 p-3 rounded-xl border border-white/10">
+                  <span class="text-slate-300 block text-[10px]">డీజిల్ మొత్తం (Diesel)</span>
+                  <div class="text-base font-mono font-black text-blue-300" id="waTotalDieselAmt">₹0</div>
+                  <div class="text-[10px] text-slate-400 font-mono" id="waTotalDieselLitres">0.00 L</div>
+                </div>
+              </div>
+
+              <div class="bg-orange-600/90 p-3.5 rounded-xl flex items-center justify-between">
+                <span class="text-xs font-bold text-white uppercase">గ్రాండ్ టోటల్ (P + D Grand Total):</span>
+                <span class="text-xl sm:text-2xl font-mono font-black text-white" id="waGrandTotalAmt">₹0</span>
+              </div>
+
+              <!-- Collections Breakdown -->
+              <div class="grid grid-cols-4 gap-2 text-center text-[11px]">
+                <div class="bg-emerald-950/60 border border-emerald-500/30 p-2 rounded-lg">
+                  <span class="text-emerald-300 block text-[10px]">చేతి నగదు</span>
+                  <span class="font-mono font-bold text-white" id="waRecCash">₹0</span>
+                </div>
+                <div class="bg-blue-950/60 border border-blue-500/30 p-2 rounded-lg">
+                  <span class="text-blue-300 block text-[10px]">ఆన్‌లైన్ (UPI)</span>
+                  <span class="font-mono font-bold text-white" id="waRecUpi">₹0</span>
+                </div>
+                <div class="bg-purple-950/60 border border-purple-500/30 p-2 rounded-lg">
+                  <span class="text-purple-300 block text-[10px]">కార్డ్ POS</span>
+                  <span class="font-mono font-bold text-white" id="waRecCard">₹0</span>
+                </div>
+                <div class="bg-rose-950/60 border border-rose-500/30 p-2 rounded-lg">
+                  <span class="text-rose-300 block text-[10px]">ఖర్చులు</span>
+                  <span class="font-mono font-bold text-white" id="waRecExp">₹0</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1681,7 +1809,7 @@
               <label class="text-xs font-bold text-slate-700 block mb-1">
                 ప్రారంభ తేదీ (Start Date) *:
               </label>
-              <input type="date" id="salCalcStartDate" onchange="onSalaryInputsChange()" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 text-xs font-mono font-bold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 shadow-sm">
+              <input type="date" id="salCalcStartDate" onchange="onSalaryDateRangeChange()" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 text-xs font-mono font-bold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 shadow-sm">
             </div>
 
             <!-- 2. End Date -->
@@ -1689,7 +1817,7 @@
               <label class="text-xs font-bold text-slate-700 block mb-1">
                 ముగింపు తేదీ (End Date) *:
               </label>
-              <input type="date" id="salCalcEndDate" onchange="onSalaryInputsChange()" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 text-xs font-mono font-bold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 shadow-sm">
+              <input type="date" id="salCalcEndDate" onchange="onSalaryDateRangeChange()" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 text-xs font-mono font-bold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 shadow-sm">
             </div>
 
             <!-- 3. Employee Name -->
@@ -1697,17 +1825,8 @@
               <label class="text-xs font-bold text-slate-700 block mb-1">
                 సిబ్బంది పేరు (Employee Name) *:
               </label>
-              <select id="salCalcEmpSelect" onchange="onSalaryInputsChange()" class="w-full bg-slate-50 border-2 border-indigo-400 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 shadow-sm">
+              <select id="salCalcEmpSelect" onchange="onSalaryEmployeeSelect()" class="w-full bg-slate-50 border-2 border-indigo-400 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 shadow-sm">
                 <option value="">-- ఎంచుకోండి / Select Staff --</option>
-                <option value="emp1" data-id="emp1" data-name="Ramesh Kumar">Ramesh Kumar</option>
-                <option value="emp2" data-id="emp2" data-name="Suresh Reddy">Suresh Reddy</option>
-                <option value="emp3" data-id="emp3" data-name="Venkatesh Rao">Venkatesh Rao</option>
-                <option value="emp4" data-id="emp4" data-name="Naresh Babu">Naresh Babu</option>
-                <option value="emp5" data-id="emp5" data-name="Rajesh Varma">Rajesh Varma</option>
-                <option value="emp6" data-id="emp6" data-name="Prasad Rao">Prasad Rao</option>
-                <option value="emp-1792838466290" data-id="emp-1792838466290" data-name="Mahesh reddy">Mahesh reddy</option>
-                <option value="emp-1792839909945" data-id="emp-1792839909945" data-name="Maheswar Reddy">Maheswar Reddy</option>
-                <option value="emp-1792842606451" data-id="emp-1792842606451" data-name="Siva Shankar">Siva Shankar</option>
               </select>
             </div>
 
@@ -2251,6 +2370,6 @@
     </div>
   </footer>
 
-  <script src="app.js?v=9"></script>
+  <script src="app.js?v=10"></script>
 </body>
 </html>

@@ -2003,7 +2003,7 @@ function switchAdminTab(tabKey) {
   }
 
   STATE.adminTab = tabKey;
-  const tabs = ['summary', 'handover', 'financials', 'dues', 'attendance', 'fleet', 'reminders', 'employees', 'roster', 'rates', 'tanks', 'pdbs'];
+  const tabs = ['summary', 'whatsapp', 'handover', 'financials', 'dues', 'attendance', 'fleet', 'reminders', 'employees', 'roster', 'rates', 'tanks', 'pdbs'];
   
   tabs.forEach(t => {
     const btn = document.getElementById(`admTab-${t}`);
@@ -2025,6 +2025,9 @@ function switchAdminTab(tabKey) {
   updateAdminTabVisibility();
 
   renderAdminDashboard();
+  if (tabKey === 'whatsapp') {
+    renderWhatsAppSheetTab();
+  }
   if (tabKey === 'handover') {
     renderAdminHandoverDashboard();
   }
@@ -2691,6 +2694,7 @@ function renderAdminDashboard() {
   if (STATE.adminTab === 'roster') renderAdminDutyRoster();
   if (STATE.adminTab === 'pdbs') renderAdminPdbs();
   if (STATE.adminTab === 'tanks') renderTanksView();
+  if (STATE.adminTab === 'whatsapp') renderWhatsAppSheetTab();
 }
 
 // --- BUNK OWNER FINANCIAL REPORTS & HISTORICAL ARCHIVE ---
@@ -3121,30 +3125,27 @@ async function loadDutyAttendanceData() {
   const startDate = startEl ? startEl.value : `${today.slice(0, 7)}-01`;
   const endDate = endEl ? endEl.value : today;
   const dailyRate = document.getElementById('salCalcDailyRate')?.value || 750;
+  const tenant = STATE.activeTenant || 'srr-filling-station';
 
   try {
-    // 1. Populate dropdown immediately from employee directory so it is never empty
+    // 1. Fetch attendance, salary records, and employees in parallel for high speed and consistency
+    const [attRes, salRes, empRes] = await Promise.all([
+      fetch(`/api/duty-attendance?startDate=${startDate}&endDate=${endDate}&dailyWage=${dailyRate}&pump=${tenant}`),
+      fetch(`/api/salary-records?pump=${tenant}`),
+      (!STATE.employees || STATE.employees.length === 0) ? fetch(`/api/employees?pump=${tenant}`) : Promise.resolve(null)
+    ]);
+
+    if (attRes && attRes.ok) STATE.dutyAttendance = await attRes.json();
+    if (salRes && salRes.ok) STATE.salaryRecords = await salRes.json();
+    if (empRes && empRes.ok) STATE.employees = await empRes.json();
+
+    // 2. Populate employee dropdown with accurate attendance days already computed
     await populateSalaryEmployeeSelect();
 
-    // 2. Fetch duty attendance for this date range to auto-calculate days worked
-    const attRes = await fetch(`/api/duty-attendance?startDate=${startDate}&endDate=${endDate}&dailyWage=${dailyRate}&pump=${STATE.activeTenant || 'srr-filling-station'}`);
-    if (attRes.ok) {
-      STATE.dutyAttendance = await attRes.json();
-    }
+    // 3. If employee already selected, immediately populate inputs in 0ms
+    onSalaryEmployeeSelect();
 
-    // 3. Fetch saved salary calculation records
-    const salRes = await fetch(`/api/salary-records?pump=${STATE.activeTenant || 'srr-filling-station'}`);
-    if (salRes.ok) {
-      STATE.salaryRecords = await salRes.json();
-    }
-
-    // 4. Re-populate employee dropdown with updated days worked badges
-    await populateSalaryEmployeeSelect();
-
-    // 5. Update the live preview
-    await onSalaryInputsChange(false);
-
-    // 6. Render the table of records
+    // 4. Render salary table
     renderSalaryRecordsTable();
   } catch (err) {
     console.error('Error loading salary calculator data:', err);
@@ -3201,76 +3202,91 @@ async function populateSalaryEmployeeSelect() {
   select.innerHTML = html;
 }
 
-async function onSalaryInputsChange(datesChanged = false) {
-  const startEl = document.getElementById('salCalcStartDate');
-  const endEl = document.getElementById('salCalcEndDate');
+// User requirement: "as said when i choose emp name inndiatly diaplay the days he worked.."
+function onSalaryEmployeeSelect() {
   const select = document.getElementById('salCalcEmpSelect');
   const daysEl = document.getElementById('salCalcDaysWorked');
   const duesEl = document.getElementById('salCalcDuesCut');
+  if (!select || !daysEl || !duesEl) return;
 
-  const selectedVal = select?.value;
+  const selectedVal = select.value;
   if (!selectedVal) {
-    if (daysEl) daysEl.value = '0';
-    if (duesEl) duesEl.value = '0';
+    daysEl.value = '0';
+    duesEl.value = '0';
     updateSalaryLivePreview();
     return;
   }
 
   const opt = select.options[select.selectedIndex];
+  const optDays = opt?.getAttribute('data-days');
+  const optDues = opt?.getAttribute('data-dues');
   const empId = opt?.getAttribute('data-id') || selectedVal;
   const empName = opt?.getAttribute('data-name') || opt?.text?.split(' (')[0]?.trim() || selectedVal;
   const cleanName = empName.trim().toLowerCase();
   const cleanFirst = cleanName.split(/\s+/)[0];
 
-  // IMMEDIATELY fill from opt attributes (instant 0ms response!)
-  const optDays = opt?.getAttribute('data-days');
-  const optDues = opt?.getAttribute('data-dues');
-  if (optDays !== null && optDays !== undefined && daysEl) {
-    daysEl.value = optDays;
-  }
-  if (optDues !== null && optDues !== undefined && duesEl) {
-    duesEl.value = optDues;
-  }
-  updateSalaryLivePreview();
+  let days = 0;
+  let dues = 0;
 
-  // If date range changed, re-fetch attendance so days worked are accurately computed
-  const isDateChange = datesChanged === true || (datesChanged && datesChanged.target && (datesChanged.target.id === 'salCalcStartDate' || datesChanged.target.id === 'salCalcEndDate'));
-  if (isDateChange && startEl && endEl && startEl.value && endEl.value) {
-    try {
-      const dailyRate = document.getElementById('salCalcDailyRate')?.value || 750;
-      const attRes = await fetch(`/api/duty-attendance?startDate=${startEl.value}&endDate=${endEl.value}&dailyWage=${dailyRate}&pump=${STATE.activeTenant || 'srr-filling-station'}`);
-      if (attRes.ok) {
-        STATE.dutyAttendance = await attRes.json();
-        const prevSelected = select ? select.value : '';
-        await populateSalaryEmployeeSelect();
-        if (select && prevSelected) select.value = prevSelected;
-      }
-    } catch (e) {
-      console.warn('Could not refresh duty range:', e);
+  if (optDays !== null && optDays !== undefined && optDays !== '') {
+    days = parseFloat(optDays) || 0;
+  } else {
+    const attEmp = (STATE.dutyAttendance?.attendanceList || []).find(e => 
+      (e.id && (e.id === empId || e.id === selectedVal)) || 
+      (e.name && (e.name.trim().toLowerCase() === cleanName || e.name.trim().toLowerCase().split(/\s+/)[0] === cleanFirst))
+    );
+    if (attEmp && attEmp.daysWorked != null) days = attEmp.daysWorked;
+  }
+
+  if (optDues !== null && optDues !== undefined && optDues !== '') {
+    dues = parseFloat(optDues) || 0;
+  } else {
+    const attEmp = (STATE.dutyAttendance?.attendanceList || []).find(e => 
+      (e.id && (e.id === empId || e.id === selectedVal)) || 
+      (e.name && (e.name.trim().toLowerCase() === cleanName || e.name.trim().toLowerCase().split(/\s+/)[0] === cleanFirst))
+    );
+    if (attEmp && attEmp.pendingDue != null) {
+      dues = attEmp.pendingDue;
+    } else if (STATE.employeeDues) {
+      dues = STATE.employeeDues
+        .filter(d => (d.status === 'pending' || d.status === 'unsettled') && d.employeeName && d.employeeName.trim().toLowerCase().split(/\s+/)[0] === cleanFirst)
+        .reduce((s, d) => s + (d.shortageAmount || 0), 0);
     }
   }
 
-  // Find matching employee in duty attendance for latest data
-  const attEmp = (STATE.dutyAttendance?.attendanceList || []).find(e => 
-    (e.id && (e.id === empId || e.id === selectedVal)) || 
-    (e.name && (e.name.trim().toLowerCase() === cleanName || e.name.trim().toLowerCase().split(/\s+/)[0] === cleanFirst))
-  );
-
-  if (attEmp) {
-    if (daysEl) daysEl.value = attEmp.daysWorked != null ? attEmp.daysWorked : 0;
-    if (duesEl) duesEl.value = attEmp.pendingDue != null ? attEmp.pendingDue : 0;
-  } else if (!optDays) {
-    if (daysEl) daysEl.value = '0';
-
-    // Check if there are pending dues in STATE.employeeDues
-    const pendingDue = (STATE.employeeDues || [])
-      .filter(d => (d.status === 'pending' || d.status === 'unsettled') && d.employeeName && d.employeeName.trim().toLowerCase().split(/\s+/)[0] === cleanFirst)
-      .reduce((s, d) => s + (d.shortageAmount || 0), 0);
-
-    if (duesEl) duesEl.value = pendingDue || 0;
-  }
-
+  daysEl.value = days;
+  duesEl.value = dues;
   updateSalaryLivePreview();
+}
+
+// When date range changes, re-fetch attendance to accurately recalculate days worked
+async function onSalaryDateRangeChange() {
+  const startEl = document.getElementById('salCalcStartDate');
+  const endEl = document.getElementById('salCalcEndDate');
+  if (!startEl?.value || !endEl?.value) return;
+
+  const dailyRate = document.getElementById('salCalcDailyRate')?.value || 750;
+  const tenant = STATE.activeTenant || 'srr-filling-station';
+
+  try {
+    const attRes = await fetch(`/api/duty-attendance?startDate=${startEl.value}&endDate=${endEl.value}&dailyWage=${dailyRate}&pump=${tenant}`);
+    if (attRes.ok) {
+      STATE.dutyAttendance = await attRes.json();
+      const select = document.getElementById('salCalcEmpSelect');
+      const curVal = select ? select.value : '';
+      await populateSalaryEmployeeSelect();
+      if (select && curVal) {
+        select.value = curVal;
+      }
+      onSalaryEmployeeSelect();
+    }
+  } catch (e) {
+    console.error('Error refreshing duty attendance on date change:', e);
+  }
+}
+
+async function onSalaryInputsChange() {
+  onSalaryEmployeeSelect();
 }
 
 function updateSalaryLivePreview() {
@@ -3312,7 +3328,13 @@ async function calculateAndAddSalaryRecord() {
   const cleanFirst = cleanName.split(/\s+/)[0];
   const today = getTodayDateString();
 
+  const daysWorked = parseFloat(daysEl?.value) || 0;
+  const dailyRate = parseFloat(rateEl?.value) || 750;
+  const deductions = parseFloat(duesEl?.value) || 0;
+  const notes = notesEl?.value?.trim() || '';
+
   // User requirement: "i have saved with name like ramesh and if same name chossen (ramesh) and click on save on that same day i have saved - should not allow duplicate entires with same name on same day - give already done with ramesh"
+  // Check if an entry already exists for this employee
   const existing = (STATE.salaryRecords || []).find(r => {
     const rName = (r.employeeName || '').trim().toLowerCase();
     const rFirst = rName.split(/\s+/)[0];
@@ -3323,15 +3345,11 @@ async function calculateAndAddSalaryRecord() {
     return isSameEmp && (isSamePeriod || isSavedToday);
   });
 
-  if (existing) {
-    showToast(`Already done with ${empName}! (ఈ ఉద్యోగికి ఈ రోజు లేదా ఈ కాలానికి ఇప్పటికే జీతం లెక్కించి సేవ్ చేయబడింది)`, 'error');
+  // If exact same values already saved, warn user (prevents redundant duplicates)
+  if (existing && existing.daysWorked === daysWorked && existing.dailyRate === dailyRate && existing.deductions === deductions) {
+    showToast(`Already done with ${empName}! (ఈ ఉద్యోగికి ఇప్పటికే జీతం లెక్కించబడింది)`, 'warning');
     return;
   }
-
-  const daysWorked = parseFloat(daysEl?.value) || 0;
-  const dailyRate = parseFloat(rateEl?.value) || 750;
-  const deductions = parseFloat(duesEl?.value) || 0;
-  const notes = notesEl?.value?.trim() || '';
 
   try {
     const res = await fetch(`/api/salary-records?pump=${STATE.activeTenant || 'srr-filling-station'}`, {
@@ -3352,9 +3370,13 @@ async function calculateAndAddSalaryRecord() {
 
     const result = await res.json();
     if (result.success) {
-      showToast(STATE.lang === 'te' 
-        ? `${empName} జీతం రికార్డు పట్టికలో చేర్చబడింది!` 
-        : `Salary record added for ${empName}!`);
+      if (result.updated) {
+        showToast(result.message || `${empName} జీతం రికార్డు నవీకరించబడింది (${daysWorked} రోజులు)!`);
+      } else {
+        showToast(STATE.lang === 'te' 
+          ? `${empName} జీతం రికార్డు పట్టికలో చేర్చబడింది!` 
+          : `Salary record added for ${empName}!`);
+      }
       if (notesEl) notesEl.value = '';
       await loadDutyAttendanceData();
     } else {
@@ -4385,4 +4407,223 @@ function copySlipToClipboard() {
 
 function printDailySlip() {
   window.print();
+}
+
+// =========================================================================
+// WHATSAPP FINAL SHEET CONTROLLER & ACTIONS
+// User requirement: "dont show this slip on screen - lets create a tab like whatsapp (what ever calucltions done s1 s2 s3 s4 - all will be shown in whatsapp final sheet thn we send that message)"
+// =========================================================================
+
+let currentWhatsAppMode = 'full';
+
+function switchWhatsAppMode(mode) {
+  currentWhatsAppMode = mode;
+  const fullBtn = document.getElementById('waModeFullBtn');
+  const compactBtn = document.getElementById('waModeCompactBtn');
+  if (fullBtn && compactBtn) {
+    if (mode === 'full') {
+      fullBtn.className = 'px-3.5 py-2 rounded-xl transition-all bg-emerald-600 text-white shadow font-black';
+      compactBtn.className = 'px-3.5 py-2 rounded-xl transition-all text-slate-600 hover:text-slate-900 font-bold';
+    } else {
+      compactBtn.className = 'px-3.5 py-2 rounded-xl transition-all bg-emerald-600 text-white shadow font-black';
+      fullBtn.className = 'px-3.5 py-2 rounded-xl transition-all text-slate-600 hover:text-slate-900 font-bold';
+    }
+  }
+  renderWhatsAppSheetTab();
+}
+
+function getWhatsAppReportMessage(mode = 'full') {
+  const sum = STATE.summary;
+  if (!sum) return 'నివేదిక వివరాలు సిద్ధంగా లేవు (No report data)';
+
+  const dateStr = sum.dateFormatted || STATE.selectedDate || getTodayDateString();
+  const pRate = sum.petrolRate || 117.07;
+  const dRate = sum.dieselRate || 105.23;
+  const isTe = STATE.lang === 'te';
+
+  if (mode === 'compact') {
+    return isTe ? (sum.slipTextTe || sum.slipText) : (sum.slipTextEn || sum.slipText);
+  }
+
+  // Full S1, S2, S3, S4 Breakdown Sheet
+  const stations = sum.stations || sum.stationBreakdown || {};
+  const sKeys = ['S1', 'S2', 'S3', 'S4'];
+
+  let stationLines = '';
+  sKeys.forEach(key => {
+    const st = stations[key] || {};
+    const emp = st.employeeName || (STATE.shiftAssignments?.[sum.date || getTodayDateString()]?.[key]?.employeeName) || (STATE.shift?.stations?.[key]?.employeeName) || '-';
+    const pLitres = Number(st.petrolLitres || st.meters?.petrol?.saleLitres || 0);
+    const dLitres = Number(st.dieselLitres || st.meters?.diesel?.saleLitres || 0);
+    const pAmt = Math.round(st.petrolAmount || (pLitres * pRate));
+    const dAmt = Math.round(st.dieselAmount || (dLitres * dRate));
+    const stTotal = pAmt + dAmt;
+
+    const cash = Number(st.collections?.cash || 0);
+    const upi = Number(st.collections?.upi || 0);
+    const card = Number(st.collections?.card || 0);
+    const exp = Number(st.collections?.expenses || 0);
+    const expReason = st.collections?.expenseReason ? ` (${st.collections.expenseReason})` : '';
+
+    stationLines += `
+*▶ ${key} (${st.pump || (key === 'S1' || key === 'S2' ? 'Pump 1' : 'Pump 2')}) - ${emp}*
+• పెట్రోల్ (Petrol): ${pLitres.toFixed(2)} L = ₹${pAmt.toLocaleString('en-IN')}
+• డీజిల్ (Diesel): ${dLitres.toFixed(2)} L = ₹${dAmt.toLocaleString('en-IN')}
+• స్టేషన్ సేల్: *₹${stTotal.toLocaleString('en-IN')}*
+• కలెక్షన్: క్యాష్ ₹${cash.toLocaleString('en-IN')} | UPI ₹${upi.toLocaleString('en-IN')} | కార్డ్ ₹${card.toLocaleString('en-IN')}${exp > 0 ? ` | ఖర్చు ₹${exp.toLocaleString('en-IN')}${expReason}` : ''}
+`;
+  });
+
+  const totalPLitres = Number(sum.petrol?.litres || 0);
+  const totalPAmt = Math.round(sum.petrol?.amount || 0);
+  const totalDLitres = Number(sum.diesel?.litres || 0);
+  const totalDAmt = Math.round(sum.diesel?.amount || 0);
+  const grandTotal = Math.round(sum.grandTotal?.amount || (totalPAmt + totalDAmt));
+
+  const rec = sum.reconciliation || {};
+  const totalCash = Number(rec.totalCash || 0);
+  const totalUpi = Number(rec.totalUpi || 0);
+  const totalCard = Number(rec.totalCard || 0);
+  const totalExp = Number(rec.totalExpenses || 0);
+  const totalCollected = totalCash + totalUpi + totalCard;
+  const netDiff = totalCollected - grandTotal;
+
+  const diffText = netDiff === 0 
+    ? '✅ సరిపోయింది (Tally OK)' 
+    : netDiff < 0 
+      ? `⚠️ తరుగు/బాకీ (Shortage): -₹${Math.abs(netDiff).toLocaleString('en-IN')}` 
+      : `➕ అదనపు (Excess): +₹${netDiff.toLocaleString('en-IN')}`;
+
+  const message = 
+`*⛽ SRR FILLING STATION (Indian Oil) ⛽*
+📅 *తేదీ (Date):* ${dateStr}
+------------------------------------
+*📋 4 స్టేషన్ల పూర్తి లెక్కలు (S1 to S4 STATIONS):*
+${stationLines}------------------------------------
+*📈 బంక్ మొత్తం అమ్మకాలు (GRAND TOTAL SALES):*
+⛽ *పెట్రోల్ (Petrol):* ${totalPLitres.toFixed(2)} L × ₹${pRate} = *₹${totalPAmt.toLocaleString('en-IN')}*
+🛢️ *డీజిల్ (Diesel):* ${totalDLitres.toFixed(2)} L × ₹${dRate} = *₹${totalDAmt.toLocaleString('en-IN')}*
+💰 *మొత్తం అమ్మకం (P + D Total): ₹${grandTotal.toLocaleString('en-IN')}*
+------------------------------------
+*💵 కలెక్షన్లు & నగదు హ్యాండోవర్ (COLLECTIONS):*
+• చేతి నగదు (Cash Handover): *₹${totalCash.toLocaleString('en-IN')}*
+• ఆన్‌లైన్ పేమెంట్లు (UPI): *₹${totalUpi.toLocaleString('en-IN')}*
+• కార్డు స్వైప్ (Card POS): *₹${totalCard.toLocaleString('en-IN')}*
+• ఖర్చులు (Expenses): *₹${totalExp.toLocaleString('en-IN')}*
+• మొత్తం వసూలైనది (Collected): *₹${totalCollected.toLocaleString('en-IN')}*
+• స్థితి (Status): *${diffText}*
+------------------------------------
+SRR Filling Station Management System`;
+
+  return message.trim();
+}
+
+function renderWhatsAppSheetTab() {
+  const sum = STATE.summary;
+  if (!sum) return;
+
+  const dateBadge = document.getElementById('waShiftDateBadge');
+  if (dateBadge) dateBadge.innerText = sum.dateFormatted || getTodayDateString();
+
+  const msgPre = document.getElementById('waSheetMessagePre');
+  if (msgPre) {
+    msgPre.innerText = getWhatsAppReportMessage(currentWhatsAppMode);
+  }
+
+  // Populate Grand Totals & Reconciliation
+  const pAmtEl = document.getElementById('waTotalPetrolAmt');
+  const pLitEl = document.getElementById('waTotalPetrolLitres');
+  const dAmtEl = document.getElementById('waTotalDieselAmt');
+  const dLitEl = document.getElementById('waTotalDieselLitres');
+  const grandEl = document.getElementById('waGrandTotalAmt');
+
+  if (pAmtEl) pAmtEl.innerText = `₹${(sum.petrol?.amount || 0).toLocaleString('en-IN')}`;
+  if (pLitEl) pLitEl.innerText = `${sum.petrol?.litres || 0} L`;
+  if (dAmtEl) dAmtEl.innerText = `₹${(sum.diesel?.amount || 0).toLocaleString('en-IN')}`;
+  if (dLitEl) dLitEl.innerText = `${sum.diesel?.litres || 0} L`;
+  if (grandEl) grandEl.innerText = `₹${(sum.grandTotal?.amount || 0).toLocaleString('en-IN')}`;
+
+  const rec = sum.reconciliation || {};
+  const cashEl = document.getElementById('waRecCash');
+  const upiEl = document.getElementById('waRecUpi');
+  const cardEl = document.getElementById('waRecCard');
+  const expEl = document.getElementById('waRecExp');
+
+  if (cashEl) cashEl.innerText = `₹${(rec.totalCash || 0).toLocaleString('en-IN')}`;
+  if (upiEl) upiEl.innerText = `₹${(rec.totalUpi || 0).toLocaleString('en-IN')}`;
+  if (cardEl) cardEl.innerText = `₹${(rec.totalCard || 0).toLocaleString('en-IN')}`;
+  if (expEl) expEl.innerText = `₹${(rec.totalExpenses || 0).toLocaleString('en-IN')}`;
+
+  // Populate 4 station cards in #waStationCardsContainer
+  const container = document.getElementById('waStationCardsContainer');
+  if (!container) return;
+
+  const stations = sum.stations || sum.stationBreakdown || {};
+  const sKeys = ['S1', 'S2', 'S3', 'S4'];
+  const pRate = sum.petrolRate || 117.07;
+  const dRate = sum.dieselRate || 105.23;
+
+  container.innerHTML = sKeys.map(key => {
+    const st = stations[key] || {};
+    const emp = st.employeeName || (STATE.shiftAssignments?.[sum.date || getTodayDateString()]?.[key]?.employeeName) || (STATE.shift?.stations?.[key]?.employeeName) || '-';
+    const pL = Number(st.petrolLitres || st.meters?.petrol?.saleLitres || 0);
+    const dL = Number(st.dieselLitres || st.meters?.diesel?.saleLitres || 0);
+    const pA = Math.round(st.petrolAmount || (pL * pRate));
+    const dA = Math.round(st.dieselAmount || (dL * dRate));
+    const totalA = pA + dA;
+    const col = st.collections || {};
+
+    return `
+      <div class="bg-slate-50 border border-slate-200 p-3.5 rounded-2xl space-y-2">
+        <div class="flex items-center justify-between border-b border-slate-200 pb-1.5">
+          <div class="flex items-center gap-1.5">
+            <span class="font-black text-xs text-orange-600 bg-orange-100 px-2 py-0.5 rounded-md">${key}</span>
+            <span class="text-xs font-bold text-slate-800">${emp}</span>
+          </div>
+          <span class="text-xs font-black font-mono text-slate-900">₹${totalA.toLocaleString('en-IN')}</span>
+        </div>
+        <div class="grid grid-cols-2 gap-1.5 text-[11px]">
+          <div>
+            <span class="text-amber-800 font-bold block">పెట్రోల్ (MS):</span>
+            <span class="font-mono text-slate-700">${pL.toFixed(2)} L (₹${pA.toLocaleString('en-IN')})</span>
+          </div>
+          <div>
+            <span class="text-blue-800 font-bold block">డీజిల్ (HSD):</span>
+            <span class="font-mono text-slate-700">${dL.toFixed(2)} L (₹${dA.toLocaleString('en-IN')})</span>
+          </div>
+        </div>
+        <div class="pt-1 border-t border-slate-200/80 flex items-center justify-between text-[10px] text-slate-500 font-bold">
+          <span>క్యాష్: ₹${Number(col.cash || 0).toLocaleString('en-IN')}</span>
+          <span>UPI: ₹${Number(col.upi || 0).toLocaleString('en-IN')}</span>
+          <span>కార్డ్: ₹${Number(col.card || 0).toLocaleString('en-IN')}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function shareFullWhatsAppSheet() {
+  const msg = getWhatsAppReportMessage(currentWhatsAppMode);
+  if (!msg) {
+    showToast('నివేదిక వివరాలు లేవు (No report data)', 'warning');
+    return;
+  }
+  const encoded = encodeURIComponent(msg);
+  window.open(`https://api.whatsapp.com/send?text=${encoded}`, '_blank');
+}
+
+function copyWhatsAppSheetToClipboard() {
+  const msg = getWhatsAppReportMessage(currentWhatsAppMode);
+  if (!msg) return;
+  navigator.clipboard.writeText(msg).then(() => {
+    const btn = document.getElementById('copyWhatsAppBtnText');
+    const icon = document.getElementById('copyWhatsAppIcon');
+    if (btn) btn.innerText = 'కాపీ అయింది! (Copied!)';
+    if (icon) icon.innerText = '✓';
+    showToast('వాట్సాప్ నివేదిక కాపీ చేయబడింది! (Copied to clipboard)');
+    setTimeout(() => {
+      if (btn) btn.innerText = 'సందేశం కాపీ చేయి (Copy Message)';
+      if (icon) icon.innerText = '📋';
+    }, 2000);
+  });
 }

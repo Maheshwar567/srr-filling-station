@@ -1394,6 +1394,13 @@ app.post('/api/salary-records', (req, res) => {
   const cleanName = empName.toLowerCase();
   const cleanFirst = cleanName.split(/\s+/)[0];
 
+  const newDays = Number(req.body.daysWorked || 0);
+  const newRate = Number(req.body.dailyRate || 750);
+  const newDeductions = Number(req.body.deductions || 0);
+  const newGross = Math.round(newDays * newRate);
+  const newNet = Math.max(0, newGross - newDeductions);
+  const newNotes = (req.body.notes || '').trim();
+
   // User requirement: "i have saved with name like ramesh and if same name chossen (ramesh) and click on save on that same day i have saved - should not allow duplicate entires with same name on same day - give already done with ramesh"
   const existing = data.salaryRecords.find(r => {
     const rName = (r.employeeName || "").trim().toLowerCase();
@@ -1405,8 +1412,27 @@ app.post('/api/salary-records', (req, res) => {
   });
 
   if (existing) {
-    return res.status(400).json({ 
-      error: `Already done with ${empName}! (ఈ ఉద్యోగికి ఇప్పటికే జీతం లెక్కించబడింది)` 
+    // If exact same values already saved, reject as duplicate
+    if (existing.daysWorked === newDays && existing.dailyRate === newRate && existing.deductions === newDeductions) {
+      return res.status(400).json({ 
+        error: `Already done with ${empName}! (ఈ ఉద్యోగికి ఇప్పటికే జీతం లెక్కించబడింది)` 
+      });
+    }
+
+    // If days worked or values changed (e.g. from 0 days to 5 days), update existing record (no duplicate row)
+    existing.daysWorked = newDays;
+    existing.dailyRate = newRate;
+    existing.grossSalary = newGross;
+    existing.deductions = newDeductions;
+    existing.netSalary = newNet;
+    existing.notes = newNotes;
+    existing.updatedAt = new Date().toISOString();
+    storage.save(tenantId, data);
+    return res.json({
+      success: true,
+      updated: true,
+      record: existing,
+      message: `${empName} జీతం రికార్డు నవీకరించబడింది (${newDays} రోజులు, నికర జీతం: ₹${formatIndianNumber(newNet)})!`
     });
   }
 
@@ -1416,13 +1442,13 @@ app.post('/api/salary-records', (req, res) => {
     endDate,
     employeeId: empId,
     employeeName: empName,
-    daysWorked: Number(req.body.daysWorked || 0),
-    dailyRate: Number(req.body.dailyRate || 750),
-    grossSalary: Math.round(Number(req.body.daysWorked || 0) * Number(req.body.dailyRate || 750)),
-    deductions: Number(req.body.deductions || 0),
-    netSalary: Math.round(Number(req.body.daysWorked || 0) * Number(req.body.dailyRate || 750)) - Number(req.body.deductions || 0),
+    daysWorked: newDays,
+    dailyRate: newRate,
+    grossSalary: newGross,
+    deductions: newDeductions,
+    netSalary: newNet,
     status: req.body.status || 'pending',
-    notes: req.body.notes || '',
+    notes: newNotes,
     calculatedBy: req.body.calculatedBy || 'Management',
     createdAt: new Date().toISOString()
   };
