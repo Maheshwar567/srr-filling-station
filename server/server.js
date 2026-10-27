@@ -795,6 +795,41 @@ app.post('/api/duty-assignments', (req, res) => {
   res.json({ success: true, assignments: data.shiftAssignments[date] });
 });
 
+// Duty Assignments Historical Archive (Read-Only Archive for Past Months/Dates)
+// User requirement: "in future we want to see last month who worked on which pump and all - do we need to create a tab with historical data(only read) - how we can archive it .."
+app.get('/api/duty-assignments/history', (req, res) => {
+  const tenantId = getTenantId(req);
+  const data = storage.load(tenantId);
+  const month = req.query.month; // e.g. "2026-10"
+  const empFilter = req.query.employee ? req.query.employee.toLowerCase().trim() : '';
+
+  const assignments = data.shiftAssignments || {};
+  const history = [];
+
+  // Sort dates descending (newest dates first)
+  const dates = Object.keys(assignments).sort().reverse();
+
+  dates.forEach(d => {
+    if (month && !d.startsWith(month)) return;
+
+    const stMap = assignments[d] || {};
+    let matchesEmp = true;
+    if (empFilter) {
+      matchesEmp = Object.values(stMap).some(st => 
+        st.employeeName && st.employeeName.toLowerCase().includes(empFilter)
+      );
+    }
+    if (!matchesEmp) return;
+
+    history.push({
+      date: d,
+      stations: stMap
+    });
+  });
+
+  res.json({ success: true, count: history.length, history });
+});
+
 // Shifts API
 app.get('/api/shifts', (req, res) => {
   const tenantId = getTenantId(req);
@@ -1377,7 +1412,16 @@ app.get('/api/duty-attendance', (req, res) => {
 app.get('/api/salary-records', (req, res) => {
   const tenantId = getTenantId(req);
   const data = storage.load(tenantId);
-  res.json(data.salaryRecords || []);
+  if (!data.salaryRecords) data.salaryRecords = [];
+  
+  // User requirement: "why its allowing if worked days 0 - also the days he worked showing upon saving with 0 values, this is not we want"
+  // Automatically prune any legacy records saved with 0 worked days
+  const cleanRecords = data.salaryRecords.filter(r => Number(r.daysWorked || 0) > 0);
+  if (cleanRecords.length !== data.salaryRecords.length) {
+    data.salaryRecords = cleanRecords;
+    storage.save(tenantId, data);
+  }
+  res.json(cleanRecords);
 });
 
 app.post('/api/salary-records', (req, res) => {
@@ -1400,6 +1444,13 @@ app.post('/api/salary-records', (req, res) => {
   const newGross = Math.round(newDays * newRate);
   const newNet = Math.max(0, newGross - newDeductions);
   const newNotes = (req.body.notes || '').trim();
+
+  // User requirement: "why its allowing if worked days 0 - also the days he worked showing upon saving with 0 values, this is not we want"
+  if (newDays <= 0) {
+    return res.status(400).json({ 
+      error: "పని చేసిన రోజులు 0 గా ఉన్నప్పుడు జీతం లెక్కించలేరు. దయచేసి పనిదినాలను నమోదు చేయండి (Cannot save salary: Days worked must be greater than 0)" 
+    });
+  }
 
   // User requirement: "i have saved with name like ramesh and if same name chossen (ramesh) and click on save on that same day i have saved - should not allow duplicate entires with same name on same day - give already done with ramesh"
   const existing = data.salaryRecords.find(r => {

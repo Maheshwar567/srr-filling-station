@@ -3333,6 +3333,12 @@ async function calculateAndAddSalaryRecord() {
   const deductions = parseFloat(duesEl?.value) || 0;
   const notes = notesEl?.value?.trim() || '';
 
+  // User requirement: "why its allowing if worked days 0 - also the days he worked showing upon saving with 0 values, this is not we want"
+  if (daysWorked <= 0) {
+    showToast('పని చేసిన రోజులు 0 గా ఉన్నప్పుడు జీతం లెక్కించలేరు. దయచేసి పనిదినాలను నమోదు చేయండి (Cannot save salary: Days worked must be at least 1)', 'warning');
+    return;
+  }
+
   // User requirement: "i have saved with name like ramesh and if same name chossen (ramesh) and click on save on that same day i have saved - should not allow duplicate entires with same name on same day - give already done with ramesh"
   // Check if an entry already exists for this employee
   const existing = (STATE.salaryRecords || []).find(r => {
@@ -3448,6 +3454,11 @@ async function calculateSalaryForAllEmployees() {
       );
 
       const daysWorked = att && att.daysWorked != null ? att.daysWorked : 0;
+      // User requirement: "why its allowing if worked days 0 - also the days he worked showing upon saving with 0 values, this is not we want"
+      if (daysWorked <= 0) {
+        skippedCount++;
+        continue;
+      }
       let deductions = att && att.pendingDue != null ? att.pendingDue : 0;
       if (!deductions && STATE.employeeDues) {
         deductions = STATE.employeeDues
@@ -4137,6 +4148,9 @@ function renderAdminDutyRoster() {
       </div>
     `;
   }).join('');
+
+  // Automatically load the historical archive
+  loadDutyRosterHistory();
 }
 
 function generateRandomDutyPin(stKey) {
@@ -4168,12 +4182,118 @@ async function saveDutyRosterAssignments() {
         ? 'పంపుల కేటాయింపు & డ్యూటీ పిన్‌లు సేవ్ చేయబడ్డాయి! సిబ్బందికి ఈ పిన్ ఇవ్వండి.' 
         : 'Pump assignments & Duty PINs saved! Share PIN with staff.');
       loadAllData();
+      loadDutyRosterHistory();
     } else {
       showToast('Failed to save pump assignments', 'error');
     }
   } catch (err) {
     showToast('Failed to save pump assignments', 'error');
   }
+}
+
+// --- PUMP ASSIGNMENT HISTORY & ARCHIVE CONTROLLER ---
+// User requirement: "in future we want to see last month who worked on which pump and all - do we need to create a tab with historical data(only read) - how we can archive it .."
+let cachedRosterHistory = [];
+
+async function loadDutyRosterHistory() {
+  const tbody = document.getElementById('rosterHistoryTableBody');
+  const monthInput = document.getElementById('rosterHistoryMonthInput');
+
+  const month = monthInput?.value || '';
+
+  try {
+    const res = await fetch(`/api/duty-assignments/history?month=${month}&pump=${STATE.activeTenant || 'srr-filling-station'}`);
+    if (!res.ok) throw new Error('Failed to fetch history');
+
+    const data = await res.json();
+    cachedRosterHistory = data.history || [];
+
+    filterDutyRosterHistory();
+  } catch (err) {
+    console.error('Error loading roster history:', err);
+    if (tbody) {
+      tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-rose-500 font-bold">ఆర్కైవ్ లోడ్ చేయడం విఫలమైంది (Failed to load archive)</td></tr>`;
+    }
+  }
+}
+
+function filterDutyRosterHistory() {
+  const tbody = document.getElementById('rosterHistoryTableBody');
+  const searchInput = document.getElementById('rosterHistorySearchInput');
+  const countBadge = document.getElementById('rosterHistoryCountBadge');
+
+  if (!tbody) return;
+
+  const query = (searchInput?.value || '').toLowerCase().trim();
+
+  let list = cachedRosterHistory;
+  if (query) {
+    list = list.filter(item => {
+      return Object.values(item.stations || {}).some(st => 
+        (st.employeeName && st.employeeName.toLowerCase().includes(query)) ||
+        (st.dutyPin && st.dutyPin.includes(query)) ||
+        (item.date && item.date.includes(query))
+      );
+    });
+  }
+
+  if (countBadge) {
+    countBadge.innerText = `రికార్డులు: ${list.length} రోజులు`;
+  }
+
+  if (list.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400 font-bold">ఈ నెలలో లేదా ఈ పేరుతో ఎటువంటి కేటాయింపులు కనుగొనబడలేదు (No pump assignments found)</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = list.map(item => {
+    const d = item.date;
+    const st = item.stations || {};
+
+    let assignedStaffCount = 0;
+    ['S1', 'S2', 'S3', 'S4'].forEach(k => {
+      if (st[k]?.employeeName) assignedStaffCount++;
+    });
+
+    const renderCell = (key, pumpName) => {
+      const info = st[key];
+      if (!info || !info.employeeName) {
+        return `<span class="text-slate-400 italic text-[11px]">- ఖాళీ (Unassigned) -</span>`;
+      }
+      return `
+        <div class="space-y-0.5">
+          <div class="font-bold text-slate-900 text-xs flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
+            <span>${info.employeeName}</span>
+          </div>
+          <div class="flex items-center gap-1">
+            <span class="text-[10px] font-mono bg-amber-100 text-amber-900 px-1.5 py-0.2 rounded font-bold">PIN: ${info.dutyPin || '-'}</span>
+          </div>
+        </div>
+      `;
+    };
+
+    return `
+      <tr class="hover:bg-amber-50/40 transition-colors">
+        <td class="p-3 font-mono font-bold text-slate-800 border-r border-slate-100 whitespace-nowrap">
+          📅 ${d}
+        </td>
+        <td class="p-3 border-r border-slate-100">${renderCell('S1', 'Pump 1')}</td>
+        <td class="p-3 border-r border-slate-100">${renderCell('S2', 'Pump 1')}</td>
+        <td class="p-3 border-r border-slate-100">${renderCell('S3', 'Pump 2')}</td>
+        <td class="p-3 border-r border-slate-100">${renderCell('S4', 'Pump 2')}</td>
+        <td class="p-3 text-center whitespace-nowrap">
+          <span class="text-[11px] font-bold px-2 py-0.5 rounded-full ${assignedStaffCount === 4 ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
+            ${assignedStaffCount} / 4 Staff
+          </span>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function printRosterHistory() {
+  window.print();
 }
 
 // Live Pump Allocations Summary for Overview / Daily Sales Slip screen
