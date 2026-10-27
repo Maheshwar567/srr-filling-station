@@ -920,6 +920,24 @@ app.post('/api/shifts/station-readings', (req, res) => {
     };
   }
 
+  // 1b. Prevent duplicate reading entries with identical readings
+  const lastSession = st.readingsHistory.length > 0 ? st.readingsHistory[st.readingsHistory.length - 1] : null;
+  if (lastSession) {
+    const isSamePetrol = (pClose > 0 && lastSession.petrol?.close === pClose) || (lastSession.petrol?.open === pOpen && lastSession.petrol?.close === pClose);
+    const isSameDiesel = (dClose > 0 && lastSession.diesel?.close === dClose) || (lastSession.diesel?.open === dOpen && lastSession.diesel?.close === dClose);
+    if (isSamePetrol && isSameDiesel) {
+      return res.status(400).json({ 
+        error: "డూప్లికేట్ రీడింగ్ అనుమతించబడదు: ఈ రీడింగ్‌లు ఇప్పటికే సేవ్ చేయబడ్డాయి! (Duplicate reading not allowed: identical readings already saved)" 
+      });
+    }
+  }
+
+  if (pClose <= pOpen && dClose <= dOpen && (pClose > 0 || dClose > 0)) {
+    return res.status(400).json({ 
+      error: "ముగింపు రీడింగ్ ప్రారంభ రీడింగ్ కంటే ఎక్కువగా ఉండాలి (Closing reading must be higher than opening reading)" 
+    });
+  }
+
   // 2. Record this save session in readingsHistory (Meals break, dinner break, shift final, etc.)
   const legPetrolSale = pClose > pOpen ? Number((pClose - pOpen - pTesting).toFixed(2)) : 0;
   const legDieselSale = dClose > dOpen ? Number((dClose - dOpen - dTesting).toFixed(2)) : 0;
@@ -983,18 +1001,36 @@ app.delete('/api/shifts/station-readings/:id', (req, res) => {
     st.readingsHistory.splice(idx, 1);
   }
 
-  // Recalculate latest close and next open from remaining history
+  // Recalculate latest close, open, and saleLitres from remaining history
+  const pTesting = Number(st.meters?.petrol?.testing || 0);
+  const dTesting = Number(st.meters?.diesel?.testing || 0);
+  const initOpenP = st.initialJoinedMeters?.petrol?.open ?? 0;
+  const initOpenD = st.initialJoinedMeters?.diesel?.open ?? 0;
+
   if (st.readingsHistory.length > 0) {
     const lastSession = st.readingsHistory[st.readingsHistory.length - 1];
     st.nextOpenPetrol = lastSession.petrol.close > 0 ? lastSession.petrol.close : lastSession.petrol.open;
     st.nextOpenDiesel = lastSession.diesel.close > 0 ? lastSession.diesel.close : lastSession.diesel.open;
-    if (st.meters?.petrol) st.meters.petrol.close = lastSession.petrol.close;
-    if (st.meters?.diesel) st.meters.diesel.close = lastSession.diesel.close;
+    if (st.meters?.petrol) {
+      st.meters.petrol.close = lastSession.petrol.close;
+      st.meters.petrol.saleLitres = lastSession.petrol.close > initOpenP ? Number((lastSession.petrol.close - initOpenP - pTesting).toFixed(2)) : 0;
+    }
+    if (st.meters?.diesel) {
+      st.meters.diesel.close = lastSession.diesel.close;
+      st.meters.diesel.saleLitres = lastSession.diesel.close > initOpenD ? Number((lastSession.diesel.close - initOpenD - dTesting).toFixed(2)) : 0;
+    }
   } else {
-    st.nextOpenPetrol = st.initialJoinedMeters?.petrol?.open || 0;
-    st.nextOpenDiesel = st.initialJoinedMeters?.diesel?.open || 0;
-    if (st.meters?.petrol) st.meters.petrol.close = 0;
-    if (st.meters?.diesel) st.meters.diesel.close = 0;
+    st.nextOpenPetrol = initOpenP;
+    st.nextOpenDiesel = initOpenD;
+    if (st.meters?.petrol) {
+      st.meters.petrol.close = 0;
+      st.meters.petrol.saleLitres = 0;
+    }
+    if (st.meters?.diesel) {
+      st.meters.diesel.close = 0;
+      st.meters.diesel.saleLitres = 0;
+    }
+    st.status = "active";
   }
 
   storage.save(tenantId, data);
@@ -1349,12 +1385,37 @@ app.post('/api/salary-records', (req, res) => {
   const data = storage.load(tenantId);
   if (!data.salaryRecords) data.salaryRecords = [];
 
+  const empName = (req.body.employeeName || "Attendant").trim();
+  const empId = req.body.employeeId || "";
+  const startDate = req.body.startDate || getTodayString();
+  const endDate = req.body.endDate || getTodayString();
+  const today = getTodayString();
+
+  const cleanName = empName.toLowerCase();
+  const cleanFirst = cleanName.split(/\s+/)[0];
+
+  // User requirement: "i have saved with name like ramesh and if same name chossen (ramesh) and click on save on that same day i have saved - should not allow duplicate entires with same name on same day - give already done with ramesh"
+  const existing = data.salaryRecords.find(r => {
+    const rName = (r.employeeName || "").trim().toLowerCase();
+    const rFirst = rName.split(/\s+/)[0];
+    const isSameEmp = (empId && r.employeeId === empId) || (rName === cleanName || rFirst === cleanFirst || rName.startsWith(cleanFirst));
+    const isSamePeriod = (r.startDate === startDate && r.endDate === endDate);
+    const isSavedToday = r.createdAt && r.createdAt.slice(0, 10) === today;
+    return isSameEmp && (isSamePeriod || isSavedToday);
+  });
+
+  if (existing) {
+    return res.status(400).json({ 
+      error: `Already done with ${empName}! (ఈ ఉద్యోగికి ఇప్పటికే జీతం లెక్కించబడింది)` 
+    });
+  }
+
   const record = {
     id: `sal-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-    startDate: req.body.startDate || getTodayString(),
-    endDate: req.body.endDate || getTodayString(),
-    employeeId: req.body.employeeId || "",
-    employeeName: req.body.employeeName || "Attendant",
+    startDate,
+    endDate,
+    employeeId: empId,
+    employeeName: empName,
     daysWorked: Number(req.body.daysWorked || 0),
     dailyRate: Number(req.body.dailyRate || 750),
     grossSalary: Math.round(Number(req.body.daysWorked || 0) * Number(req.body.dailyRate || 750)),

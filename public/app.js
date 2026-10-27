@@ -1048,28 +1048,49 @@ async function deleteReadingSession(sessionId) {
 }
 
 async function saveStationReadings() {
-  const pOpen = parseFloat(document.getElementById('empPetrolOpen').value) || 0;
-  const pClose = parseFloat(document.getElementById('empPetrolClose').value) || 0;
-  const dOpen = parseFloat(document.getElementById('empDieselOpen').value) || 0;
-  const dClose = parseFloat(document.getElementById('empDieselClose').value) || 0;
+  const saveBtn = document.querySelector('button[onclick="saveStationReadings()"]');
+  if (saveBtn && saveBtn.disabled) return;
+
+  const pOpen = parseFloat(document.getElementById('empPetrolOpen')?.value) || 0;
+  const pClose = parseFloat(document.getElementById('empPetrolClose')?.value) || 0;
+  const dOpen = parseFloat(document.getElementById('empDieselOpen')?.value) || 0;
+  const dClose = parseFloat(document.getElementById('empDieselClose')?.value) || 0;
 
   if (pClose <= 0 && dClose <= 0) {
-    showToast('దయచేసి ముగింపు రీడింగ్ (Closing Reading) నమోదు చేయండి', 'error');
+    showToast(STATE.lang === 'te' ? 'దయచేసి ముగింపు రీడింగ్ (Closing Reading) నమోదు చేయండి' : 'Please enter closing reading', 'error');
     return;
   }
 
   if (pClose > 0 && pClose < pOpen) {
-    showToast('పెట్రోల్ ముగింపు రీడింగ్ ప్రారంభ రీడింగ్ కంటే తక్కువగా ఉండకూడదు', 'error');
+    showToast(STATE.lang === 'te' ? 'పెట్రోల్ ముగింపు రీడింగ్ ప్రారంభ రీడింగ్ కంటే తక్కువగా ఉండకూడదు' : 'Petrol close reading cannot be less than open reading', 'error');
     return;
   }
 
   if (dClose > 0 && dClose < dOpen) {
-    showToast('డీజిల్ ముగింపు రీడింగ్ ప్రారంభ రీడింగ్ కంటే తక్కువగా ఉండకూడదు', 'error');
+    showToast(STATE.lang === 'te' ? 'డీజిల్ ముగింపు రీడింగ్ ప్రారంభ రీడింగ్ కంటే తక్కువగా ఉండకూడదు' : 'Diesel close reading cannot be less than open reading', 'error');
     return;
   }
 
-  const sessionTag = document.getElementById('empReadingSessionTag')?.value || 'Meals / Lunch Break';
+  if (pClose <= pOpen && dClose <= dOpen && (pClose > 0 || dClose > 0)) {
+    showToast(STATE.lang === 'te' ? 'ముగింపు రీడింగ్ ప్రారంభ రీడింగ్ కంటే ఎక్కువగా ఉండాలి (No sales recorded)' : 'Closing reading must be higher than opening reading', 'error');
+    return;
+  }
+
   const stData = STATE.shift?.stations?.[STATE.selectedStation] || {};
+  const lastSession = (stData.readingsHistory && stData.readingsHistory.length > 0)
+    ? stData.readingsHistory[stData.readingsHistory.length - 1]
+    : null;
+
+  if (lastSession) {
+    const isSamePetrol = (pClose > 0 && lastSession.petrol?.close === pClose) || (lastSession.petrol?.open === pOpen && lastSession.petrol?.close === pClose);
+    const isSameDiesel = (dClose > 0 && lastSession.diesel?.close === dClose) || (lastSession.diesel?.open === dOpen && lastSession.diesel?.close === dClose);
+    if (isSamePetrol && isSameDiesel) {
+      showToast(STATE.lang === 'te' ? 'డూప్లికేట్ రీడింగ్ అనుమతించబడదు: ఈ రీడింగ్‌లు ఇప్పటికే నమోదయ్యాయి! (Duplicate reading not allowed)' : 'Duplicate reading not allowed: already recorded!', 'warning');
+      return;
+    }
+  }
+
+  const sessionTag = document.getElementById('empReadingSessionTag')?.value || 'Meals / Lunch Break';
   const pTest = Number(stData.meters?.petrol?.testing || 0);
   const dTest = Number(stData.meters?.diesel?.testing || 0);
 
@@ -1085,6 +1106,11 @@ async function saveStationReadings() {
     }
   };
 
+  if (saveBtn) {
+    saveBtn.disabled = true;
+    saveBtn.classList.add('opacity-50', 'cursor-not-allowed');
+  }
+
   try {
     const res = await fetch(`/api/shifts/station-readings?pump=${STATE.activeTenant}`, {
       method: 'POST',
@@ -1093,20 +1119,31 @@ async function saveStationReadings() {
     });
     const result = await res.json();
     if (result.success) {
-      showToast(`రీడింగ్ సేవ్ చేయబడింది! ముగింపు రీడింగ్ తదుపరి ప్రారంభ రీడింగ్‌గా సెట్ చేయబడింది.`);
+      showToast(STATE.lang === 'te' ? `రీడింగ్ సేవ్ చేయబడింది! ముగింపు రీడింగ్ తదుపరి ప్రారంభ రీడింగ్‌గా సెట్ చేయబడింది.` : `Readings saved successfully!`);
       // User Requirement: "once the close reading will be given the that close reading will default comes in opening reading"
-      document.getElementById('empPetrolOpen').value = result.nextOpen?.petrol ?? pClose;
-      document.getElementById('empPetrolClose').value = '';
-      document.getElementById('empDieselOpen').value = result.nextOpen?.diesel ?? dClose;
-      document.getElementById('empDieselClose').value = '';
+      const pOpenEl = document.getElementById('empPetrolOpen');
+      const pCloseEl = document.getElementById('empPetrolClose');
+      const dOpenEl = document.getElementById('empDieselOpen');
+      const dCloseEl = document.getElementById('empDieselClose');
+
+      if (pOpenEl) pOpenEl.value = result.nextOpen?.petrol ?? pClose;
+      if (pCloseEl) pCloseEl.value = '';
+      if (dOpenEl) dOpenEl.value = result.nextOpen?.diesel ?? dClose;
+      if (dCloseEl) dCloseEl.value = '';
+
       calculateEmployeeLiveLitres();
-      loadAllData();
+      await loadAllData();
     } else {
       showToast(result.error || 'Failed to save readings', 'error');
     }
   } catch (err) {
     console.error(err);
     showToast('Failed to save readings', 'error');
+  } finally {
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+    }
   }
 }
 
@@ -3137,7 +3174,6 @@ async function populateSalaryEmployeeSelect() {
   const attList = STATE.dutyAttendance?.attendanceList || [];
 
   if (empList.length === 0) {
-    // Fallback if network issue
     return;
   }
 
@@ -3147,16 +3183,19 @@ async function populateSalaryEmployeeSelect() {
     const empId = emp.id || emp.name;
     const name = emp.name || 'Staff';
     const cleanName = name.trim().toLowerCase();
+    const cleanFirst = cleanName.split(/\s+/)[0];
 
     // Find attendance info if available in duty attendance response
     const att = attList.find(a => 
       (a.id && (a.id === empId || a.id === emp.name)) || 
-      (a.name && (a.name.trim().toLowerCase() === cleanName || a.name.trim().toLowerCase().includes(cleanName) || cleanName.includes(a.name.trim().toLowerCase())))
+      (a.name && (a.name.trim().toLowerCase() === cleanName || a.name.trim().toLowerCase().split(/\s+/)[0] === cleanFirst))
     );
 
-    const daysText = (att && att.daysWorked != null && att.daysWorked > 0) ? ` (${att.daysWorked} days)` : '';
+    const days = (att && att.daysWorked != null) ? att.daysWorked : 0;
+    const dues = (att && att.pendingDue != null) ? att.pendingDue : 0;
+    const daysText = days > 0 ? ` (${days} days)` : '';
     const selected = (currentVal === empId || currentVal === name) ? 'selected' : '';
-    html += `<option value="${empId}" data-id="${empId}" data-name="${name}" ${selected}>${name}${daysText}</option>`;
+    html += `<option value="${empId}" data-id="${empId}" data-name="${name}" data-days="${days}" data-dues="${dues}" ${selected}>${name}${daysText}</option>`;
   });
 
   select.innerHTML = html;
@@ -3168,6 +3207,31 @@ async function onSalaryInputsChange(datesChanged = false) {
   const select = document.getElementById('salCalcEmpSelect');
   const daysEl = document.getElementById('salCalcDaysWorked');
   const duesEl = document.getElementById('salCalcDuesCut');
+
+  const selectedVal = select?.value;
+  if (!selectedVal) {
+    if (daysEl) daysEl.value = '0';
+    if (duesEl) duesEl.value = '0';
+    updateSalaryLivePreview();
+    return;
+  }
+
+  const opt = select.options[select.selectedIndex];
+  const empId = opt?.getAttribute('data-id') || selectedVal;
+  const empName = opt?.getAttribute('data-name') || opt?.text?.split(' (')[0]?.trim() || selectedVal;
+  const cleanName = empName.trim().toLowerCase();
+  const cleanFirst = cleanName.split(/\s+/)[0];
+
+  // IMMEDIATELY fill from opt attributes (instant 0ms response!)
+  const optDays = opt?.getAttribute('data-days');
+  const optDues = opt?.getAttribute('data-dues');
+  if (optDays !== null && optDays !== undefined && daysEl) {
+    daysEl.value = optDays;
+  }
+  if (optDues !== null && optDues !== undefined && duesEl) {
+    duesEl.value = optDues;
+  }
+  updateSalaryLivePreview();
 
   // If date range changed, re-fetch attendance so days worked are accurately computed
   const isDateChange = datesChanged === true || (datesChanged && datesChanged.target && (datesChanged.target.id === 'salCalcStartDate' || datesChanged.target.id === 'salCalcEndDate'));
@@ -3186,34 +3250,21 @@ async function onSalaryInputsChange(datesChanged = false) {
     }
   }
 
-  const selectedVal = select?.value;
-  if (!selectedVal) {
-    if (daysEl) daysEl.value = '0';
-    if (duesEl) duesEl.value = '0';
-    updateSalaryLivePreview();
-    return;
-  }
-
-  const opt = select.options[select.selectedIndex];
-  const empId = opt?.getAttribute('data-id') || selectedVal;
-  const empName = opt?.getAttribute('data-name') || opt?.text?.split(' (')[0]?.trim() || selectedVal;
-  const cleanName = empName.trim().toLowerCase();
-
-  // Find matching employee in duty attendance
+  // Find matching employee in duty attendance for latest data
   const attEmp = (STATE.dutyAttendance?.attendanceList || []).find(e => 
     (e.id && (e.id === empId || e.id === selectedVal)) || 
-    (e.name && (e.name.trim().toLowerCase() === cleanName || e.name.trim().toLowerCase().includes(cleanName) || cleanName.includes(e.name.trim().toLowerCase())))
+    (e.name && (e.name.trim().toLowerCase() === cleanName || e.name.trim().toLowerCase().split(/\s+/)[0] === cleanFirst))
   );
 
   if (attEmp) {
     if (daysEl) daysEl.value = attEmp.daysWorked != null ? attEmp.daysWorked : 0;
     if (duesEl) duesEl.value = attEmp.pendingDue != null ? attEmp.pendingDue : 0;
-  } else {
+  } else if (!optDays) {
     if (daysEl) daysEl.value = '0';
 
     // Check if there are pending dues in STATE.employeeDues
     const pendingDue = (STATE.employeeDues || [])
-      .filter(d => (d.status === 'pending' || d.status === 'unsettled') && d.employeeName && d.employeeName.trim().toLowerCase() === cleanName)
+      .filter(d => (d.status === 'pending' || d.status === 'unsettled') && d.employeeName && d.employeeName.trim().toLowerCase().split(/\s+/)[0] === cleanFirst)
       .reduce((s, d) => s + (d.shortageAmount || 0), 0);
 
     if (duesEl) duesEl.value = pendingDue || 0;
@@ -3257,6 +3308,26 @@ async function calculateAndAddSalaryRecord() {
   const opt = select.options[select.selectedIndex];
   const empId = opt?.getAttribute('data-id') || selectedVal;
   const empName = opt?.getAttribute('data-name') || opt?.text?.split(' (')[0]?.trim() || selectedVal;
+  const cleanName = empName.trim().toLowerCase();
+  const cleanFirst = cleanName.split(/\s+/)[0];
+  const today = getTodayDateString();
+
+  // User requirement: "i have saved with name like ramesh and if same name chossen (ramesh) and click on save on that same day i have saved - should not allow duplicate entires with same name on same day - give already done with ramesh"
+  const existing = (STATE.salaryRecords || []).find(r => {
+    const rName = (r.employeeName || '').trim().toLowerCase();
+    const rFirst = rName.split(/\s+/)[0];
+    const isSameEmp = (r.employeeId && (r.employeeId === empId || r.employeeId === selectedVal)) ||
+                      (rName === cleanName || rFirst === cleanFirst || rName.startsWith(cleanFirst));
+    const isSamePeriod = (r.startDate === startDate && r.endDate === endDate);
+    const isSavedToday = r.createdAt && r.createdAt.slice(0, 10) === today;
+    return isSameEmp && (isSamePeriod || isSavedToday);
+  });
+
+  if (existing) {
+    showToast(`Already done with ${empName}! (ఈ ఉద్యోగికి ఈ రోజు లేదా ఈ కాలానికి ఇప్పటికే జీతం లెక్కించి సేవ్ చేయబడింది)`, 'error');
+    return;
+  }
+
   const daysWorked = parseFloat(daysEl?.value) || 0;
   const dailyRate = parseFloat(rateEl?.value) || 750;
   const deductions = parseFloat(duesEl?.value) || 0;
@@ -3321,24 +3392,44 @@ async function calculateSalaryForAllEmployees() {
   if (!confirm(confirmMsg)) return;
 
   const attList = STATE.dutyAttendance?.attendanceList || [];
+  const today = getTodayDateString();
 
   let addedCount = 0;
-  for (const emp of empList) {
-    try {
-      const empId = emp.id || emp.name;
-      const empName = emp.name;
-      const cleanName = empName.trim().toLowerCase();
+  let skippedCount = 0;
 
+  for (const emp of empList) {
+    const empId = emp.id || emp.name;
+    const empName = emp.name;
+    const cleanName = empName.trim().toLowerCase();
+    const cleanFirst = cleanName.split(/\s+/)[0];
+
+    // Check if already done today
+    const isAlreadyDone = (STATE.salaryRecords || []).some(r => {
+      const rName = (r.employeeName || '').trim().toLowerCase();
+      const rFirst = rName.split(/\s+/)[0];
+      const isSameEmp = (r.employeeId && (r.employeeId === empId || r.employeeId === empName)) ||
+                        (rName === cleanName || rFirst === cleanFirst || rName.startsWith(cleanFirst));
+      const isSamePeriod = (r.startDate === startDate && r.endDate === endDate);
+      const isSavedToday = r.createdAt && r.createdAt.slice(0, 10) === today;
+      return isSameEmp && (isSamePeriod || isSavedToday);
+    });
+
+    if (isAlreadyDone) {
+      skippedCount++;
+      continue;
+    }
+
+    try {
       const att = attList.find(a => 
         (a.id && (a.id === empId || a.id === emp.name)) || 
-        (a.name && (a.name.trim().toLowerCase() === cleanName || a.name.trim().toLowerCase().includes(cleanName) || cleanName.includes(a.name.trim().toLowerCase())))
+        (a.name && (a.name.trim().toLowerCase() === cleanName || a.name.trim().toLowerCase().split(/\s+/)[0] === cleanFirst))
       );
 
       const daysWorked = att && att.daysWorked != null ? att.daysWorked : 0;
       let deductions = att && att.pendingDue != null ? att.pendingDue : 0;
       if (!deductions && STATE.employeeDues) {
         deductions = STATE.employeeDues
-          .filter(d => (d.status === 'pending' || d.status === 'unsettled') && d.employeeName && d.employeeName.trim().toLowerCase() === cleanName)
+          .filter(d => (d.status === 'pending' || d.status === 'unsettled') && d.employeeName && d.employeeName.trim().toLowerCase().split(/\s+/)[0] === cleanFirst)
           .reduce((s, d) => s + (d.shortageAmount || 0), 0);
       }
 
@@ -3363,9 +3454,13 @@ async function calculateSalaryForAllEmployees() {
     }
   }
 
-  showToast(STATE.lang === 'te' 
-    ? `${addedCount} మంది సిబ్బంది జీతాలు పట్టికలో చేర్చబడ్డాయి!` 
-    : `Added salary calculations for ${addedCount} employees!`);
+  if (addedCount === 0 && skippedCount > 0) {
+    showToast(`అందరు (${skippedCount}) సిబ్బందికి ఇప్పటికే జీతాలు లెక్కించబడ్డాయి (Already done for all staff today)!`, 'warning');
+  } else {
+    showToast(STATE.lang === 'te' 
+      ? `${addedCount} మంది సిబ్బంది జీతాలు చేర్చబడ్డాయి (${skippedCount} మంది ఇప్పటికే చేశారు)!` 
+      : `Added salary calculations for ${addedCount} employees (${skippedCount} skipped as already done)!`);
+  }
   await loadDutyAttendanceData();
 }
 

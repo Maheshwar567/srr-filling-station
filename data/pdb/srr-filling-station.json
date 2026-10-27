@@ -1,1159 +1,1593 @@
-{
-  "rates": [
-    {
-      "date": "2026-10-23",
-      "diesel": 105.23,
-      "petrol": 117.07,
-      "updatedAt": "2026-10-23T08:30:00.000Z"
-    },
-    {
-      "date": "2026-10-24",
-      "diesel": 105.23,
-      "petrol": 117.07,
-      "updatedAt": "2026-10-24T08:30:00.000Z"
-    }
-  ],
-  "tanks": [
-    {
-      "id": "tank-ms",
-      "fuel": "Petrol",
-      "name": "Petrol Tank (MS)",
-      "dipCm": 165,
-      "capacity": 20000,
-      "deliveries": [],
-      "currentStock": 14250
-    },
-    {
-      "id": "tank-hsd",
-      "fuel": "Diesel",
-      "name": "Diesel Tank (HSD)",
-      "dipCm": 198,
-      "capacity": 25000,
-      "deliveries": [],
-      "currentStock": 18900
-    }
-  ],
-  "config": {
-    "brand": "Indian Oil",
-    "pumps": [
-      {
-        "id": "Pump1",
-        "name": "Pump 1",
-        "stations": [
-          {
-            "id": "S1",
-            "name": "Side 1 (S1)",
-            "pump": "Pump 1",
-            "nozzles": [
-              {
-                "code": "A1",
-                "fuel": "Petrol",
-                "label": "Petrol (A1)"
-              },
-              {
-                "code": "A2",
-                "fuel": "Diesel",
-                "label": "Diesel (A2)"
-              }
-            ]
-          },
-          {
-            "id": "S2",
-            "name": "Side 2 (S2)",
-            "pump": "Pump 1",
-            "nozzles": [
-              {
-                "code": "B1",
-                "fuel": "Petrol",
-                "label": "Petrol (B1)"
-              },
-              {
-                "code": "B2",
-                "fuel": "Diesel",
-                "label": "Diesel (B2)"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "id": "Pump2",
-        "name": "Pump 2",
-        "stations": [
-          {
-            "id": "S3",
-            "name": "Side 3 (S3)",
-            "pump": "Pump 2",
-            "nozzles": [
-              {
-                "code": "A1",
-                "fuel": "Petrol",
-                "label": "Petrol (A1)"
-              },
-              {
-                "code": "A2",
-                "fuel": "Diesel",
-                "label": "Diesel (A2)"
-              }
-            ]
-          },
-          {
-            "id": "S4",
-            "name": "Side 4 (S4)",
-            "pump": "Pump 2",
-            "nozzles": [
-              {
-                "code": "B1",
-                "fuel": "Petrol",
-                "label": "Petrol (B1)"
-              },
-              {
-                "code": "B2",
-                "fuel": "Diesel",
-                "label": "Diesel (B2)"
-              }
-            ]
-          }
-        ]
-      }
-    ],
-    "adminPin": "123",
-    "location": "Highway Point",
-    "stationId": "srr-filling-station",
-    "oilCompany": "Indian Oil Corporation Ltd. (IOCL)",
-    "stationName": "SRR FILLING STATION",
-    "mgmtPassword": "123",
-    "mgmtUsername": "mgmt",
-    "adminPassword": "123",
-    "adminUsername": "admin",
-    "ownerPassword": "123",
-    "ownerUsername": "owner",
-    "developerPassword": "123"
-  },
-  "shifts": [
-    {
-      "id": "shift-2026-10-23",
-      "date": "2026-10-23",
-      "status": "completed",
-      "stations": {
-        "S1": {
-          "pump": "Pump 1",
-          "meters": {
-            "diesel": {
-              "code": "A2",
-              "open": 2000,
-              "close": 2080,
-              "testing": 0,
-              "saleLitres": 80
-            },
-            "petrol": {
-              "code": "A1",
-              "open": 1000,
-              "close": 1100,
-              "testing": 0,
-              "saleLitres": 100
-            }
-          },
-          "status": "readings-entered",
-          "shortage": 1000,
-          "grossSale": 19014,
-          "stationId": "S1",
-          "cardSwipes": [
-            {
-              "id": "csw-1792834525202",
-              "date": "2026-10-24",
-              "time": "03:05 PM",
-              "amount": 1000,
-              "slipNo": "",
-              "machine": "IOCL POS",
-              "dateTime": "2026-10-24T09:35:00.000Z"
-            }
-          ],
-          "collections": {
-            "upi": 0,
-            "card": 0,
-            "cash": 7659,
-            "notes": "Handover shortage test",
-            "expenses": 0,
-            "expenseReason": ""
-          },
-          "submittedAt": "2026-10-24T09:05:00.000Z",
-          "upiPayments": [],
-          "employeeName": "Ramesh Kumar",
-          "expectedCash": 8659,
-          "expensesList": [],
-          "testingRecords": [],
-          "totalDeductions": 10355
-        },
-        "S2": {
-          "pump": "Pump 1",
-          "meters": {
-            "diesel": {
-              "code": "B2",
-              "open": 187200,
-              "close": 187880.5,
-              "testing": 5,
-              "saleLitres": 675.5
-            },
-            "petrol": {
-              "code": "B1",
-              "open": 98400.1,
-              "close": 99150.3,
-              "testing": 5,
-              "saleLitres": 745.2
-            }
-          },
-          "status": "submitted",
-          "stationId": "S2",
-          "cardSwipes": [],
-          "collections": {
-            "upi": 39000,
-            "card": 6000,
-            "cash": 112000,
-            "notes": "",
-            "expenses": 250,
-            "expenseReason": "Receipt paper"
-          },
-          "submittedAt": "2026-10-24T09:08:00.000Z",
-          "upiPayments": [],
-          "employeeName": "Suresh Reddy",
-          "expensesList": [],
-          "testingRecords": [
-            {
-              "id": "tst-init-p-S2",
-              "time": "09:00 AM",
-              "litres": 5,
-              "reason": "Daily calibration check",
-              "fuelType": "Petrol"
-            },
-            {
-              "id": "tst-init-d-S2",
-              "time": "09:00 AM",
-              "litres": 5,
-              "reason": "Daily calibration check",
-              "fuelType": "Diesel"
-            }
-          ]
-        },
-        "S3": {
-          "pump": "Pump 2",
-          "meters": {
-            "diesel": {
-              "code": "A2",
-              "open": 412500.1,
-              "close": 413165.69,
-              "testing": 5,
-              "saleLitres": 660.59
-            },
-            "petrol": {
-              "code": "A1",
-              "open": 310200,
-              "close": 310955.41,
-              "testing": 5,
-              "saleLitres": 750.41
-            }
-          },
-          "status": "readings-entered",
-          "stationId": "S3",
-          "cardSwipes": [],
-          "collections": {
-            "upi": 32000,
-            "card": 4500,
-            "cash": 118000,
-            "notes": "",
-            "expenses": 200,
-            "expenseReason": "Water cans"
-          },
-          "submittedAt": "2026-10-24T09:12:00.000Z",
-          "upiPayments": [],
-          "employeeName": "Rajesh Varma",
-          "expensesList": [],
-          "testingRecords": [
-            {
-              "id": "tst-init-p-S3",
-              "time": "09:00 AM",
-              "litres": 5,
-              "reason": "Daily calibration check",
-              "fuelType": "Petrol"
-            },
-            {
-              "id": "tst-init-d-S3",
-              "time": "09:00 AM",
-              "litres": 5,
-              "reason": "Daily calibration check",
-              "fuelType": "Diesel"
-            }
-          ]
-        },
-        "S4": {
-          "pump": "Pump 2",
-          "meters": {
-            "diesel": {
-              "code": "B2",
-              "open": 221300,
-              "close": 221978,
-              "testing": 5,
-              "saleLitres": 673
-            },
-            "petrol": {
-              "code": "B1",
-              "open": 154100,
-              "close": 154854,
-              "testing": 5,
-              "saleLitres": 749
-            }
-          },
-          "status": "submitted",
-          "stationId": "S4",
-          "cardSwipes": [],
-          "collections": {
-            "upi": 37500,
-            "card": 5500,
-            "cash": 115000,
-            "notes": "",
-            "expenses": 150,
-            "expenseReason": "Nozzle tip"
-          },
-          "submittedAt": "2026-10-24T09:15:00.000Z",
-          "upiPayments": [],
-          "employeeName": "Prasad Rao",
-          "expensesList": [],
-          "testingRecords": [
-            {
-              "id": "tst-init-p-S4",
-              "time": "09:00 AM",
-              "litres": 5,
-              "reason": "Daily calibration check",
-              "fuelType": "Petrol"
-            },
-            {
-              "id": "tst-init-d-S4",
-              "time": "09:00 AM",
-              "litres": 5,
-              "reason": "Daily calibration check",
-              "fuelType": "Diesel"
-            }
-          ]
-        }
-      },
-      "dieselRate": 105.23,
-      "petrolRate": 117.07
-    },
-    {
-      "id": "shift-2026-10-24",
-      "date": "2026-10-24",
-      "status": "active",
-      "stations": {
-        "S1": {
-          "pump": "Pump 1",
-          "meters": {
-            "diesel": {
-              "code": "A2",
-              "open": 245710.2,
-              "close": 0,
-              "testing": 0,
-              "saleLitres": 0
-            },
-            "petrol": {
-              "code": "A1",
-              "open": 121300.1,
-              "close": 0,
-              "testing": 0,
-              "saleLitres": 0
-            }
-          },
-          "status": "in-progress",
-          "stationId": "S1",
-          "cardSwipes": [],
-          "collections": {
-            "upi": 0,
-            "card": 0,
-            "cash": 0,
-            "notes": "",
-            "expenses": 0,
-            "expenseReason": ""
-          },
-          "upiPayments": [],
-          "employeeName": "Ramesh Kumar",
-          "expensesList": [],
-          "testingRecords": []
-        },
-        "S2": {
-          "pump": "Pump 1",
-          "meters": {
-            "diesel": {
-              "code": "B2",
-              "open": 187880.5,
-              "close": 0,
-              "testing": 0,
-              "saleLitres": 0
-            },
-            "petrol": {
-              "code": "B1",
-              "open": 99150.3,
-              "close": 0,
-              "testing": 0,
-              "saleLitres": 0
-            }
-          },
-          "status": "in-progress",
-          "stationId": "S2",
-          "cardSwipes": [],
-          "collections": {
-            "upi": 0,
-            "card": 0,
-            "cash": 0,
-            "notes": "",
-            "expenses": 0,
-            "expenseReason": ""
-          },
-          "upiPayments": [],
-          "employeeName": "Suresh Reddy",
-          "expensesList": [],
-          "testingRecords": []
-        },
-        "S3": {
-          "pump": "Pump 2",
-          "meters": {
-            "diesel": {
-              "code": "A2",
-              "open": 413165.69,
-              "close": 0,
-              "testing": 0,
-              "saleLitres": 0
-            },
-            "petrol": {
-              "code": "A1",
-              "open": 310955.41,
-              "close": 0,
-              "testing": 0,
-              "saleLitres": 0
-            }
-          },
-          "status": "in-progress",
-          "stationId": "S3",
-          "cardSwipes": [],
-          "collections": {
-            "upi": 0,
-            "card": 0,
-            "cash": 0,
-            "notes": "",
-            "expenses": 0,
-            "expenseReason": ""
-          },
-          "upiPayments": [],
-          "employeeName": "Rajesh Varma",
-          "expensesList": [],
-          "testingRecords": []
-        },
-        "S4": {
-          "pump": "Pump 2",
-          "meters": {
-            "diesel": {
-              "code": "B2",
-              "open": 221978,
-              "close": 0,
-              "testing": 0,
-              "saleLitres": 0
-            },
-            "petrol": {
-              "code": "B1",
-              "open": 154854,
-              "close": 0,
-              "testing": 0,
-              "saleLitres": 0
-            }
-          },
-          "status": "in-progress",
-          "stationId": "S4",
-          "cardSwipes": [],
-          "collections": {
-            "upi": 0,
-            "card": 0,
-            "cash": 0,
-            "notes": "",
-            "expenses": 0,
-            "expenseReason": ""
-          },
-          "upiPayments": [],
-          "employeeName": "Prasad Rao",
-          "expensesList": [],
-          "testingRecords": []
-        }
-      },
-      "dieselRate": 105.23,
-      "petrolRate": 117.07
-    },
-    {
-      "id": "shift-2026-10-25",
-      "date": "2026-10-25",
-      "status": "active",
-      "stations": {
-        "S1": {
-          "pump": "Pump 1",
-          "meters": {
-            "diesel": {
-              "code": "A2",
-              "open": 2000,
-              "close": 2500,
-              "testing": 5,
-              "saleLitres": 495
-            },
-            "petrol": {
-              "code": "A1",
-              "open": 1000,
-              "close": 2000,
-              "testing": 5,
-              "saleLitres": 995
-            }
-          },
-          "status": "verified",
-          "shortage": 165574,
-          "grossSale": 168574,
-          "stationId": "S1",
-          "cardSwipes": [
-            {
-              "id": "csw-1792908593620",
-              "date": "2026-10-25",
-              "time": "06:09 AM",
-              "amount": 1000,
-              "slipNo": "",
-              "machine": "Paytm All-in-one",
-              "dateTime": "2026-10-25T06:09:00.000Z"
-            }
-          ],
-          "collections": {
-            "upi": 2000,
-            "card": 1000,
-            "cash": 0,
-            "notes": "",
-            "expenses": 0,
-            "expenseReason": ""
-          },
-          "upiPayments": [
-            {
-              "id": "upi-1792908603643",
-              "app": "PhonePe",
-              "ref": "",
-              "time": "11:37 AM",
-              "amount": 2000
-            }
-          ],
-          "employeeName": "Ramesh Kumar",
-          "expectedCash": 165574,
-          "nextOpenDiesel": 2500,
-          "nextOpenPetrol": 2000,
-          "testingRecords": [
-            {
-              "id": "tst-1792908557516",
-              "time": "06:09 AM",
-              "litres": 5,
-              "reason": "Daily calibration check poured back to tank",
-              "fuelType": "Petrol"
-            },
-            {
-              "id": "tst-1792908570704",
-              "time": "06:09 AM",
-              "litres": 5,
-              "reason": "Daily calibration check poured back to tank",
-              "fuelType": "Diesel"
-            }
-          ],
-          "readingsHistory": [
-            {
-              "id": "sess-1792908402246",
-              "tag": "Shift Final",
-              "time": "11:36 AM",
-              "diesel": {
-                "open": 2000,
-                "close": 2500,
-                "testing": 0,
-                "saleLitres": 500
-              },
-              "petrol": {
-                "open": 1000,
-                "close": 2000,
-                "testing": 0,
-                "saleLitres": 1000
-              },
-              "employeeName": "Ramesh Kumar",
-              "sessionIndex": 1
-            }
-          ],
-          "totalDeductions": 3000,
-          "adminVerification": {
-            "notes": "Checked and matched meter readings",
-            "adminUpi": 2000,
-            "verified": true,
-            "adminCash": 50000,
-            "verifiedAt": "2026-10-25T06:49:40.160Z",
-            "verifiedBy": "Bunk Owner"
-          },
-          "initialJoinedMeters": {
-            "diesel": {
-              "open": 2000
-            },
-            "petrol": {
-              "open": 1000
-            },
-            "joinedAt": "11:25 AM"
-          }
-        },
-        "S2": {
-          "pump": "Pump 1",
-          "meters": {
-            "diesel": {
-              "code": "B2",
-              "open": 0,
-              "close": 0,
-              "testing": 0,
-              "saleLitres": 0
-            },
-            "petrol": {
-              "code": "B1",
-              "open": 0,
-              "close": 0,
-              "testing": 0,
-              "saleLitres": 0
-            }
-          },
-          "status": "pending",
-          "stationId": "S2",
-          "collections": {
-            "upi": 0,
-            "card": 0,
-            "cash": 0,
-            "notes": "",
-            "expenses": 0,
-            "expenseReason": ""
-          },
-          "employeeName": "",
-          "readingsHistory": []
-        },
-        "S3": {
-          "pump": "Pump 2",
-          "meters": {
-            "diesel": {
-              "code": "A2",
-              "open": 0,
-              "close": 0,
-              "testing": 0,
-              "saleLitres": 0
-            },
-            "petrol": {
-              "code": "A1",
-              "open": 0,
-              "close": 0,
-              "testing": 0,
-              "saleLitres": 0
-            }
-          },
-          "status": "pending",
-          "stationId": "S3",
-          "collections": {
-            "upi": 0,
-            "card": 0,
-            "cash": 0,
-            "notes": "",
-            "expenses": 0,
-            "expenseReason": ""
-          },
-          "employeeName": "",
-          "readingsHistory": []
-        },
-        "S4": {
-          "pump": "Pump 2",
-          "meters": {
-            "diesel": {
-              "code": "B2",
-              "open": 0,
-              "close": 0,
-              "testing": 0,
-              "saleLitres": 0
-            },
-            "petrol": {
-              "code": "B1",
-              "open": 0,
-              "close": 0,
-              "testing": 0,
-              "saleLitres": 0
-            }
-          },
-          "status": "pending",
-          "stationId": "S4",
-          "collections": {
-            "upi": 0,
-            "card": 0,
-            "cash": 0,
-            "notes": "",
-            "expenses": 0,
-            "expenseReason": ""
-          },
-          "employeeName": "",
-          "readingsHistory": []
-        }
-      },
-      "dieselRate": 105.23,
-      "petrolRate": 117.07
-    }
-  ],
-  "employees": [
-    {
-      "id": "emp1",
-      "name": "Ramesh Kumar",
-      "role": "Attendant",
-      "phone": "9848011223",
-      "active": true,
-      "address": "Plot 14, Near IOCL Bunk, Main Road",
-      "password": "123",
-      "username": "9848011223",
-      "fatherName": "K. Narayana Swamy",
-      "joiningDate": "2024-01-10",
-      "villageName": "Kalyandurg, Anantapur Dist",
-      "aadhaarNumber": "4589 1234 5678",
-      "emergencyContact": "9440123999 (Brother - Siva)"
-    },
-    {
-      "id": "emp2",
-      "name": "Suresh Reddy",
-      "role": "Attendant",
-      "phone": "9848022334",
-      "active": true,
-      "address": "Door 2-45, Brahmin Street, Beluguppa",
-      "password": "123",
-      "username": "9848022334",
-      "fatherName": "M. Ramachandra Reddy",
-      "joiningDate": "2024-03-15",
-      "villageName": "Beluguppa Village",
-      "aadhaarNumber": "6712 3456 7890",
-      "emergencyContact": "9848088771 (Wife - Lakshmi)"
-    },
-    {
-      "id": "emp3",
-      "name": "Venkatesh Rao",
-      "role": "Attendant",
-      "phone": "9848033445",
-      "active": true,
-      "address": "H.No 4-89, Near Old Bus Stand, Rayadurg",
-      "password": "123",
-      "username": "9848033445",
-      "fatherName": "G. Venkateswarlu",
-      "joiningDate": "2024-05-20",
-      "villageName": "Rayadurg Mandal",
-      "aadhaarNumber": "8899 4321 0987",
-      "emergencyContact": "9441122334 (Father)"
-    },
-    {
-      "id": "emp4",
-      "name": "Naresh Babu",
-      "role": "Attendant",
-      "phone": "9848044556",
-      "active": true,
-      "address": "3-12, Atmakur",
-      "password": "123",
-      "username": "9848044556",
-      "fatherName": "B. Venkataramana",
-      "joiningDate": "2024-08-01",
-      "villageName": "Atmakur Village",
-      "aadhaarNumber": "3344 5566 7788",
-      "emergencyContact": "9988112233 (Uncle - Prasad)"
-    },
-    {
-      "id": "emp5",
-      "name": "Rajesh Varma",
-      "role": "Attendant",
-      "phone": "9848055667",
-      "active": true,
-      "address": "5-67, Weaver Colony, Dharmavaram",
-      "password": "123",
-      "username": "9848055667",
-      "fatherName": "D. Satyanarayana",
-      "joiningDate": "2025-01-05",
-      "villageName": "Dharmavaram",
-      "aadhaarNumber": "9988 7766 5544",
-      "emergencyContact": "9701122334 (Brother)"
-    },
-    {
-      "id": "emp6",
-      "name": "Prasad Rao",
-      "role": "Attendant",
-      "phone": "9848066778",
-      "active": true,
-      "address": "Railway Station Road, Guntakal",
-      "password": "123",
-      "username": "9848066778",
-      "fatherName": "P. Subba Rao",
-      "joiningDate": "2025-03-12",
-      "villageName": "Guntakal",
-      "aadhaarNumber": "2233 4455 6677",
-      "emergencyContact": "9866112244 (Father)"
-    },
-    {
-      "id": "emp-1792838466290",
-      "name": "Mahesh reddy",
-      "role": "Attendant",
-      "phone": "7799532888",
-      "active": true,
-      "address": "Ieeja",
-      "password": "123",
-      "username": "7799532888",
-      "fatherName": "Maheswar Reddy",
-      "joiningDate": "2026-10-24",
-      "villageName": "Ieeja",
-      "aadhaarNumber": "",
-      "emergencyContact": ""
-    },
-    {
-      "id": "emp-1792839909945",
-      "name": "Maheswar Reddy",
-      "role": "Attendant",
-      "phone": "1234576890",
-      "active": true,
-      "address": "",
-      "password": "123",
-      "username": "1234576890",
-      "fatherName": "S Maheswar Reddy",
-      "joiningDate": "2026-10-24",
-      "villageName": "Ieeja",
-      "aadhaarNumber": "",
-      "emergencyContact": "1234567788"
-    },
-    {
-      "id": "emp-1792840783873",
-      "name": "Mahesh reddy",
-      "role": "Attendant",
-      "phone": "7795628848",
-      "active": true,
-      "address": "",
-      "password": "123",
-      "username": "7795628848",
-      "fatherName": "Raghav reddy",
-      "joiningDate": "2026-10-24",
-      "villageName": "Ieeja",
-      "aadhaarNumber": "",
-      "emergencyContact": ""
-    },
-    {
-      "id": "emp-1792842606451",
-      "name": "Siva Shankar",
-      "role": "Attendant",
-      "phone": "9900409848",
-      "active": true,
-      "address": "",
-      "password": "123",
-      "username": "9900409848",
-      "fatherName": "Ramanaiah",
-      "joiningDate": "2026-10-24",
-      "villageName": "Rayadurg",
-      "aadhaarNumber": "",
-      "emergencyContact": ""
-    }
-  ],
-  "reminders": [
-    {
-      "id": "rem-101",
-      "date": "2026-10-23",
-      "time": "11:20 AM",
-      "notes": "Went to ATM, will pay in 30 minutes",
-      "phone": "9988776655",
-      "amount": 2500,
-      "status": "pending",
-      "fuelType": "Diesel",
-      "clearedAt": null,
-      "stationId": "S1",
-      "clearedMode": null,
-      "customerName": "K. Mohan Reddy",
-      "employeeName": "Ramesh Kumar",
-      "vehicleNumber": "AP 21 TC 4488"
-    },
-    {
-      "id": "rem-102",
-      "date": "2026-10-24",
-      "time": "10:15 AM",
-      "notes": "Card machine link failed, will send UPI in 1 hour",
-      "phone": "9440123456",
-      "amount": 1500,
-      "status": "pending",
-      "fuelType": "Petrol",
-      "clearedAt": null,
-      "stationId": "S1",
-      "clearedMode": null,
-      "customerName": "Venkata Raman",
-      "employeeName": "Rajesh Varma",
-      "vehicleNumber": "AP 09 CD 1234"
-    }
-  ],
-  "attendance": [
-    {
-      "id": "att-1",
-      "date": "2026-10-23",
-      "shift": "9AM-9AM",
-      "status": "present",
-      "station": "S1",
-      "employeeId": "emp1",
-      "employeeName": "Ramesh Kumar"
-    },
-    {
-      "id": "att-2",
-      "date": "2026-10-23",
-      "shift": "9AM-9AM",
-      "status": "present",
-      "station": "S2",
-      "employeeId": "emp2",
-      "employeeName": "Suresh Reddy"
-    },
-    {
-      "id": "att-3",
-      "date": "2026-10-23",
-      "shift": "9AM-9AM",
-      "status": "present",
-      "station": "S3",
-      "employeeId": "emp3",
-      "employeeName": "Venkatesh Rao"
-    },
-    {
-      "id": "att-4",
-      "date": "2026-10-23",
-      "shift": "9AM-9AM",
-      "status": "present",
-      "station": "S4",
-      "employeeId": "emp4",
-      "employeeName": "Naresh Babu"
-    },
-    {
-      "id": "att-5",
-      "date": "2026-10-24",
-      "shift": "9AM-9AM",
-      "status": "present",
-      "station": "S1",
-      "employeeId": "emp5",
-      "employeeName": "Rajesh Varma"
-    },
-    {
-      "id": "att-6",
-      "date": "2026-10-24",
-      "shift": "9AM-9AM",
-      "status": "present",
-      "station": "S2",
-      "employeeId": "emp6",
-      "employeeName": "Prasad Rao"
-    },
-    {
-      "id": "att-7",
-      "date": "2026-10-24",
-      "shift": "9AM-9AM",
-      "status": "present",
-      "station": "S3",
-      "employeeId": "emp1",
-      "employeeName": "Ramesh Kumar"
-    },
-    {
-      "id": "att-8",
-      "date": "2026-10-24",
-      "shift": "9AM-9AM",
-      "status": "present",
-      "station": "S4",
-      "employeeId": "emp2",
-      "employeeName": "Suresh Reddy"
-    }
-  ],
-  "employeeDues": [
-    {
-      "id": "due-1792908626245",
-      "date": "2026-10-25",
-      "notes": "Shift handover shortage: expected ₹165574, given ₹0",
-      "status": "pending",
-      "createdAt": "2026-10-25T06:10:26.245Z",
-      "settledAt": null,
-      "stationId": "S1",
-      "actualCash": 0,
-      "grossAmount": 168574,
-      "settledMode": null,
-      "employeeName": "Ramesh Kumar",
-      "expectedCash": 165574,
-      "settledNotes": null,
-      "shortageAmount": 165574,
-      "totalDeductions": 3000
-    },
-    {
-      "id": "due-1792836604426",
-      "date": "2026-10-23",
-      "notes": "Handover shortage test",
-      "status": "settled",
-      "createdAt": "2026-10-24T10:10:04.426Z",
-      "settledAt": "2026-10-24T10:10:04.445Z",
-      "stationId": "S1",
-      "actualCash": 7659,
-      "grossAmount": 19014,
-      "settledMode": "Cash Recovery",
-      "employeeName": "Ramesh Kumar",
-      "expectedCash": 8659,
-      "settledNotes": "Recovered next morning from Ramesh",
-      "shortageAmount": 1000,
-      "totalDeductions": 10355
-    }
-  ],
-  "vehicleLedger": [
-    {
-      "id": "vlog-1",
-      "date": "2026-10-20",
-      "rate": 105.23,
-      "time": "08:15 AM",
-      "notes": "Tractor - Regular fleet account",
-      "amount": 5000,
-      "litres": 47.51,
-      "slipNo": "SL-881",
-      "status": "unsettled",
-      "fuelType": "Diesel",
-      "stationId": "S1",
-      "driverName": "Chandra Shekar",
-      "driverPhone": "9988776655",
-      "employeeName": "Ramesh Kumar",
-      "vehicleNumber": "AP 21 TC 4488"
-    },
-    {
-      "id": "vlog-2",
-      "date": "2026-10-22",
-      "rate": 105.23,
-      "time": "02:30 PM",
-      "notes": "Tractor - Second load trip",
-      "amount": 5262,
-      "litres": 50,
-      "slipNo": "SL-914",
-      "status": "unsettled",
-      "fuelType": "Diesel",
-      "stationId": "S3",
-      "driverName": "Chandra Shekar",
-      "driverPhone": "9988776655",
-      "employeeName": "Venkatesh Rao",
-      "vehicleNumber": "AP 21 TC 4488"
-    },
-    {
-      "id": "vlog-3",
-      "date": "2026-10-23",
-      "rate": 105.23,
-      "time": "09:40 AM",
-      "notes": "Tractor - Field work",
-      "amount": 5000,
-      "litres": 47.51,
-      "slipNo": "SL-965",
-      "status": "unsettled",
-      "fuelType": "Diesel",
-      "stationId": "S1",
-      "driverName": "Chandra Shekar",
-      "driverPhone": "9988776655",
-      "employeeName": "Ramesh Kumar",
-      "vehicleNumber": "AP 21 TC 4488"
-    },
-    {
-      "id": "vlog-4",
-      "date": "2026-10-23",
-      "rate": 105.23,
-      "time": "03:45 PM",
-      "notes": "Lorry fleet account",
-      "amount": 10000,
-      "litres": 95.03,
-      "slipNo": "SL-982",
-      "status": "unsettled",
-      "fuelType": "Diesel",
-      "stationId": "S3",
-      "driverName": "Balaji Transport Lorry",
-      "driverPhone": "9849098765",
-      "employeeName": "Venkatesh Rao",
-      "vehicleNumber": "TS 08 UB 7712"
-    },
-    {
-      "id": "vlog-1792828449802",
-      "date": "2026-10-24",
-      "rate": 0,
-      "time": "01:24 PM",
-      "notes": "",
-      "amount": 1000,
-      "litres": 9.5,
-      "slipNo": "",
-      "status": "unsettled",
-      "fuelType": "Diesel",
-      "stationId": "S1",
-      "driverName": "",
-      "driverPhone": "9848011223",
-      "employeeName": "Attendant",
-      "mobileNumber": "9848011223",
-      "vehicleNumber": "AP21TC4488"
-    },
-    {
-      "id": "vlog-1792828997602",
-      "date": "2026-10-23",
-      "rate": 0,
-      "time": "01:33 PM",
-      "notes": "",
-      "amount": 2105,
-      "litres": 20,
-      "slipNo": "SL-1001",
-      "status": "unsettled",
-      "fuelType": "Diesel",
-      "stationId": "S1",
-      "driverName": "Chandra Shekar",
-      "driverPhone": "9848011223",
-      "employeeName": "Ramesh Kumar",
-      "mobileNumber": "9848011223",
-      "vehicleNumber": "AP 21 TC 4488"
-    }
-  ],
-  "shiftAssignments": {
-    "2026-10-23": {
-      "S1": {
-        "dutyPin": "1122",
-        "employeeName": "Ramesh Kumar"
-      },
-      "S2": {
-        "dutyPin": "3344",
-        "employeeName": "Suresh Reddy"
-      },
-      "S3": {
-        "dutyPin": "5566",
-        "employeeName": "Rajesh Varma"
-      },
-      "S4": {
-        "dutyPin": "7788",
-        "employeeName": "Prasad Rao"
-      }
-    },
-    "2026-10-24": {
-      "S1": {
-        "dutyPin": "1122",
-        "employeeName": "Ramesh Kumar"
-      },
-      "S2": {
-        "dutyPin": "3344",
-        "employeeName": "Suresh Reddy"
-      },
-      "S3": {
-        "dutyPin": "5566",
-        "employeeName": "Rajesh Varma"
-      },
-      "S4": {
-        "dutyPin": "7788",
-        "employeeName": "Prasad Rao"
-      }
-    },
-    "2026-10-25": {
-      "S1": {
-        "dutyPin": "1122",
-        "employeeName": "Ramesh Kumar"
-      },
-      "S2": {
-        "dutyPin": "3344",
-        "employeeName": "Suresh Reddy"
-      },
-      "S3": {
-        "dutyPin": "5566",
-        "employeeName": "Venkatesh Rao"
-      },
-      "S4": {
-        "dutyPin": "7788",
-        "employeeName": "Naresh Babu"
-      }
-    }
-  },
-  "salaryRecords": []
+﻿{
+    "rates":  [
+                  {
+                      "date":  "2026-10-23",
+                      "diesel":  105.23,
+                      "petrol":  117.07,
+                      "updatedAt":  "2026-10-23T08:30:00.000Z"
+                  },
+                  {
+                      "date":  "2026-10-24",
+                      "diesel":  105.23,
+                      "petrol":  117.07,
+                      "updatedAt":  "2026-10-24T08:30:00.000Z"
+                  }
+              ],
+    "tanks":  [
+                  {
+                      "id":  "tank-ms",
+                      "fuel":  "Petrol",
+                      "name":  "Petrol Tank (MS)",
+                      "dipCm":  165,
+                      "capacity":  20000,
+                      "deliveries":  [
+
+                                     ],
+                      "currentStock":  14250
+                  },
+                  {
+                      "id":  "tank-hsd",
+                      "fuel":  "Diesel",
+                      "name":  "Diesel Tank (HSD)",
+                      "dipCm":  198,
+                      "capacity":  25000,
+                      "deliveries":  [
+
+                                     ],
+                      "currentStock":  18900
+                  }
+              ],
+    "config":  {
+                   "brand":  "Indian Oil",
+                   "pumps":  [
+                                 {
+                                     "id":  "Pump1",
+                                     "name":  "Pump 1",
+                                     "stations":  [
+                                                      {
+                                                          "id":  "S1",
+                                                          "name":  "Side 1 (S1)",
+                                                          "pump":  "Pump 1",
+                                                          "nozzles":  [
+                                                                          {
+                                                                              "code":  "A1",
+                                                                              "fuel":  "Petrol",
+                                                                              "label":  "Petrol (A1)"
+                                                                          },
+                                                                          {
+                                                                              "code":  "A2",
+                                                                              "fuel":  "Diesel",
+                                                                              "label":  "Diesel (A2)"
+                                                                          }
+                                                                      ]
+                                                      },
+                                                      {
+                                                          "id":  "S2",
+                                                          "name":  "Side 2 (S2)",
+                                                          "pump":  "Pump 1",
+                                                          "nozzles":  [
+                                                                          {
+                                                                              "code":  "B1",
+                                                                              "fuel":  "Petrol",
+                                                                              "label":  "Petrol (B1)"
+                                                                          },
+                                                                          {
+                                                                              "code":  "B2",
+                                                                              "fuel":  "Diesel",
+                                                                              "label":  "Diesel (B2)"
+                                                                          }
+                                                                      ]
+                                                      }
+                                                  ]
+                                 },
+                                 {
+                                     "id":  "Pump2",
+                                     "name":  "Pump 2",
+                                     "stations":  [
+                                                      {
+                                                          "id":  "S3",
+                                                          "name":  "Side 3 (S3)",
+                                                          "pump":  "Pump 2",
+                                                          "nozzles":  [
+                                                                          {
+                                                                              "code":  "A1",
+                                                                              "fuel":  "Petrol",
+                                                                              "label":  "Petrol (A1)"
+                                                                          },
+                                                                          {
+                                                                              "code":  "A2",
+                                                                              "fuel":  "Diesel",
+                                                                              "label":  "Diesel (A2)"
+                                                                          }
+                                                                      ]
+                                                      },
+                                                      {
+                                                          "id":  "S4",
+                                                          "name":  "Side 4 (S4)",
+                                                          "pump":  "Pump 2",
+                                                          "nozzles":  [
+                                                                          {
+                                                                              "code":  "B1",
+                                                                              "fuel":  "Petrol",
+                                                                              "label":  "Petrol (B1)"
+                                                                          },
+                                                                          {
+                                                                              "code":  "B2",
+                                                                              "fuel":  "Diesel",
+                                                                              "label":  "Diesel (B2)"
+                                                                          }
+                                                                      ]
+                                                      }
+                                                  ]
+                                 }
+                             ],
+                   "adminPin":  "123",
+                   "location":  "Highway Point",
+                   "stationId":  "srr-filling-station",
+                   "oilCompany":  "Indian Oil Corporation Ltd. (IOCL)",
+                   "stationName":  "SRR FILLING STATION",
+                   "mgmtPassword":  "123",
+                   "mgmtUsername":  "mgmt",
+                   "adminPassword":  "123",
+                   "adminUsername":  "admin",
+                   "ownerPassword":  "123",
+                   "ownerUsername":  "owner",
+                   "developerPassword":  "123"
+               },
+    "shifts":  [
+                   {
+                       "id":  "shift-2026-10-23",
+                       "date":  "2026-10-23",
+                       "status":  "completed",
+                       "stations":  {
+                                        "S1":  {
+                                                   "pump":  "Pump 1",
+                                                   "meters":  {
+                                                                  "diesel":  {
+                                                                                 "code":  "A2",
+                                                                                 "open":  2000,
+                                                                                 "close":  2080,
+                                                                                 "testing":  0,
+                                                                                 "saleLitres":  80
+                                                                             },
+                                                                  "petrol":  {
+                                                                                 "code":  "A1",
+                                                                                 "open":  1000,
+                                                                                 "close":  1100,
+                                                                                 "testing":  0,
+                                                                                 "saleLitres":  100
+                                                                             }
+                                                              },
+                                                   "status":  "readings-entered",
+                                                   "shortage":  1000,
+                                                   "grossSale":  19014,
+                                                   "stationId":  "S1",
+                                                   "cardSwipes":  [
+                                                                      {
+                                                                          "id":  "csw-1792834525202",
+                                                                          "date":  "2026-10-24",
+                                                                          "time":  "03:05 PM",
+                                                                          "amount":  1000,
+                                                                          "slipNo":  "",
+                                                                          "machine":  "IOCL POS",
+                                                                          "dateTime":  "2026-10-24T09:35:00.000Z"
+                                                                      }
+                                                                  ],
+                                                   "collections":  {
+                                                                       "upi":  0,
+                                                                       "card":  0,
+                                                                       "cash":  7659,
+                                                                       "notes":  "Handover shortage test",
+                                                                       "expenses":  0,
+                                                                       "expenseReason":  ""
+                                                                   },
+                                                   "submittedAt":  "2026-10-24T09:05:00.000Z",
+                                                   "upiPayments":  [
+
+                                                                   ],
+                                                   "employeeName":  "Ramesh Kumar",
+                                                   "expectedCash":  8659,
+                                                   "expensesList":  [
+
+                                                                    ],
+                                                   "testingRecords":  [
+
+                                                                      ],
+                                                   "totalDeductions":  10355
+                                               },
+                                        "S2":  {
+                                                   "pump":  "Pump 1",
+                                                   "meters":  {
+                                                                  "diesel":  {
+                                                                                 "code":  "B2",
+                                                                                 "open":  187200,
+                                                                                 "close":  187880.5,
+                                                                                 "testing":  5,
+                                                                                 "saleLitres":  675.5
+                                                                             },
+                                                                  "petrol":  {
+                                                                                 "code":  "B1",
+                                                                                 "open":  98400.1,
+                                                                                 "close":  99150.3,
+                                                                                 "testing":  5,
+                                                                                 "saleLitres":  745.2
+                                                                             }
+                                                              },
+                                                   "status":  "submitted",
+                                                   "stationId":  "S2",
+                                                   "cardSwipes":  [
+
+                                                                  ],
+                                                   "collections":  {
+                                                                       "upi":  39000,
+                                                                       "card":  6000,
+                                                                       "cash":  112000,
+                                                                       "notes":  "",
+                                                                       "expenses":  250,
+                                                                       "expenseReason":  "Receipt paper"
+                                                                   },
+                                                   "submittedAt":  "2026-10-24T09:08:00.000Z",
+                                                   "upiPayments":  [
+
+                                                                   ],
+                                                   "employeeName":  "Suresh Reddy",
+                                                   "expensesList":  [
+
+                                                                    ],
+                                                   "testingRecords":  [
+                                                                          {
+                                                                              "id":  "tst-init-p-S2",
+                                                                              "time":  "09:00 AM",
+                                                                              "litres":  5,
+                                                                              "reason":  "Daily calibration check",
+                                                                              "fuelType":  "Petrol"
+                                                                          },
+                                                                          {
+                                                                              "id":  "tst-init-d-S2",
+                                                                              "time":  "09:00 AM",
+                                                                              "litres":  5,
+                                                                              "reason":  "Daily calibration check",
+                                                                              "fuelType":  "Diesel"
+                                                                          }
+                                                                      ]
+                                               },
+                                        "S3":  {
+                                                   "pump":  "Pump 2",
+                                                   "meters":  {
+                                                                  "diesel":  {
+                                                                                 "code":  "A2",
+                                                                                 "open":  412500.1,
+                                                                                 "close":  413165.69,
+                                                                                 "testing":  5,
+                                                                                 "saleLitres":  660.59
+                                                                             },
+                                                                  "petrol":  {
+                                                                                 "code":  "A1",
+                                                                                 "open":  310200,
+                                                                                 "close":  310955.41,
+                                                                                 "testing":  5,
+                                                                                 "saleLitres":  750.41
+                                                                             }
+                                                              },
+                                                   "status":  "readings-entered",
+                                                   "stationId":  "S3",
+                                                   "cardSwipes":  [
+
+                                                                  ],
+                                                   "collections":  {
+                                                                       "upi":  32000,
+                                                                       "card":  4500,
+                                                                       "cash":  118000,
+                                                                       "notes":  "",
+                                                                       "expenses":  200,
+                                                                       "expenseReason":  "Water cans"
+                                                                   },
+                                                   "submittedAt":  "2026-10-24T09:12:00.000Z",
+                                                   "upiPayments":  [
+
+                                                                   ],
+                                                   "employeeName":  "Rajesh Varma",
+                                                   "expensesList":  [
+
+                                                                    ],
+                                                   "testingRecords":  [
+                                                                          {
+                                                                              "id":  "tst-init-p-S3",
+                                                                              "time":  "09:00 AM",
+                                                                              "litres":  5,
+                                                                              "reason":  "Daily calibration check",
+                                                                              "fuelType":  "Petrol"
+                                                                          },
+                                                                          {
+                                                                              "id":  "tst-init-d-S3",
+                                                                              "time":  "09:00 AM",
+                                                                              "litres":  5,
+                                                                              "reason":  "Daily calibration check",
+                                                                              "fuelType":  "Diesel"
+                                                                          }
+                                                                      ]
+                                               },
+                                        "S4":  {
+                                                   "pump":  "Pump 2",
+                                                   "meters":  {
+                                                                  "diesel":  {
+                                                                                 "code":  "B2",
+                                                                                 "open":  221300,
+                                                                                 "close":  221978,
+                                                                                 "testing":  5,
+                                                                                 "saleLitres":  673
+                                                                             },
+                                                                  "petrol":  {
+                                                                                 "code":  "B1",
+                                                                                 "open":  154100,
+                                                                                 "close":  154854,
+                                                                                 "testing":  5,
+                                                                                 "saleLitres":  749
+                                                                             }
+                                                              },
+                                                   "status":  "submitted",
+                                                   "stationId":  "S4",
+                                                   "cardSwipes":  [
+
+                                                                  ],
+                                                   "collections":  {
+                                                                       "upi":  37500,
+                                                                       "card":  5500,
+                                                                       "cash":  115000,
+                                                                       "notes":  "",
+                                                                       "expenses":  150,
+                                                                       "expenseReason":  "Nozzle tip"
+                                                                   },
+                                                   "submittedAt":  "2026-10-24T09:15:00.000Z",
+                                                   "upiPayments":  [
+
+                                                                   ],
+                                                   "employeeName":  "Prasad Rao",
+                                                   "expensesList":  [
+
+                                                                    ],
+                                                   "testingRecords":  [
+                                                                          {
+                                                                              "id":  "tst-init-p-S4",
+                                                                              "time":  "09:00 AM",
+                                                                              "litres":  5,
+                                                                              "reason":  "Daily calibration check",
+                                                                              "fuelType":  "Petrol"
+                                                                          },
+                                                                          {
+                                                                              "id":  "tst-init-d-S4",
+                                                                              "time":  "09:00 AM",
+                                                                              "litres":  5,
+                                                                              "reason":  "Daily calibration check",
+                                                                              "fuelType":  "Diesel"
+                                                                          }
+                                                                      ]
+                                               }
+                                    },
+                       "dieselRate":  105.23,
+                       "petrolRate":  117.07
+                   },
+                   {
+                       "id":  "shift-2026-10-24",
+                       "date":  "2026-10-24",
+                       "status":  "active",
+                       "stations":  {
+                                        "S1":  {
+                                                   "pump":  "Pump 1",
+                                                   "meters":  {
+                                                                  "diesel":  {
+                                                                                 "code":  "A2",
+                                                                                 "open":  245710.2,
+                                                                                 "close":  0,
+                                                                                 "testing":  0,
+                                                                                 "saleLitres":  0
+                                                                             },
+                                                                  "petrol":  {
+                                                                                 "code":  "A1",
+                                                                                 "open":  121300.1,
+                                                                                 "close":  0,
+                                                                                 "testing":  0,
+                                                                                 "saleLitres":  0
+                                                                             }
+                                                              },
+                                                   "status":  "in-progress",
+                                                   "stationId":  "S1",
+                                                   "cardSwipes":  [
+
+                                                                  ],
+                                                   "collections":  {
+                                                                       "upi":  0,
+                                                                       "card":  0,
+                                                                       "cash":  0,
+                                                                       "notes":  "",
+                                                                       "expenses":  0,
+                                                                       "expenseReason":  ""
+                                                                   },
+                                                   "upiPayments":  [
+
+                                                                   ],
+                                                   "employeeName":  "Ramesh Kumar",
+                                                   "expensesList":  [
+
+                                                                    ],
+                                                   "testingRecords":  [
+
+                                                                      ]
+                                               },
+                                        "S2":  {
+                                                   "pump":  "Pump 1",
+                                                   "meters":  {
+                                                                  "diesel":  {
+                                                                                 "code":  "B2",
+                                                                                 "open":  187880.5,
+                                                                                 "close":  0,
+                                                                                 "testing":  0,
+                                                                                 "saleLitres":  0
+                                                                             },
+                                                                  "petrol":  {
+                                                                                 "code":  "B1",
+                                                                                 "open":  99150.3,
+                                                                                 "close":  0,
+                                                                                 "testing":  0,
+                                                                                 "saleLitres":  0
+                                                                             }
+                                                              },
+                                                   "status":  "in-progress",
+                                                   "stationId":  "S2",
+                                                   "cardSwipes":  [
+
+                                                                  ],
+                                                   "collections":  {
+                                                                       "upi":  0,
+                                                                       "card":  0,
+                                                                       "cash":  0,
+                                                                       "notes":  "",
+                                                                       "expenses":  0,
+                                                                       "expenseReason":  ""
+                                                                   },
+                                                   "upiPayments":  [
+
+                                                                   ],
+                                                   "employeeName":  "Suresh Reddy",
+                                                   "expensesList":  [
+
+                                                                    ],
+                                                   "testingRecords":  [
+
+                                                                      ]
+                                               },
+                                        "S3":  {
+                                                   "pump":  "Pump 2",
+                                                   "meters":  {
+                                                                  "diesel":  {
+                                                                                 "code":  "A2",
+                                                                                 "open":  413165.69,
+                                                                                 "close":  0,
+                                                                                 "testing":  0,
+                                                                                 "saleLitres":  0
+                                                                             },
+                                                                  "petrol":  {
+                                                                                 "code":  "A1",
+                                                                                 "open":  310955.41,
+                                                                                 "close":  0,
+                                                                                 "testing":  0,
+                                                                                 "saleLitres":  0
+                                                                             }
+                                                              },
+                                                   "status":  "in-progress",
+                                                   "stationId":  "S3",
+                                                   "cardSwipes":  [
+
+                                                                  ],
+                                                   "collections":  {
+                                                                       "upi":  0,
+                                                                       "card":  0,
+                                                                       "cash":  0,
+                                                                       "notes":  "",
+                                                                       "expenses":  0,
+                                                                       "expenseReason":  ""
+                                                                   },
+                                                   "upiPayments":  [
+
+                                                                   ],
+                                                   "employeeName":  "Rajesh Varma",
+                                                   "expensesList":  [
+
+                                                                    ],
+                                                   "testingRecords":  [
+
+                                                                      ]
+                                               },
+                                        "S4":  {
+                                                   "pump":  "Pump 2",
+                                                   "meters":  {
+                                                                  "diesel":  {
+                                                                                 "code":  "B2",
+                                                                                 "open":  221978,
+                                                                                 "close":  0,
+                                                                                 "testing":  0,
+                                                                                 "saleLitres":  0
+                                                                             },
+                                                                  "petrol":  {
+                                                                                 "code":  "B1",
+                                                                                 "open":  154854,
+                                                                                 "close":  0,
+                                                                                 "testing":  0,
+                                                                                 "saleLitres":  0
+                                                                             }
+                                                              },
+                                                   "status":  "in-progress",
+                                                   "stationId":  "S4",
+                                                   "cardSwipes":  [
+
+                                                                  ],
+                                                   "collections":  {
+                                                                       "upi":  0,
+                                                                       "card":  0,
+                                                                       "cash":  0,
+                                                                       "notes":  "",
+                                                                       "expenses":  0,
+                                                                       "expenseReason":  ""
+                                                                   },
+                                                   "upiPayments":  [
+
+                                                                   ],
+                                                   "employeeName":  "Prasad Rao",
+                                                   "expensesList":  [
+
+                                                                    ],
+                                                   "testingRecords":  [
+
+                                                                      ]
+                                               }
+                                    },
+                       "dieselRate":  105.23,
+                       "petrolRate":  117.07
+                   },
+                   {
+                       "id":  "shift-2026-10-25",
+                       "date":  "2026-10-25",
+                       "status":  "active",
+                       "stations":  {
+                                        "S1":  {
+                                                   "pump":  "Pump 1",
+                                                   "meters":  {
+                                                                  "diesel":  {
+                                                                                 "code":  "A2",
+                                                                                 "open":  2000,
+                                                                                 "close":  2500,
+                                                                                 "testing":  5,
+                                                                                 "saleLitres":  495
+                                                                             },
+                                                                  "petrol":  {
+                                                                                 "code":  "A1",
+                                                                                 "open":  1000,
+                                                                                 "close":  2000,
+                                                                                 "testing":  5,
+                                                                                 "saleLitres":  995
+                                                                             }
+                                                              },
+                                                   "status":  "verified",
+                                                   "shortage":  165574,
+                                                   "grossSale":  168574,
+                                                   "stationId":  "S1",
+                                                   "cardSwipes":  [
+                                                                      {
+                                                                          "id":  "csw-1792908593620",
+                                                                          "date":  "2026-10-25",
+                                                                          "time":  "06:09 AM",
+                                                                          "amount":  1000,
+                                                                          "slipNo":  "",
+                                                                          "machine":  "Paytm All-in-one",
+                                                                          "dateTime":  "2026-10-25T06:09:00.000Z"
+                                                                      }
+                                                                  ],
+                                                   "collections":  {
+                                                                       "upi":  2000,
+                                                                       "card":  1000,
+                                                                       "cash":  0,
+                                                                       "notes":  "",
+                                                                       "expenses":  0,
+                                                                       "expenseReason":  ""
+                                                                   },
+                                                   "upiPayments":  [
+                                                                       {
+                                                                           "id":  "upi-1792908603643",
+                                                                           "app":  "PhonePe",
+                                                                           "ref":  "",
+                                                                           "time":  "11:37 AM",
+                                                                           "amount":  2000
+                                                                       }
+                                                                   ],
+                                                   "employeeName":  "Ramesh Kumar",
+                                                   "expectedCash":  165574,
+                                                   "nextOpenDiesel":  2500,
+                                                   "nextOpenPetrol":  2000,
+                                                   "testingRecords":  [
+                                                                          {
+                                                                              "id":  "tst-1792908557516",
+                                                                              "time":  "06:09 AM",
+                                                                              "litres":  5,
+                                                                              "reason":  "Daily calibration check poured back to tank",
+                                                                              "fuelType":  "Petrol"
+                                                                          },
+                                                                          {
+                                                                              "id":  "tst-1792908570704",
+                                                                              "time":  "06:09 AM",
+                                                                              "litres":  5,
+                                                                              "reason":  "Daily calibration check poured back to tank",
+                                                                              "fuelType":  "Diesel"
+                                                                          }
+                                                                      ],
+                                                   "readingsHistory":  [
+                                                                           {
+                                                                               "id":  "sess-1792908402246",
+                                                                               "tag":  "Shift Final",
+                                                                               "time":  "11:36 AM",
+                                                                               "diesel":  {
+                                                                                              "open":  2000,
+                                                                                              "close":  2500,
+                                                                                              "testing":  0,
+                                                                                              "saleLitres":  500
+                                                                                          },
+                                                                               "petrol":  {
+                                                                                              "open":  1000,
+                                                                                              "close":  2000,
+                                                                                              "testing":  0,
+                                                                                              "saleLitres":  1000
+                                                                                          },
+                                                                               "employeeName":  "Ramesh Kumar",
+                                                                               "sessionIndex":  1
+                                                                           }
+                                                                       ],
+                                                   "totalDeductions":  3000,
+                                                   "adminVerification":  {
+                                                                             "notes":  "Checked and matched meter readings",
+                                                                             "adminUpi":  2000,
+                                                                             "verified":  true,
+                                                                             "adminCash":  50000,
+                                                                             "verifiedAt":  "2026-10-25T06:49:40.160Z",
+                                                                             "verifiedBy":  "Bunk Owner"
+                                                                         },
+                                                   "initialJoinedMeters":  {
+                                                                               "diesel":  {
+                                                                                              "open":  2000
+                                                                                          },
+                                                                               "petrol":  {
+                                                                                              "open":  1000
+                                                                                          },
+                                                                               "joinedAt":  "11:25 AM"
+                                                                           }
+                                               },
+                                        "S2":  {
+                                                   "pump":  "Pump 1",
+                                                   "meters":  {
+                                                                  "diesel":  {
+                                                                                 "code":  "B2",
+                                                                                 "open":  0,
+                                                                                 "close":  0,
+                                                                                 "testing":  0,
+                                                                                 "saleLitres":  0
+                                                                             },
+                                                                  "petrol":  {
+                                                                                 "code":  "B1",
+                                                                                 "open":  0,
+                                                                                 "close":  0,
+                                                                                 "testing":  0,
+                                                                                 "saleLitres":  0
+                                                                             }
+                                                              },
+                                                   "status":  "pending",
+                                                   "stationId":  "S2",
+                                                   "collections":  {
+                                                                       "upi":  0,
+                                                                       "card":  0,
+                                                                       "cash":  0,
+                                                                       "notes":  "",
+                                                                       "expenses":  0,
+                                                                       "expenseReason":  ""
+                                                                   },
+                                                   "employeeName":  "",
+                                                   "readingsHistory":  [
+
+                                                                       ]
+                                               },
+                                        "S3":  {
+                                                   "pump":  "Pump 2",
+                                                   "meters":  {
+                                                                  "diesel":  {
+                                                                                 "code":  "A2",
+                                                                                 "open":  0,
+                                                                                 "close":  0,
+                                                                                 "testing":  0,
+                                                                                 "saleLitres":  0
+                                                                             },
+                                                                  "petrol":  {
+                                                                                 "code":  "A1",
+                                                                                 "open":  0,
+                                                                                 "close":  0,
+                                                                                 "testing":  0,
+                                                                                 "saleLitres":  0
+                                                                             }
+                                                              },
+                                                   "status":  "pending",
+                                                   "stationId":  "S3",
+                                                   "collections":  {
+                                                                       "upi":  0,
+                                                                       "card":  0,
+                                                                       "cash":  0,
+                                                                       "notes":  "",
+                                                                       "expenses":  0,
+                                                                       "expenseReason":  ""
+                                                                   },
+                                                   "employeeName":  "",
+                                                   "readingsHistory":  [
+
+                                                                       ]
+                                               },
+                                        "S4":  {
+                                                   "pump":  "Pump 2",
+                                                   "meters":  {
+                                                                  "diesel":  {
+                                                                                 "code":  "B2",
+                                                                                 "open":  0,
+                                                                                 "close":  0,
+                                                                                 "testing":  0,
+                                                                                 "saleLitres":  0
+                                                                             },
+                                                                  "petrol":  {
+                                                                                 "code":  "B1",
+                                                                                 "open":  0,
+                                                                                 "close":  0,
+                                                                                 "testing":  0,
+                                                                                 "saleLitres":  0
+                                                                             }
+                                                              },
+                                                   "status":  "pending",
+                                                   "stationId":  "S4",
+                                                   "collections":  {
+                                                                       "upi":  0,
+                                                                       "card":  0,
+                                                                       "cash":  0,
+                                                                       "notes":  "",
+                                                                       "expenses":  0,
+                                                                       "expenseReason":  ""
+                                                                   },
+                                                   "employeeName":  "",
+                                                   "readingsHistory":  [
+
+                                                                       ]
+                                               }
+                                    },
+                       "dieselRate":  105.23,
+                       "petrolRate":  117.07
+                   },
+                   {
+                       "id":  "shift-2026-10-26",
+                       "date":  "2026-10-26",
+                       "status":  "active",
+                       "stations":  {
+                                        "S1":  {
+                                                   "pump":  "Pump 1",
+                                                   "meters":  {
+                                                                  "diesel":  {
+                                                                                 "code":  "A2",
+                                                                                 "open":  2500,
+                                                                                 "close":  0,
+                                                                                 "testing":  0,
+                                                                                 "saleLitres":  0
+                                                                             },
+                                                                  "petrol":  {
+                                                                                 "code":  "A1",
+                                                                                 "open":  2000,
+                                                                                 "close":  0,
+                                                                                 "testing":  0,
+                                                                                 "saleLitres":  0
+                                                                             }
+                                                              },
+                                                   "status":  "pending",
+                                                   "stationId":  "S1",
+                                                   "collections":  {
+                                                                       "upi":  0,
+                                                                       "card":  0,
+                                                                       "cash":  0,
+                                                                       "notes":  "",
+                                                                       "expenses":  0,
+                                                                       "expenseReason":  ""
+                                                                   },
+                                                   "employeeName":  "Ramesh Kumar",
+                                                   "readingsHistory":  [
+
+                                                                       ]
+                                               },
+                                        "S2":  {
+                                                   "pump":  "Pump 1",
+                                                   "meters":  {
+                                                                  "diesel":  {
+                                                                                 "code":  "B2",
+                                                                                 "open":  0,
+                                                                                 "close":  0,
+                                                                                 "testing":  0,
+                                                                                 "saleLitres":  0
+                                                                             },
+                                                                  "petrol":  {
+                                                                                 "code":  "B1",
+                                                                                 "open":  0,
+                                                                                 "close":  0,
+                                                                                 "testing":  0,
+                                                                                 "saleLitres":  0
+                                                                             }
+                                                              },
+                                                   "status":  "pending",
+                                                   "stationId":  "S2",
+                                                   "collections":  {
+                                                                       "upi":  0,
+                                                                       "card":  0,
+                                                                       "cash":  0,
+                                                                       "notes":  "",
+                                                                       "expenses":  0,
+                                                                       "expenseReason":  ""
+                                                                   },
+                                                   "employeeName":  "Suresh Reddy",
+                                                   "readingsHistory":  [
+
+                                                                       ]
+                                               },
+                                        "S3":  {
+                                                   "pump":  "Pump 2",
+                                                   "meters":  {
+                                                                  "diesel":  {
+                                                                                 "code":  "A2",
+                                                                                 "open":  0,
+                                                                                 "close":  0,
+                                                                                 "testing":  0,
+                                                                                 "saleLitres":  0
+                                                                             },
+                                                                  "petrol":  {
+                                                                                 "code":  "A1",
+                                                                                 "open":  0,
+                                                                                 "close":  0,
+                                                                                 "testing":  0,
+                                                                                 "saleLitres":  0
+                                                                             }
+                                                              },
+                                                   "status":  "pending",
+                                                   "stationId":  "S3",
+                                                   "collections":  {
+                                                                       "upi":  0,
+                                                                       "card":  0,
+                                                                       "cash":  0,
+                                                                       "notes":  "",
+                                                                       "expenses":  0,
+                                                                       "expenseReason":  ""
+                                                                   },
+                                                   "employeeName":  "Venkatesh Rao",
+                                                   "readingsHistory":  [
+
+                                                                       ]
+                                               },
+                                        "S4":  {
+                                                   "pump":  "Pump 2",
+                                                   "meters":  {
+                                                                  "diesel":  {
+                                                                                 "code":  "B2",
+                                                                                 "open":  0,
+                                                                                 "close":  0,
+                                                                                 "testing":  0,
+                                                                                 "saleLitres":  0
+                                                                             },
+                                                                  "petrol":  {
+                                                                                 "code":  "B1",
+                                                                                 "open":  0,
+                                                                                 "close":  0,
+                                                                                 "testing":  0,
+                                                                                 "saleLitres":  0
+                                                                             }
+                                                              },
+                                                   "status":  "pending",
+                                                   "stationId":  "S4",
+                                                   "collections":  {
+                                                                       "upi":  0,
+                                                                       "card":  0,
+                                                                       "cash":  0,
+                                                                       "notes":  "",
+                                                                       "expenses":  0,
+                                                                       "expenseReason":  ""
+                                                                   },
+                                                   "employeeName":  "Naresh Babu",
+                                                   "readingsHistory":  [
+
+                                                                       ]
+                                               }
+                                    },
+                       "dieselRate":  105.23,
+                       "petrolRate":  117.07
+                   },
+                   {
+                       "id":  "shift-2026-10-27",
+                       "date":  "2026-10-27",
+                       "status":  "active",
+                       "stations":  {
+                                        "S1":  {
+                                                   "pump":  "Pump 1",
+                                                   "meters":  {
+                                                                  "diesel":  {
+                                                                                 "code":  "A2",
+                                                                                 "open":  200,
+                                                                                 "close":  250,
+                                                                                 "testing":  0,
+                                                                                 "saleLitres":  50
+                                                                             },
+                                                                  "petrol":  {
+                                                                                 "code":  "A1",
+                                                                                 "open":  100,
+                                                                                 "close":  150,
+                                                                                 "testing":  0,
+                                                                                 "saleLitres":  50
+                                                                             }
+                                                              },
+                                                   "status":  "readings-entered",
+                                                   "stationId":  "S1",
+                                                   "collections":  {
+                                                                       "upi":  0,
+                                                                       "card":  0,
+                                                                       "cash":  0,
+                                                                       "notes":  "",
+                                                                       "expenses":  0,
+                                                                       "expenseReason":  ""
+                                                                   },
+                                                   "employeeName":  "Ramesh Kumar",
+                                                   "nextOpenDiesel":  250,
+                                                   "nextOpenPetrol":  150,
+                                                   "readingsHistory":  [
+                                                                           {
+                                                                               "id":  "sess-1793075260557",
+                                                                               "tag":  "Meals / Lunch Break",
+                                                                               "time":  "09:56 AM",
+                                                                               "diesel":  {
+                                                                                              "open":  200,
+                                                                                              "close":  220,
+                                                                                              "testing":  0,
+                                                                                              "saleLitres":  20
+                                                                                          },
+                                                                               "petrol":  {
+                                                                                              "open":  100,
+                                                                                              "close":  110,
+                                                                                              "testing":  0,
+                                                                                              "saleLitres":  10
+                                                                                          },
+                                                                               "employeeName":  "Ramesh Kumar",
+                                                                               "sessionIndex":  1
+                                                                           },
+                                                                           {
+                                                                               "id":  "sess-1793075292936",
+                                                                               "tag":  "Shift Final",
+                                                                               "time":  "09:56 AM",
+                                                                               "diesel":  {
+                                                                                              "open":  220,
+                                                                                              "close":  250,
+                                                                                              "testing":  0,
+                                                                                              "saleLitres":  30
+                                                                                          },
+                                                                               "petrol":  {
+                                                                                              "open":  110,
+                                                                                              "close":  150,
+                                                                                              "testing":  0,
+                                                                                              "saleLitres":  40
+                                                                                          },
+                                                                               "employeeName":  "Ramesh Kumar",
+                                                                               "sessionIndex":  2
+                                                                           }
+                                                                       ],
+                                                   "initialJoinedMeters":  {
+                                                                               "diesel":  {
+                                                                                              "open":  200
+                                                                                          },
+                                                                               "petrol":  {
+                                                                                              "open":  100
+                                                                                          },
+                                                                               "joinedAt":  "09:56 AM"
+                                                                           }
+                                               },
+                                        "S2":  {
+                                                   "pump":  "Pump 1",
+                                                   "meters":  {
+                                                                  "diesel":  {
+                                                                                 "code":  "B2",
+                                                                                 "open":  0,
+                                                                                 "close":  0,
+                                                                                 "testing":  0,
+                                                                                 "saleLitres":  0
+                                                                             },
+                                                                  "petrol":  {
+                                                                                 "code":  "B1",
+                                                                                 "open":  0,
+                                                                                 "close":  0,
+                                                                                 "testing":  0,
+                                                                                 "saleLitres":  0
+                                                                             }
+                                                              },
+                                                   "status":  "pending",
+                                                   "stationId":  "S2",
+                                                   "collections":  {
+                                                                       "upi":  0,
+                                                                       "card":  0,
+                                                                       "cash":  0,
+                                                                       "notes":  "",
+                                                                       "expenses":  0,
+                                                                       "expenseReason":  ""
+                                                                   },
+                                                   "employeeName":  "Suresh Reddy",
+                                                   "readingsHistory":  [
+
+                                                                       ]
+                                               },
+                                        "S3":  {
+                                                   "pump":  "Pump 2",
+                                                   "meters":  {
+                                                                  "diesel":  {
+                                                                                 "code":  "A2",
+                                                                                 "open":  0,
+                                                                                 "close":  0,
+                                                                                 "testing":  0,
+                                                                                 "saleLitres":  0
+                                                                             },
+                                                                  "petrol":  {
+                                                                                 "code":  "A1",
+                                                                                 "open":  0,
+                                                                                 "close":  0,
+                                                                                 "testing":  0,
+                                                                                 "saleLitres":  0
+                                                                             }
+                                                              },
+                                                   "status":  "pending",
+                                                   "stationId":  "S3",
+                                                   "collections":  {
+                                                                       "upi":  0,
+                                                                       "card":  0,
+                                                                       "cash":  0,
+                                                                       "notes":  "",
+                                                                       "expenses":  0,
+                                                                       "expenseReason":  ""
+                                                                   },
+                                                   "employeeName":  "Venkatesh Rao",
+                                                   "readingsHistory":  [
+
+                                                                       ]
+                                               },
+                                        "S4":  {
+                                                   "pump":  "Pump 2",
+                                                   "meters":  {
+                                                                  "diesel":  {
+                                                                                 "code":  "B2",
+                                                                                 "open":  0,
+                                                                                 "close":  0,
+                                                                                 "testing":  0,
+                                                                                 "saleLitres":  0
+                                                                             },
+                                                                  "petrol":  {
+                                                                                 "code":  "B1",
+                                                                                 "open":  0,
+                                                                                 "close":  0,
+                                                                                 "testing":  0,
+                                                                                 "saleLitres":  0
+                                                                             }
+                                                              },
+                                                   "status":  "pending",
+                                                   "stationId":  "S4",
+                                                   "collections":  {
+                                                                       "upi":  0,
+                                                                       "card":  0,
+                                                                       "cash":  0,
+                                                                       "notes":  "",
+                                                                       "expenses":  0,
+                                                                       "expenseReason":  ""
+                                                                   },
+                                                   "employeeName":  "Naresh Babu",
+                                                   "readingsHistory":  [
+
+                                                                       ]
+                                               }
+                                    },
+                       "dieselRate":  105.23,
+                       "petrolRate":  117.07
+                   }
+               ],
+    "employees":  [
+                      {
+                          "id":  "emp1",
+                          "name":  "Ramesh Kumar",
+                          "role":  "Attendant",
+                          "phone":  "9848011223",
+                          "active":  true,
+                          "address":  "Plot 14, Near IOCL Bunk, Main Road",
+                          "password":  "123",
+                          "username":  "9848011223",
+                          "fatherName":  "K. Narayana Swamy",
+                          "joiningDate":  "2024-01-10",
+                          "villageName":  "Kalyandurg, Anantapur Dist",
+                          "aadhaarNumber":  "4589 1234 5678",
+                          "emergencyContact":  "9440123999 (Brother - Siva)"
+                      },
+                      {
+                          "id":  "emp2",
+                          "name":  "Suresh Reddy",
+                          "role":  "Attendant",
+                          "phone":  "9848022334",
+                          "active":  true,
+                          "address":  "Door 2-45, Brahmin Street, Beluguppa",
+                          "password":  "123",
+                          "username":  "9848022334",
+                          "fatherName":  "M. Ramachandra Reddy",
+                          "joiningDate":  "2024-03-15",
+                          "villageName":  "Beluguppa Village",
+                          "aadhaarNumber":  "6712 3456 7890",
+                          "emergencyContact":  "9848088771 (Wife - Lakshmi)"
+                      },
+                      {
+                          "id":  "emp3",
+                          "name":  "Venkatesh Rao",
+                          "role":  "Attendant",
+                          "phone":  "9848033445",
+                          "active":  true,
+                          "address":  "H.No 4-89, Near Old Bus Stand, Rayadurg",
+                          "password":  "123",
+                          "username":  "9848033445",
+                          "fatherName":  "G. Venkateswarlu",
+                          "joiningDate":  "2024-05-20",
+                          "villageName":  "Rayadurg Mandal",
+                          "aadhaarNumber":  "8899 4321 0987",
+                          "emergencyContact":  "9441122334 (Father)"
+                      },
+                      {
+                          "id":  "emp4",
+                          "name":  "Naresh Babu",
+                          "role":  "Attendant",
+                          "phone":  "9848044556",
+                          "active":  true,
+                          "address":  "3-12, Atmakur",
+                          "password":  "123",
+                          "username":  "9848044556",
+                          "fatherName":  "B. Venkataramana",
+                          "joiningDate":  "2024-08-01",
+                          "villageName":  "Atmakur Village",
+                          "aadhaarNumber":  "3344 5566 7788",
+                          "emergencyContact":  "9988112233 (Uncle - Prasad)"
+                      },
+                      {
+                          "id":  "emp5",
+                          "name":  "Rajesh Varma",
+                          "role":  "Attendant",
+                          "phone":  "9848055667",
+                          "active":  true,
+                          "address":  "5-67, Weaver Colony, Dharmavaram",
+                          "password":  "123",
+                          "username":  "9848055667",
+                          "fatherName":  "D. Satyanarayana",
+                          "joiningDate":  "2025-01-05",
+                          "villageName":  "Dharmavaram",
+                          "aadhaarNumber":  "9988 7766 5544",
+                          "emergencyContact":  "9701122334 (Brother)"
+                      },
+                      {
+                          "id":  "emp6",
+                          "name":  "Prasad Rao",
+                          "role":  "Attendant",
+                          "phone":  "9848066778",
+                          "active":  true,
+                          "address":  "Railway Station Road, Guntakal",
+                          "password":  "123",
+                          "username":  "9848066778",
+                          "fatherName":  "P. Subba Rao",
+                          "joiningDate":  "2025-03-12",
+                          "villageName":  "Guntakal",
+                          "aadhaarNumber":  "2233 4455 6677",
+                          "emergencyContact":  "9866112244 (Father)"
+                      },
+                      {
+                          "id":  "emp-1792838466290",
+                          "name":  "Mahesh reddy",
+                          "role":  "Attendant",
+                          "phone":  "7799532888",
+                          "active":  true,
+                          "address":  "Ieeja",
+                          "password":  "123",
+                          "username":  "7799532888",
+                          "fatherName":  "Maheswar Reddy",
+                          "joiningDate":  "2026-10-24",
+                          "villageName":  "Ieeja",
+                          "aadhaarNumber":  "",
+                          "emergencyContact":  ""
+                      },
+                      {
+                          "id":  "emp-1792839909945",
+                          "name":  "Maheswar Reddy",
+                          "role":  "Attendant",
+                          "phone":  "1234576890",
+                          "active":  true,
+                          "address":  "",
+                          "password":  "123",
+                          "username":  "1234576890",
+                          "fatherName":  "S Maheswar Reddy",
+                          "joiningDate":  "2026-10-24",
+                          "villageName":  "Ieeja",
+                          "aadhaarNumber":  "",
+                          "emergencyContact":  "1234567788"
+                      },
+                      {
+                          "id":  "emp-1792840783873",
+                          "name":  "Mahesh reddy",
+                          "role":  "Attendant",
+                          "phone":  "7795628848",
+                          "active":  true,
+                          "address":  "",
+                          "password":  "123",
+                          "username":  "7795628848",
+                          "fatherName":  "Raghav reddy",
+                          "joiningDate":  "2026-10-24",
+                          "villageName":  "Ieeja",
+                          "aadhaarNumber":  "",
+                          "emergencyContact":  ""
+                      },
+                      {
+                          "id":  "emp-1792842606451",
+                          "name":  "Siva Shankar",
+                          "role":  "Attendant",
+                          "phone":  "9900409848",
+                          "active":  true,
+                          "address":  "",
+                          "password":  "123",
+                          "username":  "9900409848",
+                          "fatherName":  "Ramanaiah",
+                          "joiningDate":  "2026-10-24",
+                          "villageName":  "Rayadurg",
+                          "aadhaarNumber":  "",
+                          "emergencyContact":  ""
+                      }
+                  ],
+    "reminders":  [
+                      {
+                          "id":  "rem-101",
+                          "date":  "2026-10-23",
+                          "time":  "11:20 AM",
+                          "notes":  "Went to ATM, will pay in 30 minutes",
+                          "phone":  "9988776655",
+                          "amount":  2500,
+                          "status":  "pending",
+                          "fuelType":  "Diesel",
+                          "clearedAt":  null,
+                          "stationId":  "S1",
+                          "clearedMode":  null,
+                          "customerName":  "K. Mohan Reddy",
+                          "employeeName":  "Ramesh Kumar",
+                          "vehicleNumber":  "AP 21 TC 4488"
+                      },
+                      {
+                          "id":  "rem-102",
+                          "date":  "2026-10-24",
+                          "time":  "10:15 AM",
+                          "notes":  "Card machine link failed, will send UPI in 1 hour",
+                          "phone":  "9440123456",
+                          "amount":  1500,
+                          "status":  "pending",
+                          "fuelType":  "Petrol",
+                          "clearedAt":  null,
+                          "stationId":  "S1",
+                          "clearedMode":  null,
+                          "customerName":  "Venkata Raman",
+                          "employeeName":  "Rajesh Varma",
+                          "vehicleNumber":  "AP 09 CD 1234"
+                      }
+                  ],
+    "attendance":  [
+                       {
+                           "id":  "att-1",
+                           "date":  "2026-10-23",
+                           "shift":  "9AM-9AM",
+                           "status":  "present",
+                           "station":  "S1",
+                           "employeeId":  "emp1",
+                           "employeeName":  "Ramesh Kumar"
+                       },
+                       {
+                           "id":  "att-2",
+                           "date":  "2026-10-23",
+                           "shift":  "9AM-9AM",
+                           "status":  "present",
+                           "station":  "S2",
+                           "employeeId":  "emp2",
+                           "employeeName":  "Suresh Reddy"
+                       },
+                       {
+                           "id":  "att-3",
+                           "date":  "2026-10-23",
+                           "shift":  "9AM-9AM",
+                           "status":  "present",
+                           "station":  "S3",
+                           "employeeId":  "emp3",
+                           "employeeName":  "Venkatesh Rao"
+                       },
+                       {
+                           "id":  "att-4",
+                           "date":  "2026-10-23",
+                           "shift":  "9AM-9AM",
+                           "status":  "present",
+                           "station":  "S4",
+                           "employeeId":  "emp4",
+                           "employeeName":  "Naresh Babu"
+                       },
+                       {
+                           "id":  "att-5",
+                           "date":  "2026-10-24",
+                           "shift":  "9AM-9AM",
+                           "status":  "present",
+                           "station":  "S1",
+                           "employeeId":  "emp5",
+                           "employeeName":  "Rajesh Varma"
+                       },
+                       {
+                           "id":  "att-6",
+                           "date":  "2026-10-24",
+                           "shift":  "9AM-9AM",
+                           "status":  "present",
+                           "station":  "S2",
+                           "employeeId":  "emp6",
+                           "employeeName":  "Prasad Rao"
+                       },
+                       {
+                           "id":  "att-7",
+                           "date":  "2026-10-24",
+                           "shift":  "9AM-9AM",
+                           "status":  "present",
+                           "station":  "S3",
+                           "employeeId":  "emp1",
+                           "employeeName":  "Ramesh Kumar"
+                       },
+                       {
+                           "id":  "att-8",
+                           "date":  "2026-10-24",
+                           "shift":  "9AM-9AM",
+                           "status":  "present",
+                           "station":  "S4",
+                           "employeeId":  "emp2",
+                           "employeeName":  "Suresh Reddy"
+                       }
+                   ],
+    "employeeDues":  [
+                         {
+                             "id":  "due-1792908626245",
+                             "date":  "2026-10-25",
+                             "notes":  "Shift handover shortage: expected â‚¹165574, given â‚¹0",
+                             "status":  "settled",
+                             "createdAt":  "2026-10-25T06:10:26.245Z",
+                             "settledAt":  "2026-10-25T07:24:27.505Z",
+                             "stationId":  "S1",
+                             "actualCash":  0,
+                             "grossAmount":  168574,
+                             "settledMode":  "Management Cash Recovery",
+                             "employeeName":  "Ramesh Kumar",
+                             "expectedCash":  165574,
+                             "settledNotes":  "Bulk settled by management/owner",
+                             "shortageAmount":  165574,
+                             "totalDeductions":  3000
+                         },
+                         {
+                             "id":  "due-1792836604426",
+                             "date":  "2026-10-23",
+                             "notes":  "Handover shortage test",
+                             "status":  "settled",
+                             "createdAt":  "2026-10-24T10:10:04.426Z",
+                             "settledAt":  "2026-10-24T10:10:04.445Z",
+                             "stationId":  "S1",
+                             "actualCash":  7659,
+                             "grossAmount":  19014,
+                             "settledMode":  "Cash Recovery",
+                             "employeeName":  "Ramesh Kumar",
+                             "expectedCash":  8659,
+                             "settledNotes":  "Recovered next morning from Ramesh",
+                             "shortageAmount":  1000,
+                             "totalDeductions":  10355
+                         }
+                     ],
+    "salaryRecords":  [
+
+                      ],
+    "vehicleLedger":  [
+                          {
+                              "id":  "vlog-1",
+                              "date":  "2026-10-20",
+                              "rate":  105.23,
+                              "time":  "08:15 AM",
+                              "notes":  "Tractor - Regular fleet account",
+                              "amount":  5000,
+                              "litres":  47.51,
+                              "slipNo":  "SL-881",
+                              "status":  "unsettled",
+                              "fuelType":  "Diesel",
+                              "stationId":  "S1",
+                              "driverName":  "Chandra Shekar",
+                              "driverPhone":  "9988776655",
+                              "employeeName":  "Ramesh Kumar",
+                              "vehicleNumber":  "AP 21 TC 4488"
+                          },
+                          {
+                              "id":  "vlog-2",
+                              "date":  "2026-10-22",
+                              "rate":  105.23,
+                              "time":  "02:30 PM",
+                              "notes":  "Tractor - Second load trip",
+                              "amount":  5262,
+                              "litres":  50,
+                              "slipNo":  "SL-914",
+                              "status":  "unsettled",
+                              "fuelType":  "Diesel",
+                              "stationId":  "S3",
+                              "driverName":  "Chandra Shekar",
+                              "driverPhone":  "9988776655",
+                              "employeeName":  "Venkatesh Rao",
+                              "vehicleNumber":  "AP 21 TC 4488"
+                          },
+                          {
+                              "id":  "vlog-3",
+                              "date":  "2026-10-23",
+                              "rate":  105.23,
+                              "time":  "09:40 AM",
+                              "notes":  "Tractor - Field work",
+                              "amount":  5000,
+                              "litres":  47.51,
+                              "slipNo":  "SL-965",
+                              "status":  "unsettled",
+                              "fuelType":  "Diesel",
+                              "stationId":  "S1",
+                              "driverName":  "Chandra Shekar",
+                              "driverPhone":  "9988776655",
+                              "employeeName":  "Ramesh Kumar",
+                              "vehicleNumber":  "AP 21 TC 4488"
+                          },
+                          {
+                              "id":  "vlog-4",
+                              "date":  "2026-10-23",
+                              "rate":  105.23,
+                              "time":  "03:45 PM",
+                              "notes":  "Lorry fleet account",
+                              "amount":  10000,
+                              "litres":  95.03,
+                              "slipNo":  "SL-982",
+                              "status":  "unsettled",
+                              "fuelType":  "Diesel",
+                              "stationId":  "S3",
+                              "driverName":  "Balaji Transport Lorry",
+                              "driverPhone":  "9849098765",
+                              "employeeName":  "Venkatesh Rao",
+                              "vehicleNumber":  "TS 08 UB 7712"
+                          },
+                          {
+                              "id":  "vlog-1792828449802",
+                              "date":  "2026-10-24",
+                              "rate":  0,
+                              "time":  "01:24 PM",
+                              "notes":  "",
+                              "amount":  1000,
+                              "litres":  9.5,
+                              "slipNo":  "",
+                              "status":  "unsettled",
+                              "fuelType":  "Diesel",
+                              "stationId":  "S1",
+                              "driverName":  "",
+                              "driverPhone":  "9848011223",
+                              "employeeName":  "Attendant",
+                              "mobileNumber":  "9848011223",
+                              "vehicleNumber":  "AP21TC4488"
+                          },
+                          {
+                              "id":  "vlog-1792828997602",
+                              "date":  "2026-10-23",
+                              "rate":  0,
+                              "time":  "01:33 PM",
+                              "notes":  "",
+                              "amount":  2105,
+                              "litres":  20,
+                              "slipNo":  "SL-1001",
+                              "status":  "unsettled",
+                              "fuelType":  "Diesel",
+                              "stationId":  "S1",
+                              "driverName":  "Chandra Shekar",
+                              "driverPhone":  "9848011223",
+                              "employeeName":  "Ramesh Kumar",
+                              "mobileNumber":  "9848011223",
+                              "vehicleNumber":  "AP 21 TC 4488"
+                          }
+                      ],
+    "shiftAssignments":  {
+                             "2026-10-23":  {
+                                                "S1":  {
+                                                           "dutyPin":  "1122",
+                                                           "employeeName":  "Ramesh Kumar"
+                                                       },
+                                                "S2":  {
+                                                           "dutyPin":  "3344",
+                                                           "employeeName":  "Suresh Reddy"
+                                                       },
+                                                "S3":  {
+                                                           "dutyPin":  "5566",
+                                                           "employeeName":  "Rajesh Varma"
+                                                       },
+                                                "S4":  {
+                                                           "dutyPin":  "7788",
+                                                           "employeeName":  "Prasad Rao"
+                                                       }
+                                            },
+                             "2026-10-24":  {
+                                                "S1":  {
+                                                           "dutyPin":  "1122",
+                                                           "employeeName":  "Ramesh Kumar"
+                                                       },
+                                                "S2":  {
+                                                           "dutyPin":  "3344",
+                                                           "employeeName":  "Suresh Reddy"
+                                                       },
+                                                "S3":  {
+                                                           "dutyPin":  "5566",
+                                                           "employeeName":  "Rajesh Varma"
+                                                       },
+                                                "S4":  {
+                                                           "dutyPin":  "7788",
+                                                           "employeeName":  "Prasad Rao"
+                                                       }
+                                            },
+                             "2026-10-25":  {
+                                                "S1":  {
+                                                           "dutyPin":  "1122",
+                                                           "employeeName":  "Ramesh Kumar"
+                                                       },
+                                                "S2":  {
+                                                           "dutyPin":  "3344",
+                                                           "employeeName":  "Suresh Reddy"
+                                                       },
+                                                "S3":  {
+                                                           "dutyPin":  "5566",
+                                                           "employeeName":  "Venkatesh Rao"
+                                                       },
+                                                "S4":  {
+                                                           "dutyPin":  "7788",
+                                                           "employeeName":  "Naresh Babu"
+                                                       }
+                                            },
+                             "2026-10-26":  {
+                                                "S1":  {
+                                                           "dutyPin":  "5999",
+                                                           "employeeName":  "Ramesh Kumar"
+                                                       },
+                                                "S2":  {
+                                                           "dutyPin":  "3344",
+                                                           "employeeName":  "Suresh Reddy"
+                                                       },
+                                                "S3":  {
+                                                           "dutyPin":  "5566",
+                                                           "employeeName":  "Venkatesh Rao"
+                                                       },
+                                                "S4":  {
+                                                           "dutyPin":  "7788",
+                                                           "employeeName":  "Naresh Babu"
+                                                       }
+                                            },
+                             "2026-10-27":  {
+                                                "S1":  {
+                                                           "dutyPin":  "1122",
+                                                           "employeeName":  "Ramesh Kumar"
+                                                       },
+                                                "S2":  {
+                                                           "dutyPin":  "3344",
+                                                           "employeeName":  "Suresh Reddy"
+                                                       },
+                                                "S3":  {
+                                                           "dutyPin":  "5566",
+                                                           "employeeName":  "Venkatesh Rao"
+                                                       },
+                                                "S4":  {
+                                                           "dutyPin":  "7788",
+                                                           "employeeName":  "Naresh Babu"
+                                                       }
+                                            }
+                         }
 }
