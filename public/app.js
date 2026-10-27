@@ -592,15 +592,41 @@ function resolveEmployeePumpLock() {
   if (hoBadge) hoBadge.innerText = assignedStation || 'S1';
 }
 
+// Helper to get GPS location with timeout
+function getBrowserLocationAsync(timeoutMs = 4000) {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) {
+      resolve(null);
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        resolve({
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+          accuracy: pos.coords.accuracy
+        });
+      },
+      (err) => {
+        console.warn('Geolocation lookup:', err.message);
+        resolve(null);
+      },
+      { enableHighAccuracy: true, timeout: timeoutMs, maximumAge: 60000 }
+    );
+  });
+}
+
 // --- AUTHENTICATION (UNIFIED CLEAN SIGN IN & PERSISTENT SESSION) ---
 // User requirement: "dont show staff / management login options on login screen give just login page like enter username and password screens (duty pin for staff)"
 // User requirement: "for staff login should be there till shift ends (not imediate logout - think he has to do all his caluculations and all all ok thn ok)"
+// User requirement: "lets do this for secutiry, the empoyee should not access the app outside the pump (lets make readius)"
 async function handleLoginSubmit(event) {
   event.preventDefault();
 
   const userField = document.getElementById('loginUsernameInput');
   const passField = document.getElementById('loginPasswordInput');
   const errEl = document.getElementById('loginErrorMessage');
+  const submitBtn = document.getElementById('btnLoginSubmit');
 
   const username = userField ? userField.value.trim() : '';
   const credential = passField ? passField.value.trim() : '';
@@ -621,17 +647,43 @@ async function handleLoginSubmit(event) {
     return;
   }
 
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `<span>⏳ పరిశీలిస్తోంది (Verifying & GPS)...</span>`;
+  }
+  if (errEl) errEl.classList.add('hidden');
+
+  let locationData = null;
+  const isPrivilegedUser = ['developer', 'dev', 'owner', 'mgmt', 'manager', 'admin'].includes(username.toLowerCase());
+
+  // If not privileged user (i.e. potential staff/attendant), fetch current device GPS location
+  if (!isPrivilegedUser && navigator.geolocation) {
+    try {
+      locationData = await getBrowserLocationAsync(4000);
+    } catch (e) {
+      console.warn('GPS query error:', e);
+    }
+  }
+
   try {
+    const payload = {
+      username,
+      password: credential,
+      dutyPin: credential,
+      pin: credential,
+      date: STATE.selectedDate
+    };
+
+    if (locationData) {
+      payload.latitude = locationData.latitude;
+      payload.longitude = locationData.longitude;
+      payload.accuracy = locationData.accuracy;
+    }
+
     const res = await fetch(`/api/auth/login?pump=${STATE.activeTenant}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        username,
-        password: credential,
-        dutyPin: credential,
-        pin: credential,
-        date: STATE.selectedDate
-      })
+      body: JSON.stringify(payload)
     });
 
     const data = await res.json();
@@ -667,6 +719,11 @@ async function handleLoginSubmit(event) {
     if (errEl) {
       errEl.innerText = 'Connection error. Please try again.';
       errEl.classList.remove('hidden');
+    }
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = `<span>లాగిన్ చేయండి (SIGN IN)</span><span>➔</span>`;
     }
   }
 }
@@ -4149,8 +4206,9 @@ function renderAdminDutyRoster() {
     `;
   }).join('');
 
-  // Automatically load the historical archive
+  // Automatically load the historical archive & geofence settings
   loadDutyRosterHistory();
+  loadGeofenceSettings();
 }
 
 function generateRandomDutyPin(stKey) {
@@ -4161,6 +4219,7 @@ function generateRandomDutyPin(stKey) {
   }
 }
 
+// User requirement: "once click on save allocation -> then if again click on save allocation without changing anything on same day not allow to save say data already save (onlve save allow if any changes in fields, atleast one field has to change and that also to be saved with date when saved and all)"
 async function saveDutyRosterAssignments() {
   const assignments = {};
   const defaultPins = { S1: "1122", S2: "3344", S3: "5566", S4: "7788" };
@@ -4170,6 +4229,25 @@ async function saveDutyRosterAssignments() {
     assignments[stKey] = { employeeName: empName, dutyPin };
   });
 
+  // Client check: Check if any field actually changed compared to current STATE.dutyAssignments
+  if (STATE.dutyAssignments) {
+    let hasChanges = false;
+    ['S1', 'S2', 'S3', 'S4'].forEach(stKey => {
+      const currentName = (assignments[stKey].employeeName || "").trim();
+      const prevName = (STATE.dutyAssignments[stKey]?.employeeName || "").trim();
+      const currentPin = (assignments[stKey].dutyPin || defaultPins[stKey] || "").trim();
+      const prevPin = (STATE.dutyAssignments[stKey]?.dutyPin || defaultPins[stKey] || "").trim();
+      if (currentName !== prevName || currentPin !== prevPin) {
+        hasChanges = true;
+      }
+    });
+
+    if (!hasChanges) {
+      showToast('డేటా ఇప్పటికే సేవ్ చేయబడింది! ఎటువంటి మార్పులు లేవు (Data already saved! No changes detected).', 'info');
+      return;
+    }
+  }
+
   try {
     const res = await fetch(`/api/duty-assignments?pump=${STATE.activeTenant}`, {
       method: 'POST',
@@ -4178,18 +4256,25 @@ async function saveDutyRosterAssignments() {
     });
     const result = await res.json();
     if (result.success) {
-      showToast(STATE.lang === 'te' 
-        ? 'పంపుల కేటాయింపు & డ్యూటీ పిన్‌లు సేవ్ చేయబడ్డాయి! సిబ్బందికి ఈ పిన్ ఇవ్వండి.' 
-        : 'Pump assignments & Duty PINs saved! Share PIN with staff.');
+      STATE.dutyAssignments = result.assignments;
+      const lastSavedBadge = document.getElementById('rosterLastSavedBadge');
+      if (lastSavedBadge && result.savedAtFormatted) {
+        lastSavedBadge.innerText = `చివరిగా సేవ్ చేయబడింది: ${result.savedAtFormatted}`;
+        lastSavedBadge.classList.remove('hidden');
+      }
+      showToast(result.message || (STATE.lang === 'te' 
+        ? 'పంపుల కేటాయింపు మార్పులు విజయవంతంగా సేవ్ చేయబడ్డాయి!' 
+        : 'Pump assignments updated!'));
       loadAllData();
       loadDutyRosterHistory();
     } else {
-      showToast('Failed to save pump assignments', 'error');
+      showToast(result.error || 'Failed to save pump assignments', 'error');
     }
   } catch (err) {
     showToast('Failed to save pump assignments', 'error');
   }
 }
+
 
 // --- PUMP ASSIGNMENT HISTORY & ARCHIVE CONTROLLER ---
 // User requirement: "in future we want to see last month who worked on which pump and all - do we need to create a tab with historical data(only read) - how we can archive it .."
@@ -4295,6 +4380,189 @@ function filterDutyRosterHistory() {
 function printRosterHistory() {
   window.print();
 }
+
+// --- BUNK GEOFENCE CONTROLLER ---
+// User requirement: "lets do this for secutiry, the empoyee should not access the app outside the pump (lets make readius) - how to plan it"
+let currentGeofenceConfig = null;
+
+async function loadGeofenceSettings() {
+  try {
+    const res = await fetch(`/api/geofence?pump=${STATE.activeTenant || 'srr-filling-station'}`);
+    if (!res.ok) return;
+    const data = await res.json();
+    currentGeofenceConfig = data.geofence;
+    renderGeofenceSettings();
+  } catch (err) {
+    console.error('Error loading geofence settings:', err);
+  }
+}
+
+function renderGeofenceSettings() {
+  if (!currentGeofenceConfig) return;
+
+  const chk = document.getElementById('geofenceEnabledCheckbox');
+  const latInput = document.getElementById('geofenceLatInput');
+  const lonInput = document.getElementById('geofenceLonInput');
+  const radiusSlider = document.getElementById('geofenceRadiusSlider');
+  const radiusDisplay = document.getElementById('geofenceRadiusDisplay');
+  const statusBadge = document.getElementById('geofenceStatusBadge');
+  const mapsLink = document.getElementById('geofenceMapsLink');
+
+  if (chk) chk.checked = Boolean(currentGeofenceConfig.enabled);
+  if (latInput) latInput.value = currentGeofenceConfig.latitude || 17.385044;
+  if (lonInput) lonInput.value = currentGeofenceConfig.longitude || 78.486671;
+  const radius = currentGeofenceConfig.radiusMeters || 200;
+  if (radiusSlider) radiusSlider.value = radius;
+  if (radiusDisplay) radiusDisplay.innerText = `${radius} m`;
+
+  if (mapsLink && currentGeofenceConfig.latitude && currentGeofenceConfig.longitude) {
+    mapsLink.href = `https://www.google.com/maps?q=${currentGeofenceConfig.latitude},${currentGeofenceConfig.longitude}`;
+  }
+
+  if (statusBadge) {
+    if (currentGeofenceConfig.enabled) {
+      statusBadge.className = 'text-xs font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300';
+      statusBadge.innerText = `🟢 సెక్యూరిటీ యాక్టివ్ (${radius}m పరిధి)`;
+    } else {
+      statusBadge.className = 'text-xs font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200';
+      statusBadge.innerText = '⚪ పరిమితి నిలిపివేయబడింది (Disabled)';
+    }
+  }
+
+  checkDeviceDistanceToBunk();
+}
+
+function updateGeofenceRadiusDisplay(val) {
+  const display = document.getElementById('geofenceRadiusDisplay');
+  if (display) display.innerText = `${val} m`;
+}
+
+function toggleGeofenceEnabledUI() {
+  const chk = document.getElementById('geofenceEnabledCheckbox');
+  const statusBadge = document.getElementById('geofenceStatusBadge');
+  const radius = document.getElementById('geofenceRadiusSlider')?.value || 200;
+  if (statusBadge) {
+    if (chk && chk.checked) {
+      statusBadge.className = 'text-xs font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300';
+      statusBadge.innerText = `🟢 సెక్యూరిటీ యాక్టివ్ (${radius}m పరిధి)`;
+    } else {
+      statusBadge.className = 'text-xs font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200';
+      statusBadge.innerText = '⚪ పరిమితి నిలిపివేయబడింది (Disabled)';
+    }
+  }
+}
+
+async function captureCurrentLocationAsBunk() {
+  if (!navigator.geolocation) {
+    showToast('ఈ పరికరంలో/బ్రౌజర్‌లో GPS Geolocation అందుబాటులో లేదు', 'error');
+    return;
+  }
+
+  showToast('GPS లొకేషన్ గుర్తిస్తోంది... వేచి ఉండండి...', 'info');
+
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const lat = Number(pos.coords.latitude.toFixed(6));
+      const lon = Number(pos.coords.longitude.toFixed(6));
+      const acc = Math.round(pos.coords.accuracy);
+
+      const latInput = document.getElementById('geofenceLatInput');
+      const lonInput = document.getElementById('geofenceLonInput');
+      const mapsLink = document.getElementById('geofenceMapsLink');
+
+      if (latInput) latInput.value = lat;
+      if (lonInput) lonInput.value = lon;
+      if (mapsLink) mapsLink.href = `https://www.google.com/maps?q=${lat},${lon}`;
+
+      showToast(`📍 ప్రస్తుత లొకేషన్ నమోదు చేయబడింది (Accuracy: ±${acc}m)! సేవ్ చేయండి.`, 'success');
+      checkDeviceDistanceToBunk();
+    },
+    (err) => {
+      console.error('Error getting GPS:', err);
+      showToast(`లొకేషన్ పొందడం విఫలమైంది (${err.message}). ఫోన్ లొకేషన్ అనుమతులు తనిఖీ చేయండి.`, 'error');
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+  );
+}
+
+function checkDeviceDistanceToBunk() {
+  const distEl = document.getElementById('geofenceDistanceIndicator');
+  if (!distEl || !navigator.geolocation) return;
+
+  const lat = parseFloat(document.getElementById('geofenceLatInput')?.value);
+  const lon = parseFloat(document.getElementById('geofenceLonInput')?.value);
+  const radius = parseFloat(document.getElementById('geofenceRadiusSlider')?.value) || 200;
+
+  if (isNaN(lat) || isNaN(lon)) return;
+
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const R = 6371e3;
+      const phi1 = (pos.coords.latitude * Math.PI) / 180;
+      const phi2 = (lat * Math.PI) / 180;
+      const deltaPhi = ((lat - pos.coords.latitude) * Math.PI) / 180;
+      const deltaLambda = ((lon - pos.coords.longitude) * Math.PI) / 180;
+      const a = Math.sin(deltaPhi / 2) * Math.sin(deltaPhi / 2) +
+                Math.cos(phi1) * Math.cos(phi2) *
+                Math.sin(deltaLambda / 2) * Math.sin(deltaLambda / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      const dist = Math.round(R * c);
+
+      if (dist <= radius) {
+        distEl.innerHTML = `<span class="text-emerald-700 font-black">📍 దూరం: ${dist}m (బంక్ లోపల ఉన్నారు ✅)</span>`;
+      } else {
+        distEl.innerHTML = `<span class="text-rose-700 font-black">📍 దూరం: ${dist}m (బంక్ వెలుపల ఉన్నారు ⚠️)</span>`;
+      }
+    },
+    (err) => {
+      distEl.innerText = '--';
+    },
+    { enableHighAccuracy: true, timeout: 5000, maximumAge: 30000 }
+  );
+}
+
+async function saveGeofenceSettings() {
+  const chk = document.getElementById('geofenceEnabledCheckbox');
+  const latInput = document.getElementById('geofenceLatInput');
+  const lonInput = document.getElementById('geofenceLonInput');
+  const radiusSlider = document.getElementById('geofenceRadiusSlider');
+
+  const enabled = Boolean(chk?.checked);
+  const latitude = parseFloat(latInput?.value);
+  const longitude = parseFloat(lonInput?.value);
+  const radiusMeters = parseFloat(radiusSlider?.value) || 200;
+
+  if (enabled && (isNaN(latitude) || isNaN(longitude))) {
+    showToast('దయచేసి సరైన Latitude మరియు Longitude నమోదు చేయండి', 'error');
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/geofence?pump=${STATE.activeTenant || 'srr-filling-station'}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        enabled,
+        latitude,
+        longitude,
+        radiusMeters
+      })
+    });
+
+    const data = await res.json();
+    if (res.ok && data.success) {
+      currentGeofenceConfig = data.geofence;
+      renderGeofenceSettings();
+      showToast(data.message || 'జియోఫెన్స్ సెట్టింగ్స్ విజయవంతంగా సేవ్ చేయబడ్డాయి!', 'success');
+    } else {
+      showToast(data.error || 'Failed to save geofence settings', 'error');
+    }
+  } catch (err) {
+    console.error('Error saving geofence:', err);
+    showToast('Failed to save geofence settings', 'error');
+  }
+}
+
 
 // Live Pump Allocations Summary for Overview / Daily Sales Slip screen
 function renderSummaryPumpAssignments() {

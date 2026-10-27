@@ -1989,6 +1989,7 @@
               </div>
             </div>
             <div class="flex items-center gap-2">
+              <span id="rosterLastSavedBadge" class="hidden text-xs font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200"></span>
               <button onclick="saveDutyRosterAssignments()" class="bg-orange-600 hover:bg-orange-700 text-white font-black text-xs sm:text-sm px-4 py-2 rounded-xl shadow-md flex items-center gap-1.5 active:scale-95 transition-all">
                 <span>💾</span>
                 <span>కేటాయింపును సేవ్ చేయి (Save Allocation)</span>
@@ -1998,7 +1999,97 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="dutyRosterCardsContainer"></div>
         </div>
 
+        <!-- BUNK GEOFENCE SECURITY CARD -->
+        <!-- User requirement: "lets do this for secutiry, the empoyee should not access the app outside the pump (lets make readius) - how to plan it" -->
+        <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+          <div class="flex flex-wrap justify-between items-center gap-3 border-b border-slate-100 pb-3">
+            <div class="flex items-center gap-2.5">
+              <span class="text-2xl">📍</span>
+              <div>
+                <h3 class="font-black text-slate-900 text-base">బంక్ జియోఫెన్స్ సెక్యూరిటీ (Pump Location Restriction)</h3>
+                <p class="text-xs text-slate-500">సిబ్బంది బంక్ పరిధి దాటి బయట నుండి డ్యూటీ లాగిన్ అవ్వకుండా నిరోధించండి (Restrict staff login within bunk radius)</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <span id="geofenceStatusBadge" class="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                ⚪ తనిఖీ చేస్తోంది...
+              </span>
+              <button onclick="saveGeofenceSettings()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs sm:text-sm px-4 py-2 rounded-xl shadow-md flex items-center gap-1.5 active:scale-95 transition-all">
+                <span>💾</span>
+                <span>జియోఫెన్స్ సేవ్ చేయి (Save Geofence)</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Toggle Switch -->
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2">
+              <label class="text-xs font-black text-slate-800 flex items-center gap-2">
+                <span>🛡️ సెక్యూరిటీ స్థితి (Security Status):</span>
+              </label>
+              <div class="flex items-center gap-3 pt-1">
+                <input type="checkbox" id="geofenceEnabledCheckbox" onchange="toggleGeofenceEnabledUI()" class="w-5 h-5 accent-indigo-600 rounded cursor-pointer">
+                <label for="geofenceEnabledCheckbox" class="text-xs font-bold text-slate-700 cursor-pointer">
+                  సిబ్బందికి జియోఫెన్స్ పరిమితి వర్తింపజేయి (Enforce Geofence for Staff)
+                </label>
+              </div>
+              <p class="text-[11px] text-slate-500 leading-snug">
+                దీన్ని ఆన్ చేస్తే, బంక్ పరిధి వెలుపల ఉన్న సిబ్బంది డ్యూటీ లాగిన్ అవ్వలేరు. ఓనర్ & మేనేజ్‌మెంట్ ఎక్కడినుండైనా లాగిన్ అవ్వవచ్చు.
+              </p>
+            </div>
+
+            <!-- GPS Coordinates -->
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2">
+              <div class="flex items-center justify-between">
+                <label class="text-xs font-black text-slate-800">
+                  🌐 బంక్ కేంద్ర బిందువు (Bunk Coordinates):
+                </label>
+                <button type="button" onclick="captureCurrentLocationAsBunk()" class="text-[11px] bg-amber-500 hover:bg-amber-600 text-white font-black px-2.5 py-1 rounded-lg shadow-sm flex items-center gap-1 active:scale-95 transition-all" title="బంక్ వద్ద నిలబడి మీ ఫోన్ GPS తో 1-క్లిక్ లో సెట్ చేయండి">
+                  <span>📍 నా లొకేషన్ సెట్ చేయి</span>
+                </button>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="text-[10px] font-bold text-slate-500 block">Latitude (అక్షాంశం):</label>
+                  <input type="number" step="any" id="geofenceLatInput" placeholder="17.385044" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-slate-900 focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                  <label class="text-[10px] font-bold text-slate-500 block">Longitude (రేఖాంశం):</label>
+                  <input type="number" step="any" id="geofenceLonInput" placeholder="78.486671" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-slate-900 focus:outline-none focus:border-indigo-500">
+                </div>
+              </div>
+              <div class="flex justify-between items-center pt-1 text-[11px]">
+                <a id="geofenceMapsLink" href="https://maps.google.com" target="_blank" class="text-indigo-600 hover:text-indigo-800 font-bold underline flex items-center gap-1">
+                  🗺️ View in Google Maps
+                </a>
+                <span id="geofenceDistanceIndicator" class="font-bold text-slate-600">--</span>
+              </div>
+            </div>
+
+            <!-- Radius Setting -->
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2">
+              <label class="text-xs font-black text-slate-800 flex items-center justify-between">
+                <span>📏 గరిష్ట పరిధి (Allowed Radius):</span>
+                <span id="geofenceRadiusDisplay" class="text-indigo-700 font-black">200 m</span>
+              </label>
+              <div class="flex items-center gap-2 pt-1">
+                <input type="range" id="geofenceRadiusSlider" min="50" max="1000" step="25" value="200" oninput="updateGeofenceRadiusDisplay(this.value)" class="w-full accent-indigo-600 cursor-pointer">
+              </div>
+              <div class="flex justify-between text-[10px] text-slate-400 font-bold">
+                <span>50m (టైట్)</span>
+                <span>200m (సిఫార్సు)</span>
+                <span>500m</span>
+                <span>1000m (1km)</span>
+              </div>
+              <p class="text-[11px] text-slate-500">
+                సిబ్బంది ఈ పరిధి (మీటర్లు) లోపల ఉన్నప్పుడు మాత్రమే డ్యూటీ లాగిన్ అవుతారు.
+              </p>
+            </div>
+          </div>
+        </div>
+
         <!-- Historical Archive & Past Pump Assignments (Read-Only) -->
+
         <!-- User requirement: "once i do pump assignment - thn where to see the history on whom we assigmend which pump and all (in future we want to see last month who worked on which pump and all) - do we need to create a tab with historical data(only read) - how we can archive it .." -->
         <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-4">
           <div class="flex flex-wrap justify-between items-center gap-3 border-b border-slate-100 pb-3">
@@ -2444,6 +2535,6 @@
     </div>
   </footer>
 
-  <script src="app.js?v=11"></script>
+  <script src="app.js?v=12"></script>
 </body>
 </html>

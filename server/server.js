@@ -41,6 +41,23 @@ function getLocalIpAddress() {
   return 'localhost';
 }
 
+// Helper to calculate geographical distance between two coordinates in meters (Haversine formula)
+function calculateDistanceMeters(lat1, lon1, lat2, lon2) {
+  const R = 6371e3; // Earth radius in meters
+  const phi1 = (lat1 * Math.PI) / 180;
+  const phi2 = (lat2 * Math.PI) / 180;
+  const deltaPhi = ((lat2 - lat1) * Math.PI) / 180;
+  const deltaLambda = ((lon2 - lon1) * Math.PI) / 180;
+
+  const a = Math.sin(deltaPhi / 2) * Math.sin(deltaPhi / 2) +
+            Math.cos(phi1) * Math.cos(phi2) *
+            Math.sin(deltaLambda / 2) * Math.sin(deltaLambda / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return Math.round(R * c);
+}
+
+
 // ----------------------------------------------------
 // MULTI-TENANT PDB (PLUGGABLE DATABASE) API
 // ----------------------------------------------------
@@ -288,7 +305,35 @@ app.post('/api/auth/login', (req, res) => {
       });
     }
 
+    // Geofencing verification strictly for Employee/Attendant logins
+    // User requirement: "lets do this for secutiry, the empoyee should not access the app outside the pump (lets make readius)"
+    const geofence = data.config?.geofence;
+    if (geofence && geofence.enabled && geofence.latitude && geofence.longitude) {
+      const userLat = parseFloat(req.body.latitude);
+      const userLon = parseFloat(req.body.longitude);
+
+      if (isNaN(userLat) || isNaN(userLon)) {
+        return res.status(403).json({
+          error: "లొకేషన్ (GPS) అనుమతి అవసరం! బంక్ భద్రత కొరకు సిబ్బంది మొబైల్ లో లొకేషన్ ఆన్ చేసి లాగిన్ అవ్వాలి (GPS Location access is required for staff duty login. Please turn on Location in your phone browser).",
+          locationRequired: true
+        });
+      }
+
+      const distance = calculateDistanceMeters(userLat, userLon, parseFloat(geofence.latitude), parseFloat(geofence.longitude));
+      const allowedRadius = parseFloat(geofence.radiusMeters) || 200;
+
+      if (distance > allowedRadius) {
+        return res.status(403).json({
+          error: `మీరు బంక్ పరిధి వెలుపల ఉన్నారు (${distance} మీటర్ల దూరం). డ్యూటీ లాగిన్ కేవలం బంక్ వద్ద (${allowedRadius} మీటర్ల లోపు) మాత్రమే సాధ్యమవుతుంది (You are outside bunk premises: ${distance}m away. Allowed radius: ${allowedRadius}m).`,
+          outsideGeofence: true,
+          distance,
+          allowedRadius
+        });
+      }
+    }
+
     const empName = emp ? emp.name : (assignments[assignedStation]?.employeeName || (isGenericEmp ? "Rajesh Varma" : username));
+
     return res.json({
       success: true,
       role: 'employee',
@@ -771,6 +816,28 @@ app.post('/api/duty-assignments', (req, res) => {
   if (!data.shiftAssignments) data.shiftAssignments = {};
   const defaultPins = { S1: "1122", S2: "3344", S3: "5566", S4: "7788" };
 
+  // User requirement: "once click on save allocation -> then if again click on save allocation without changing anything on same day not allow to save say data already save (onlve save allow if any changes in fields, atleast one field has to change and that also to be saved with date when saved and all)"
+  const existing = data.shiftAssignments[date];
+  if (existing) {
+    let hasChanges = false;
+    ['S1', 'S2', 'S3', 'S4'].forEach(stKey => {
+      const incomingName = (assignments[stKey]?.employeeName || "").trim();
+      const existingName = (existing[stKey]?.employeeName || "").trim();
+      const incomingPin = (assignments[stKey]?.dutyPin || defaultPins[stKey] || "").trim();
+      const existingPin = (existing[stKey]?.dutyPin || defaultPins[stKey] || "").trim();
+
+      if (incomingName !== existingName) hasChanges = true;
+      if (incomingPin !== existingPin) hasChanges = true;
+    });
+
+    if (!hasChanges) {
+      return res.status(400).json({ 
+        noChanges: true, 
+        error: "డేటా ఇప్పటికే సేవ్ చేయబడింది! ఎటువంటి మార్పులు లేవు (Data already saved! No changes detected. Make at least one change to update)." 
+      });
+    }
+  }
+
   ['S1', 'S2', 'S3', 'S4'].forEach(stKey => {
     if (assignments[stKey]) {
       if (!assignments[stKey].dutyPin) {
@@ -778,6 +845,12 @@ app.post('/api/duty-assignments', (req, res) => {
       }
     }
   });
+
+  const now = new Date();
+  const savedTimeString = now.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' });
+  assignments.savedAt = now.toISOString();
+  assignments.savedAtFormatted = savedTimeString;
+  assignments.updatedAt = now.toISOString();
 
   data.shiftAssignments[date] = assignments;
 
@@ -792,7 +865,12 @@ app.post('/api/duty-assignments', (req, res) => {
   }
 
   storage.save(tenantId, data);
-  res.json({ success: true, assignments: data.shiftAssignments[date] });
+  res.json({ 
+    success: true, 
+    savedAtFormatted: savedTimeString,
+    assignments: data.shiftAssignments[date],
+    message: `పంపుల కేటాయింపు మార్పులు విజయవంతంగా సేవ్ చేయబడ్డాయి (${savedTimeString})!` 
+  });
 });
 
 // Duty Assignments Historical Archive (Read-Only Archive for Past Months/Dates)
@@ -829,6 +907,63 @@ app.get('/api/duty-assignments/history', (req, res) => {
 
   res.json({ success: true, count: history.length, history });
 });
+
+// ----------------------------------------------------
+// BUNK GEOFENCE & LOCATION RESTRICTION API
+// User requirement: "lets do this for secutiry, the empoyee should not access the app outside the pump (lets make readius) - how to plan it"
+// ----------------------------------------------------
+
+// Get current Geofence Configuration
+app.get('/api/geofence', (req, res) => {
+  const tenantId = getTenantId(req);
+  const data = storage.load(tenantId);
+  const geofence = data.config?.geofence || {
+    enabled: false,
+    latitude: 17.385044,
+    longitude: 78.486671,
+    radiusMeters: 200,
+    stationName: data.config?.stationName || "SRR Filling Station",
+    updatedAt: null
+  };
+  res.json({ success: true, geofence });
+});
+
+// Update Geofence Configuration (Owner / Management)
+app.post('/api/geofence', (req, res) => {
+  const tenantId = getTenantId(req);
+  const { enabled, latitude, longitude, radiusMeters, stationName } = req.body;
+  const data = storage.load(tenantId);
+  if (!data.config) data.config = {};
+
+  const latNum = parseFloat(latitude);
+  const lonNum = parseFloat(longitude);
+  const radNum = parseFloat(radiusMeters) || 200;
+
+  if (enabled && (isNaN(latNum) || isNaN(lonNum))) {
+    return res.status(400).json({ error: "చెల్లుబాటు అయ్యే GPS అక్షాంశం (Latitude) మరియు రేఖాంశం (Longitude) అవసరం" });
+  }
+
+  const now = new Date();
+  const updatedTime = now.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' });
+
+  data.config.geofence = {
+    enabled: Boolean(enabled),
+    latitude: isNaN(latNum) ? (data.config.geofence?.latitude || 17.385044) : latNum,
+    longitude: isNaN(lonNum) ? (data.config.geofence?.longitude || 78.486671) : lonNum,
+    radiusMeters: radNum,
+    stationName: stationName || data.config.stationName || "SRR Filling Station",
+    updatedAt: now.toISOString(),
+    updatedAtFormatted: updatedTime
+  };
+
+  storage.save(tenantId, data);
+  res.json({
+    success: true,
+    geofence: data.config.geofence,
+    message: `జియోఫెన్స్ సెట్టింగ్స్ విజయవంతంగా సేవ్ చేయబడ్డాయి (${updatedTime})!`
+  });
+});
+
 
 // Shifts API
 app.get('/api/shifts', (req, res) => {

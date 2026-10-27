@@ -31,7 +31,15 @@ function createPdbTemplate(stationName, brand = "Indian Oil", adminPin = "123", 
       ownerUsername: "owner",
       ownerPassword: "123",
       developerPassword: "123",
+      geofence: {
+        enabled: false,
+        latitude: 17.385044,
+        longitude: 78.486671,
+        radiusMeters: 200,
+        stationName: stationName.toUpperCase()
+      },
       pumps: [
+
         {
           id: "Pump1",
           name: "Pump 1",
