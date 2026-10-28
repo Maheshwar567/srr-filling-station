@@ -606,7 +606,8 @@
               "open": 1000
             },
             "joinedAt": "11:25 AM"
-          }
+          },
+          "expensesList": []
         },
         "S2": {
           "pump": "Pump 1",
@@ -637,7 +638,11 @@
             "expenseReason": ""
           },
           "employeeName": "",
-          "readingsHistory": []
+          "readingsHistory": [],
+          "testingRecords": [],
+          "cardSwipes": [],
+          "expensesList": [],
+          "upiPayments": []
         },
         "S3": {
           "pump": "Pump 2",
@@ -668,7 +673,11 @@
             "expenseReason": ""
           },
           "employeeName": "",
-          "readingsHistory": []
+          "readingsHistory": [],
+          "testingRecords": [],
+          "cardSwipes": [],
+          "expensesList": [],
+          "upiPayments": []
         },
         "S4": {
           "pump": "Pump 2",
@@ -699,7 +708,11 @@
             "expenseReason": ""
           },
           "employeeName": "",
-          "readingsHistory": []
+          "readingsHistory": [],
+          "testingRecords": [],
+          "cardSwipes": [],
+          "expensesList": [],
+          "upiPayments": []
         }
       },
       "dieselRate": 105.23,
@@ -739,7 +752,11 @@
             "expenseReason": ""
           },
           "employeeName": "Ramesh Kumar",
-          "readingsHistory": []
+          "readingsHistory": [],
+          "testingRecords": [],
+          "cardSwipes": [],
+          "expensesList": [],
+          "upiPayments": []
         },
         "S2": {
           "pump": "Pump 1",
@@ -770,7 +787,11 @@
             "expenseReason": ""
           },
           "employeeName": "Suresh Reddy",
-          "readingsHistory": []
+          "readingsHistory": [],
+          "testingRecords": [],
+          "cardSwipes": [],
+          "expensesList": [],
+          "upiPayments": []
         },
         "S3": {
           "pump": "Pump 2",
@@ -801,7 +822,11 @@
             "expenseReason": ""
           },
           "employeeName": "Venkatesh Rao",
-          "readingsHistory": []
+          "readingsHistory": [],
+          "testingRecords": [],
+          "cardSwipes": [],
+          "expensesList": [],
+          "upiPayments": []
         },
         "S4": {
           "pump": "Pump 2",
@@ -832,7 +857,11 @@
             "expenseReason": ""
           },
           "employeeName": "Naresh Babu",
-          "readingsHistory": []
+          "readingsHistory": [],
+          "testingRecords": [],
+          "cardSwipes": [],
+          "expensesList": [],
+          "upiPayments": []
         }
       },
       "dieselRate": 105.23,
@@ -922,7 +951,11 @@
               "open": 100
             },
             "joinedAt": "09:56 AM"
-          }
+          },
+          "testingRecords": [],
+          "cardSwipes": [],
+          "expensesList": [],
+          "upiPayments": []
         },
         "S2": {
           "pump": "Pump 1",
@@ -953,7 +986,11 @@
             "expenseReason": ""
           },
           "employeeName": "Suresh Reddy",
-          "readingsHistory": []
+          "readingsHistory": [],
+          "testingRecords": [],
+          "cardSwipes": [],
+          "expensesList": [],
+          "upiPayments": []
         },
         "S3": {
           "pump": "Pump 2",
@@ -984,7 +1021,11 @@
             "expenseReason": ""
           },
           "employeeName": "Venkat Rao",
-          "readingsHistory": []
+          "readingsHistory": [],
+          "testingRecords": [],
+          "cardSwipes": [],
+          "expensesList": [],
+          "upiPayments": []
         },
         "S4": {
           "pump": "Pump 2",
@@ -1015,7 +1056,11 @@
             "expenseReason": ""
           },
           "employeeName": "Naresh Kumar",
-          "readingsHistory": []
+          "readingsHistory": [],
+          "testingRecords": [],
+          "cardSwipes": [],
+          "expensesList": [],
+          "upiPayments": []
         }
       },
       "dieselRate": 105.23,
@@ -1567,6 +1612,60 @@
       "savedAt": "2026-10-27T07:32:01.867Z",
       "savedAtFormatted": "27 Oct 2026, 1:02 pm",
       "updatedAt": "2026-10-27T07:32:01.867Z"
+    },
+    "2026-10-28": {
+      "S1": {
+        "employeeName": "Mahesh reddy",
+        "dutyPin": "9900",
+        "previousAttendants": [
+          {
+            "employeeName": "Ramesh Kumar",
+            "dutyPin": "1122",
+            "replacedAt": "2026-10-28T04:43:35.015Z",
+            "replacedAtFormatted": "28 Oct 2026, 10:13 am",
+            "replacedBy": "Mahesh reddy"
+          }
+        ]
+      },
+      "S2": {
+        "employeeName": "Suresh Reddy",
+        "dutyPin": "3344",
+        "previousAttendants": []
+      },
+      "S3": {
+        "employeeName": "Venkatesh Rao",
+        "dutyPin": "5566",
+        "previousAttendants": []
+      },
+      "S4": {
+        "employeeName": "Naresh Babu",
+        "dutyPin": "7788",
+        "previousAttendants": []
+      },
+      "handoverHistory": [
+        {
+          "date": "2026-10-28",
+          "stationId": "S1",
+          "stationName": "S1 (Pump 1)",
+          "previousEmployee": "Ramesh Kumar",
+          "previousDutyPin": "1122",
+          "newEmployee": "Mahesh reddy",
+          "newDutyPin": "9900",
+          "timestamp": "2026-10-28T04:43:35.015Z",
+          "formattedTime": "28 Oct 2026, 10:13 am",
+          "note": "హ్యాండోవర్: Ramesh Kumar పని ముగించారు, Mahesh reddy బాధ్యతలు తీసుకున్నారు"
+        }
+      ],
+      "allEmployeesWorked": [
+        "Ramesh Kumar",
+        "Suresh Reddy",
+        "Venkatesh Rao",
+        "Naresh Babu",
+        "Mahesh reddy"
+      ],
+      "savedAt": "2026-10-28T04:43:35.015Z",
+      "savedAtFormatted": "28 Oct 2026, 10:13 am",
+      "updatedAt": "2026-10-28T04:43:35.015Z"
     }
   }
 }

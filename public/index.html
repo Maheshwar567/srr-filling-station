@@ -1907,6 +1907,48 @@
           </div>
         </div>
 
+        <!-- WORKED STAFF ATTENDANCE SUMMARY LIST -->
+        <!-- User requirement: "i have modified the shift allocation - i have changed emp name to other (the past emp was not feeing well since evening so added new emp - in this case we need to know the old emp also to show in worked list - where to see)" -->
+        <div class="bg-white rounded-2xl shadow-md border-2 border-indigo-200 p-4 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+            <div class="flex items-center gap-2">
+              <span class="text-xl">📋</span>
+              <div>
+                <h4 class="font-black text-slate-900 text-sm">సిబ్బంది పనిదినాల జాబితా (Duty Attendance & Worked Staff List)</h4>
+                <p class="text-[11px] text-slate-500">ఎవరెవరు ఎన్ని రోజులు, ఏ పంపుల వద్ద పనిచేశారు (హ్యాండోవర్ ద్వారా మార్చబడిన మునుపటి సిబ్బందితో సహా)</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono font-bold text-indigo-900 bg-indigo-50 border border-indigo-200 px-3 py-1 rounded-xl" id="attWorkedStaffCountBadge">
+                పనిచేసిన సిబ్బంది: 0
+              </span>
+              <button onclick="onSalaryDateRangeChange()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold px-3 py-1 rounded-xl border border-slate-300 shadow-xs flex items-center gap-1 transition-all">
+                <span>🔄</span>
+                <span>రీఫ్రెష్ (Refresh List)</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs text-left border-collapse" id="attWorkedStaffTable">
+              <thead>
+                <tr class="bg-slate-900 text-white font-black uppercase text-[11px]">
+                  <th class="p-2.5">సిబ్బంది పేరు (Staff)</th>
+                  <th class="p-2.5 text-center">పని చేసిన రోజులు (Days Worked)</th>
+                  <th class="p-2.5">కేటాయించిన పంపులు (Stations)</th>
+                  <th class="p-2.5">పని చేసిన తేదీలు (Dates Worked)</th>
+                  <th class="p-2.5 text-right">రోజువారీ రేటు</th>
+                  <th class="p-2.5 text-right">అంచనా వేతనం (Earnings)</th>
+                  <th class="p-2.5 text-center">చర్య (Action)</th>
+                </tr>
+              </thead>
+              <tbody id="attWorkedStaffTableBody" class="divide-y divide-slate-100 font-medium">
+                <tr><td colspan="7" class="p-4 text-center text-slate-400 font-bold">హాజరు జాబితా లోడ్ అవుతోంది (Loading Worked List)...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
         <!-- Attendance & Salary Calculation Records Table (Rows as requested by user) -->
         <div class="bg-white rounded-2xl shadow-md border-2 border-slate-200 p-4 space-y-3">
           <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
@@ -1996,6 +2038,21 @@
               </button>
             </div>
           </div>
+
+          <!-- Live Station Quick Filter Pills -->
+          <!-- User requirement: "Also give filter for pumps if i choose S1 show only s1 like that" -->
+          <div class="flex items-center justify-between gap-2 flex-wrap bg-slate-50 p-2.5 rounded-2xl border border-slate-200">
+            <div class="flex items-center gap-1.5 flex-wrap" id="rosterLiveStationPills">
+              <span class="text-[11px] font-bold text-slate-600 mr-1">స్టేషన్ ఫిల్టర్ (Filter Station):</span>
+              <button type="button" onclick="setLiveRosterStationFilter('ALL')" id="pillLiveRoster-ALL" class="text-xs font-black px-3 py-1 rounded-xl bg-orange-600 text-white shadow-xs">అన్నీ (All S1-S4)</button>
+              <button type="button" onclick="setLiveRosterStationFilter('S1')" id="pillLiveRoster-S1" class="text-xs font-bold px-3 py-1 rounded-xl bg-white border border-slate-300 text-slate-700 hover:bg-slate-100">S1 (Pump 1)</button>
+              <button type="button" onclick="setLiveRosterStationFilter('S2')" id="pillLiveRoster-S2" class="text-xs font-bold px-3 py-1 rounded-xl bg-white border border-slate-300 text-slate-700 hover:bg-slate-100">S2 (Pump 1)</button>
+              <button type="button" onclick="setLiveRosterStationFilter('S3')" id="pillLiveRoster-S3" class="text-xs font-bold px-3 py-1 rounded-xl bg-white border border-slate-300 text-slate-700 hover:bg-slate-100">S3 (Pump 2)</button>
+              <button type="button" onclick="setLiveRosterStationFilter('S4')" id="pillLiveRoster-S4" class="text-xs font-bold px-3 py-1 rounded-xl bg-white border border-slate-300 text-slate-700 hover:bg-slate-100">S4 (Pump 2)</button>
+            </div>
+            <span class="text-[10px] text-slate-400 font-bold" id="rosterLiveFilterStatus">Showing All 4 Stations</span>
+          </div>
+
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="dutyRosterCardsContainer"></div>
         </div>
 
@@ -2112,11 +2169,22 @@
             </div>
           </div>
 
-          <!-- Filters: Month Filter & Employee Search -->
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-200">
+          <!-- Filters: Month Filter, Pump Filter & Employee Search -->
+          <!-- User requirement: "Also give filter for pumps if i choose S1 show only s1 like that" -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-200">
             <div>
               <label class="text-[11px] font-bold text-slate-700 block mb-1">నెల ఎంపిక (Filter by Month):</label>
               <input type="month" id="rosterHistoryMonthInput" onchange="loadDutyRosterHistory()" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-mono font-bold text-slate-900 shadow-sm">
+            </div>
+            <div>
+              <label class="text-[11px] font-bold text-indigo-950 block mb-1">పంపు / స్టేషన్ ఫిల్టర్ (Filter Pump):</label>
+              <select id="rosterHistoryPumpFilter" onchange="filterDutyRosterHistory()" class="w-full bg-white border-2 border-indigo-400 focus:border-indigo-600 rounded-xl px-3 py-1.5 text-xs font-bold text-indigo-950 shadow-sm">
+                <option value="ALL">అన్ని పంపులు (All Pumps / S1 - S4)</option>
+                <option value="S1">S1 (Pump 1 - Side 1)</option>
+                <option value="S2">S2 (Pump 1 - Side 2)</option>
+                <option value="S3">S3 (Pump 2 - Side 3)</option>
+                <option value="S4">S4 (Pump 2 - Side 4)</option>
+              </select>
             </div>
             <div>
               <label class="text-[11px] font-bold text-slate-700 block mb-1">సిబ్బంది శోధన (Search Attendant):</label>
@@ -2132,7 +2200,7 @@
           <!-- Read-Only History Table -->
           <div class="overflow-x-auto rounded-2xl border border-slate-200 shadow-sm">
             <table class="w-full text-left text-xs border-collapse">
-              <thead class="bg-slate-900 text-white font-black uppercase text-[11px] tracking-wider">
+              <thead class="bg-slate-900 text-white font-black uppercase text-[11px] tracking-wider" id="rosterHistoryTableHead">
                 <tr>
                   <th class="p-3 border-r border-slate-800">తేదీ (Date)</th>
                   <th class="p-3 border-r border-slate-800">S1 (Pump 1)</th>
@@ -2148,6 +2216,26 @@
                 </tr>
               </tbody>
             </table>
+          </div>
+
+          <!-- Mid-Shift Handover & Staff Replacement Audit Log -->
+          <!-- User requirement: "i have modified the shift allocation - i have changed emp name to other (the past emp was not feeing well since evening so added new emp - in this case we need to know the old emp also to show in worked list - where to see)" -->
+          <div id="rosterHandoverSection" class="bg-gradient-to-r from-amber-50 to-orange-50/40 rounded-2xl border border-amber-200 p-4 space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-amber-200/60 pb-2.5">
+              <div class="flex items-center gap-2">
+                <span class="text-xl">🔄</span>
+                <div>
+                  <h4 class="font-black text-amber-950 text-xs sm:text-sm">షిఫ్ట్ హ్యాండోవర్ & సిబ్బంది మార్పుల వివరాలు (Shift Handover & Staff Replacement Log)</h4>
+                  <p class="text-[11px] text-amber-800">షిఫ్ట్ మధ్యలో అనారోగ్యం లేదా ఇతర కారణాలతో మారిన సిబ్బంది వివరాలు (ఇద్దరు సిబ్బందికి పనిదినాలు భద్రపరచబడ్డాయి)</p>
+                </div>
+              </div>
+              <span class="text-xs font-mono font-bold bg-amber-200 text-amber-950 px-2.5 py-1 rounded-lg border border-amber-300" id="rosterHandoverCountBadge">
+                0 హ్యాండోవర్లు
+              </span>
+            </div>
+            <div id="rosterHandoverListContainer" class="space-y-2">
+              <div class="text-center text-slate-400 py-2 text-xs">హ్యాండోవర్ రికార్డులు ఏవీ లేవు (No mid-shift replacements recorded yet)</div>
+            </div>
           </div>
         </div>
       </div>
@@ -2535,6 +2623,6 @@
     </div>
   </footer>
 
-  <script src="app.js?v=12"></script>
+  <script src="app.js?v=13"></script>
 </body>
 </html>

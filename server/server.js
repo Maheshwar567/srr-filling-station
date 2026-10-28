@@ -848,20 +848,70 @@ app.post('/api/duty-assignments', (req, res) => {
 
   const now = new Date();
   const savedTimeString = now.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' });
+
+  // Mid-Shift Handover & Staff Replacement Tracking
+  // User requirement: "i have modified the shift allocation - i have changed emp name to other (the past emp was not feeing well since evening so added new emp - in this case we need to know the old emp also to show in worked list - where to see)"
+  const handoverHistory = Array.isArray(existing?.handoverHistory) ? [...existing.handoverHistory] : [];
+  const allStaffSet = new Set(Array.isArray(existing?.allEmployeesWorked) ? existing.allEmployeesWorked : []);
+
+  ['S1', 'S2', 'S3', 'S4'].forEach(stKey => {
+    if (!assignments[stKey]) return;
+
+    // Retain past attendants array for this station
+    const existingPast = Array.isArray(existing?.[stKey]?.previousAttendants) ? existing[stKey].previousAttendants : [];
+    assignments[stKey].previousAttendants = [...existingPast];
+
+    const incomingName = (assignments[stKey]?.employeeName || "").trim();
+    const existingName = (existing?.[stKey]?.employeeName || "").trim();
+
+    if (existingName) allStaffSet.add(existingName);
+    if (incomingName) allStaffSet.add(incomingName);
+
+    // If attendant changed, record previous employee in previousAttendants and handoverHistory
+    if (existingName && incomingName && existingName !== incomingName) {
+      const handoverItem = {
+        date,
+        stationId: stKey,
+        stationName: `${stKey} (${stKey === 'S1' || stKey === 'S2' ? 'Pump 1' : 'Pump 2'})`,
+        previousEmployee: existingName,
+        previousDutyPin: existing?.[stKey]?.dutyPin || defaultPins[stKey],
+        newEmployee: incomingName,
+        newDutyPin: assignments[stKey]?.dutyPin || defaultPins[stKey],
+        timestamp: now.toISOString(),
+        formattedTime: savedTimeString,
+        note: `హ్యాండోవర్: ${existingName} పని ముగించారు, ${incomingName} బాధ్యతలు తీసుకున్నారు`
+      };
+
+      assignments[stKey].previousAttendants.push({
+        employeeName: existingName,
+        dutyPin: existing?.[stKey]?.dutyPin || defaultPins[stKey],
+        replacedAt: now.toISOString(),
+        replacedAtFormatted: savedTimeString,
+        replacedBy: incomingName
+      });
+
+      handoverHistory.push(handoverItem);
+    }
+  });
+
+  assignments.handoverHistory = handoverHistory;
+  assignments.allEmployeesWorked = Array.from(allStaffSet);
   assignments.savedAt = now.toISOString();
   assignments.savedAtFormatted = savedTimeString;
   assignments.updatedAt = now.toISOString();
 
   data.shiftAssignments[date] = assignments;
 
-  // Also update shift stations employee names
+  // Also update shift stations employee names and handover history
   let shift = data.shifts.find(s => s.date === date);
   if (shift) {
     ['S1', 'S2', 'S3', 'S4'].forEach(stKey => {
       if (assignments[stKey]?.employeeName && shift.stations[stKey]) {
         shift.stations[stKey].employeeName = assignments[stKey].employeeName;
+        shift.stations[stKey].previousAttendants = assignments[stKey].previousAttendants;
       }
     });
+    shift.handoverHistory = handoverHistory;
   }
 
   storage.save(tenantId, data);
@@ -869,17 +919,21 @@ app.post('/api/duty-assignments', (req, res) => {
     success: true, 
     savedAtFormatted: savedTimeString,
     assignments: data.shiftAssignments[date],
+    handoverHistory,
+    allEmployeesWorked: assignments.allEmployeesWorked,
     message: `పంపుల కేటాయింపు మార్పులు విజయవంతంగా సేవ్ చేయబడ్డాయి (${savedTimeString})!` 
   });
 });
 
 // Duty Assignments Historical Archive (Read-Only Archive for Past Months/Dates)
 // User requirement: "in future we want to see last month who worked on which pump and all - do we need to create a tab with historical data(only read) - how we can archive it .."
+// User requirement: "Also give filter for pumps if i choose S1 show only s1 like that"
 app.get('/api/duty-assignments/history', (req, res) => {
   const tenantId = getTenantId(req);
   const data = storage.load(tenantId);
   const month = req.query.month; // e.g. "2026-10"
   const empFilter = req.query.employee ? req.query.employee.toLowerCase().trim() : '';
+  const stationFilter = req.query.station ? req.query.station.toUpperCase().trim() : ''; // e.g. "S1", "S2"
 
   const assignments = data.shiftAssignments || {};
   const history = [];
@@ -894,14 +948,25 @@ app.get('/api/duty-assignments/history', (req, res) => {
     let matchesEmp = true;
     if (empFilter) {
       matchesEmp = Object.values(stMap).some(st => 
-        st.employeeName && st.employeeName.toLowerCase().includes(empFilter)
-      );
+        (st.employeeName && st.employeeName.toLowerCase().includes(empFilter)) ||
+        (Array.isArray(st.previousAttendants) && st.previousAttendants.some(p => p.employeeName && p.employeeName.toLowerCase().includes(empFilter)))
+      ) || (Array.isArray(stMap.allEmployeesWorked) && stMap.allEmployeesWorked.some(name => name.toLowerCase().includes(empFilter)));
     }
     if (!matchesEmp) return;
 
+    // Station filter if specified (e.g. S1, S2, S3, S4)
+    if (stationFilter && ['S1', 'S2', 'S3', 'S4'].includes(stationFilter)) {
+      const targetSt = stMap[stationFilter];
+      const hasAssignment = targetSt && (targetSt.employeeName || (Array.isArray(targetSt.previousAttendants) && targetSt.previousAttendants.length > 0));
+      if (!hasAssignment) return;
+    }
+
     history.push({
       date: d,
-      stations: stMap
+      stations: stMap,
+      handoverHistory: stMap.handoverHistory || [],
+      allEmployeesWorked: stMap.allEmployeesWorked || [],
+      savedAtFormatted: stMap.savedAtFormatted || ''
     });
   });
 
@@ -1468,29 +1533,93 @@ app.get('/api/duty-attendance', (req, res) => {
     const datesWorked = new Set();
     const stationCounts = { S1: 0, S2: 0, S3: 0, S4: 0 };
 
-    // Check shiftAssignments for this date range
+    // Check shiftAssignments for this date range (including past attendants & handovers)
+    // User requirement: "the past emp was not feeing well since evening so added new emp - in this case we need to know the old emp also to show in worked list"
     Object.entries(shiftAssignments).forEach(([dateStr, stationsMap]) => {
       if (isDateInRange(dateStr)) {
-        Object.entries(stationsMap).forEach(([stKey, asgn]) => {
-          if (asgn && asgn.employeeName) {
-            const asgnName = asgn.employeeName.trim().toLowerCase();
-            if (asgnName === cleanEmp || asgnName.split(/\s+/)[0] === cleanFn) {
-              datesWorked.add(dateStr);
-              stationCounts[stKey] = (stationCounts[stKey] || 0) + 1;
+        // 1. Check direct station assignments
+        ['S1', 'S2', 'S3', 'S4'].forEach(stKey => {
+          const asgn = stationsMap[stKey];
+          if (asgn) {
+            // Check active attendant
+            if (asgn.employeeName) {
+              const asgnName = asgn.employeeName.trim().toLowerCase();
+              if (asgnName === cleanEmp || asgnName.split(/\s+/)[0] === cleanFn) {
+                datesWorked.add(dateStr);
+                stationCounts[stKey] = (stationCounts[stKey] || 0) + 1;
+              }
+            }
+            // Check previous attendants who were replaced mid-shift!
+            if (Array.isArray(asgn.previousAttendants)) {
+              asgn.previousAttendants.forEach(prev => {
+                if (prev && prev.employeeName) {
+                  const prevName = prev.employeeName.trim().toLowerCase();
+                  if (prevName === cleanEmp || prevName.split(/\s+/)[0] === cleanFn) {
+                    datesWorked.add(dateStr);
+                    stationCounts[stKey] = (stationCounts[stKey] || 0) + 1;
+                  }
+                }
+              });
             }
           }
         });
+
+        // 2. Check allEmployeesWorked list on this date
+        if (Array.isArray(stationsMap.allEmployeesWorked)) {
+          stationsMap.allEmployeesWorked.forEach(wName => {
+            const wClean = (wName || '').trim().toLowerCase();
+            if (wClean === cleanEmp || wClean.split(/\s+/)[0] === cleanFn) {
+              datesWorked.add(dateStr);
+            }
+          });
+        }
+
+        // 3. Check handoverHistory
+        if (Array.isArray(stationsMap.handoverHistory)) {
+          stationsMap.handoverHistory.forEach(h => {
+            const pClean = (h.previousEmployee || '').trim().toLowerCase();
+            const nClean = (h.newEmployee || '').trim().toLowerCase();
+            if (pClean === cleanEmp || pClean.split(/\s+/)[0] === cleanFn ||
+                nClean === cleanEmp || nClean.split(/\s+/)[0] === cleanFn) {
+              datesWorked.add(dateStr);
+              if (h.stationId) {
+                stationCounts[h.stationId] = (stationCounts[h.stationId] || 0) + 1;
+              }
+            }
+          });
+        }
       }
     });
 
-    // Check completed shifts for this date range
+    // Check completed and active shifts for this date range
     shifts.forEach(s => {
       if (s.date && isDateInRange(s.date) && s.stations) {
         Object.entries(s.stations).forEach(([stKey, stObj]) => {
-          if (stObj && stObj.employeeName) {
-            const stName = stObj.employeeName.trim().toLowerCase();
+          if (stObj) {
+            const stName = (stObj.employeeName || '').trim().toLowerCase();
             if (stName === cleanEmp || stName.split(/\s+/)[0] === cleanFn) {
               datesWorked.add(s.date);
+              stationCounts[stKey] = (stationCounts[stKey] || 0) + 1;
+            }
+            // Check past attendants on shift station
+            if (Array.isArray(stObj.previousAttendants)) {
+              stObj.previousAttendants.forEach(p => {
+                const pName = (p.employeeName || '').trim().toLowerCase();
+                if (pName === cleanEmp || pName.split(/\s+/)[0] === cleanFn) {
+                  datesWorked.add(s.date);
+                  stationCounts[stKey] = (stationCounts[stKey] || 0) + 1;
+                }
+              });
+            }
+            // Check attendants who entered readings
+            if (Array.isArray(stObj.readingsHistory)) {
+              stObj.readingsHistory.forEach(rh => {
+                const rhName = (rh.employeeName || '').trim().toLowerCase();
+                if (rhName === cleanEmp || rhName.split(/\s+/)[0] === cleanFn) {
+                  datesWorked.add(s.date);
+                  stationCounts[stKey] = (stationCounts[stKey] || 0) + 1;
+                }
+              });
             }
           }
         });

@@ -3202,8 +3202,9 @@ async function loadDutyAttendanceData() {
     // 3. If employee already selected, immediately populate inputs in 0ms
     onSalaryEmployeeSelect();
 
-    // 4. Render salary table
+    // 4. Render salary table & worked staff attendance summary list
     renderSalaryRecordsTable();
+    renderWorkedStaffAttendanceList();
   } catch (err) {
     console.error('Error loading salary calculator data:', err);
   }
@@ -3692,6 +3693,96 @@ function filterDutyAttendanceTable() {
   renderSalaryRecordsTable();
 }
 
+// --- WORKED STAFF ATTENDANCE SUMMARY LIST ---
+// User requirement: "the past emp was not feeing well since evening so added new emp - in this case we need to know the old emp also to show in worked list - where to see"
+function renderWorkedStaffAttendanceList() {
+  const tbody = document.getElementById('attWorkedStaffTableBody');
+  const countBadge = document.getElementById('attWorkedStaffCountBadge');
+  if (!tbody) return;
+
+  const attList = STATE.dutyAttendance?.attendanceList || [];
+  // Filter for employees who worked at least 0.5 days or are active
+  const workedList = attList.filter(e => (e.daysWorked || 0) > 0);
+
+  if (countBadge) {
+    countBadge.innerText = `పనిచేసిన సిబ్బంది: ${workedList.length} మంది`;
+  }
+
+  if (workedList.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-400 font-bold">ఈ వ్యవధిలో ఎటువంటి సిబ్బంది హాజరు రికార్డులు లేవు (No duty shifts worked in this period)</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = workedList.map(emp => {
+    const stationBadges = Object.entries(emp.stationCounts || {})
+      .filter(([_, count]) => count > 0)
+      .map(([st, count]) => {
+        return `<span class="bg-indigo-50 text-indigo-950 border border-indigo-200 px-2 py-0.5 rounded text-[11px] font-bold font-mono">${st} (${count}d)</span>`;
+      }).join(' ');
+
+    const datesList = (emp.datesWorked || []).join(', ');
+    const wage = emp.dailyWage || 750;
+    const earnings = Math.round(emp.daysWorked * wage);
+
+    return `
+      <tr class="hover:bg-indigo-50/30 transition-colors border-b border-slate-100">
+        <td class="p-2.5 font-black text-slate-900">
+          <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-black flex items-center justify-center text-xs shrink-0">
+              👤
+            </div>
+            <div>
+              <div class="text-xs sm:text-sm font-bold text-slate-900">${emp.name}</div>
+              <div class="text-[10px] text-slate-400 font-mono">${emp.phone || emp.villageName || 'Staff'}</div>
+            </div>
+          </div>
+        </td>
+        <td class="p-2.5 text-center font-mono font-black">
+          <span class="bg-blue-100 text-blue-950 border border-blue-300 px-2.5 py-1 rounded-xl text-xs shadow-2xs">
+            ${emp.daysWorked} Days
+          </span>
+        </td>
+        <td class="p-2.5">
+          <div class="flex items-center gap-1 flex-wrap">
+            ${stationBadges || '<span class="text-slate-400 text-[10px]">-</span>'}
+          </div>
+        </td>
+        <td class="p-2.5 font-mono text-[11px] text-slate-600 max-w-xs truncate" title="${datesList}">
+          ${datesList || '-'}
+        </td>
+        <td class="p-2.5 text-right font-mono font-bold text-slate-700">₹${wage.toLocaleString('en-IN')}</td>
+        <td class="p-2.5 text-right font-mono font-black text-emerald-700 text-xs sm:text-sm">₹${earnings.toLocaleString('en-IN')}</td>
+        <td class="p-2.5 text-center">
+          <button onclick="selectStaffForSalaryCalculation('${emp.id || emp.name}')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[11px] px-3 py-1.5 rounded-xl shadow-xs transition-all active:scale-95 flex items-center gap-1 mx-auto">
+            <span>⚡</span>
+            <span>శాలరీ లెక్కించు</span>
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function selectStaffForSalaryCalculation(empId) {
+  const select = document.getElementById('salCalcEmpSelect');
+  if (!select) return;
+
+  // Find matching option by data-id or value or data-name
+  for (let i = 0; i < select.options.length; i++) {
+    const opt = select.options[i];
+    if (opt.value === empId || opt.getAttribute('data-id') === empId || opt.getAttribute('data-name') === empId) {
+      select.selectedIndex = i;
+      break;
+    }
+  }
+
+  onSalaryEmployeeSelect();
+  select.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  select.classList.add('ring-4', 'ring-indigo-300');
+  setTimeout(() => select.classList.remove('ring-4', 'ring-indigo-300'), 1500);
+}
+
+
 async function toggleSalaryRecordPaidStatus(id, currentStatus) {
   const newStatus = currentStatus === 'paid' ? 'pending' : 'paid';
   try {
@@ -4163,7 +4254,7 @@ function renderAdminDutyRoster() {
     const dutyPin = assignments[stKey]?.dutyPin || defaultPins[stKey] || "1122";
 
     return `
-      <div class="bg-white rounded-2xl shadow-md border-2 border-slate-200 p-4 space-y-3.5 hover:border-orange-300 transition-all">
+      <div data-station="${stKey}" class="bg-white rounded-2xl shadow-md border-2 border-slate-200 p-4 space-y-3.5 hover:border-orange-300 transition-all">
         <div class="flex items-center justify-between border-b border-slate-100 pb-2">
           <div class="flex items-center gap-2">
             <span class="w-3 h-3 rounded-full ${assignedName ? 'bg-emerald-500 ring-2 ring-emerald-200' : 'bg-slate-300'}"></span>
@@ -4206,10 +4297,54 @@ function renderAdminDutyRoster() {
     `;
   }).join('');
 
+  // Re-apply live filter if any
+  setLiveRosterStationFilter(currentLiveRosterStationFilter);
+
   // Automatically load the historical archive & geofence settings
   loadDutyRosterHistory();
   loadGeofenceSettings();
 }
+
+// --- LIVE DUTY ALLOCATION STATION FILTER ---
+// User requirement: "Also give filter for pumps if i choose S1 show only s1 like that"
+let currentLiveRosterStationFilter = 'ALL';
+
+function setLiveRosterStationFilter(stKey) {
+  currentLiveRosterStationFilter = stKey || 'ALL';
+
+  // Update pills UI
+  ['ALL', 'S1', 'S2', 'S3', 'S4'].forEach(k => {
+    const btn = document.getElementById(`pillLiveRoster-${k}`);
+    if (btn) {
+      if (k === currentLiveRosterStationFilter) {
+        btn.className = 'text-xs font-black px-3 py-1 rounded-xl bg-orange-600 text-white shadow-xs';
+      } else {
+        btn.className = 'text-xs font-bold px-3 py-1 rounded-xl bg-white border border-slate-300 text-slate-700 hover:bg-slate-100';
+      }
+    }
+  });
+
+  const statusEl = document.getElementById('rosterLiveFilterStatus');
+  if (statusEl) {
+    statusEl.innerText = currentLiveRosterStationFilter === 'ALL' 
+      ? 'Showing All 4 Stations' 
+      : `Showing Station ${currentLiveRosterStationFilter} only`;
+  }
+
+  // Filter the live cards
+  const container = document.getElementById('dutyRosterCardsContainer');
+  if (container) {
+    Array.from(container.children).forEach(card => {
+      const cardKey = card.getAttribute('data-station');
+      if (currentLiveRosterStationFilter === 'ALL' || cardKey === currentLiveRosterStationFilter) {
+        card.classList.remove('hidden');
+      } else {
+        card.classList.add('hidden');
+      }
+    });
+  }
+}
+
 
 function generateRandomDutyPin(stKey) {
   const pinInput = document.getElementById(`rosterPin-${stKey}`);
@@ -4302,23 +4437,44 @@ async function loadDutyRosterHistory() {
   }
 }
 
+// User requirement: "Also give filter for pumps if i choose S1 show only s1 like that"
+// User requirement: "the past emp was not feeing well since evening so added new emp - in this case we need to know the old emp also to show in worked list - where to see"
 function filterDutyRosterHistory() {
   const tbody = document.getElementById('rosterHistoryTableBody');
+  const thead = document.getElementById('rosterHistoryTableHead');
   const searchInput = document.getElementById('rosterHistorySearchInput');
+  const pumpFilterEl = document.getElementById('rosterHistoryPumpFilter');
   const countBadge = document.getElementById('rosterHistoryCountBadge');
+  const handoverContainer = document.getElementById('rosterHandoverListContainer');
+  const handoverBadge = document.getElementById('rosterHandoverCountBadge');
 
   if (!tbody) return;
 
   const query = (searchInput?.value || '').toLowerCase().trim();
+  const pumpFilter = pumpFilterEl?.value || 'ALL';
 
   let list = cachedRosterHistory;
+
+  // 1. Filter by pump / station
+  if (pumpFilter !== 'ALL') {
+    list = list.filter(item => {
+      const stObj = item.stations?.[pumpFilter];
+      return stObj && (stObj.employeeName || (Array.isArray(stObj.previousAttendants) && stObj.previousAttendants.length > 0));
+    });
+  }
+
+  // 2. Filter by search query (checks current attendant, previous attendants, PIN, date)
   if (query) {
     list = list.filter(item => {
       return Object.values(item.stations || {}).some(st => 
         (st.employeeName && st.employeeName.toLowerCase().includes(query)) ||
         (st.dutyPin && st.dutyPin.includes(query)) ||
+        (Array.isArray(st.previousAttendants) && st.previousAttendants.some(p => 
+          (p.employeeName && p.employeeName.toLowerCase().includes(query)) ||
+          (p.dutyPin && p.dutyPin.includes(query))
+        )) ||
         (item.date && item.date.includes(query))
-      );
+      ) || (Array.isArray(item.allEmployeesWorked) && item.allEmployeesWorked.some(name => name.toLowerCase().includes(query)));
     });
   }
 
@@ -4326,47 +4482,188 @@ function filterDutyRosterHistory() {
     countBadge.innerText = `రికార్డులు: ${list.length} రోజులు`;
   }
 
+  // Collect handovers for the handover section
+  const allHandovers = [];
+  cachedRosterHistory.forEach(item => {
+    const listH = item.handoverHistory || [];
+    listH.forEach(h => {
+      if (pumpFilter === 'ALL' || h.stationId === pumpFilter) {
+        allHandovers.push(h);
+      }
+    });
+    // Also extract from stations.previousAttendants if any
+    Object.entries(item.stations || {}).forEach(([stKey, stObj]) => {
+      if (pumpFilter === 'ALL' || stKey === pumpFilter) {
+        (stObj.previousAttendants || []).forEach(prev => {
+          if (!listH.some(h => h.date === item.date && h.stationId === stKey && h.previousEmployee === prev.employeeName)) {
+            allHandovers.push({
+              date: item.date,
+              stationId: stKey,
+              stationName: `${stKey} (${stKey === 'S1' || stKey === 'S2' ? 'Pump 1' : 'Pump 2'})`,
+              previousEmployee: prev.employeeName,
+              previousDutyPin: prev.dutyPin,
+              newEmployee: stObj.employeeName,
+              newDutyPin: stObj.dutyPin,
+              timestamp: prev.replacedAt,
+              formattedTime: prev.replacedAtFormatted || 'షిఫ్ట్ మధ్యలో',
+              note: `హ్యాండోవర్: ${prev.employeeName} ➔ ${stObj.employeeName}`
+            });
+          }
+        });
+      }
+    });
+  });
+
+  if (handoverBadge) {
+    handoverBadge.innerText = `${allHandovers.length} హ్యాండోవర్లు`;
+  }
+
+  if (handoverContainer) {
+    if (allHandovers.length === 0) {
+      handoverContainer.innerHTML = `<div class="text-center text-slate-400 py-3 text-xs font-semibold">ఎటువంటి హ్యాండోవర్లు లేదా సిబ్బంది మార్పులు లేవు (No staff replacements recorded)</div>`;
+    } else {
+      handoverContainer.innerHTML = allHandovers.map(h => `
+        <div class="bg-white p-3 rounded-xl border border-amber-200 shadow-2xs flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2.5">
+            <span class="w-8 h-8 rounded-lg bg-amber-100 text-amber-900 font-mono font-black flex items-center justify-center text-xs shrink-0">
+              ${h.stationId || 'S1'}
+            </span>
+            <div>
+              <div class="text-xs font-bold text-slate-900 flex items-center gap-1.5 flex-wrap">
+                <span class="text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded line-through font-bold">${h.previousEmployee}</span>
+                <span class="text-slate-400 font-bold">➔</span>
+                <span class="text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded font-black">${h.newEmployee || 'కొత్త సిబ్బంది'}</span>
+                <span class="text-[10px] bg-amber-100 text-amber-900 px-1.5 py-0.5 rounded font-mono font-bold">PIN: ${h.newDutyPin || '-'}</span>
+              </div>
+              <div class="text-[10px] text-slate-500 font-medium mt-0.5">
+                📅 తేదీ: <strong>${h.date}</strong> • సమయం: ${h.formattedTime || 'మధ్యాహ్నం'} • ${h.note || 'సిబ్బంది మార్పు'}
+              </div>
+            </div>
+          </div>
+          <span class="text-[10px] bg-emerald-100 text-emerald-800 border border-emerald-300 px-2.5 py-1 rounded-full font-bold">
+            ✓ ఇద్దరికీ డ్యూటీ హాజరు వర్తిస్తుంది (Both Credited)
+          </span>
+        </div>
+      `).join('');
+    }
+  }
+
+  // 3. Dynamic Table Header:
+  // If specific pump selected (e.g. S1), show dedicated single pump columns!
+  if (thead) {
+    if (pumpFilter !== 'ALL') {
+      const pName = pumpFilter === 'S1' || pumpFilter === 'S2' ? 'Pump 1' : 'Pump 2';
+      thead.innerHTML = `
+        <tr>
+          <th class="p-3 border-r border-slate-800 w-36">తేదీ (Date)</th>
+          <th class="p-3 border-r border-slate-800">${pumpFilter} (${pName}) ప్రస్తుత డ్యూటీ సిబ్బంది</th>
+          <th class="p-3 border-r border-slate-800">🔄 మార్చబడిన మునుపటి సిబ్బంది (Replaced Staff)</th>
+          <th class="p-3 text-center">డ్యూటీ స్థితి (Status)</th>
+        </tr>
+      `;
+    } else {
+      thead.innerHTML = `
+        <tr>
+          <th class="p-3 border-r border-slate-800">తేదీ (Date)</th>
+          <th class="p-3 border-r border-slate-800">S1 (Pump 1)</th>
+          <th class="p-3 border-r border-slate-800">S2 (Pump 1)</th>
+          <th class="p-3 border-r border-slate-800">S3 (Pump 2)</th>
+          <th class="p-3 border-r border-slate-800">S4 (Pump 2)</th>
+          <th class="p-3 text-center">సిబ్బంది సంఖ్య</th>
+        </tr>
+      `;
+    }
+  }
+
   if (list.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400 font-bold">ఈ నెలలో లేదా ఈ పేరుతో ఎటువంటి కేటాయింపులు కనుగొనబడలేదు (No pump assignments found)</td></tr>`;
+    const colSpan = pumpFilter === 'ALL' ? 6 : 4;
+    tbody.innerHTML = `<tr><td colspan="${colSpan}" class="p-6 text-center text-slate-400 font-bold">ఈ ఫిల్టర్‌తో ఎటువంటి కేటాయింపులు కనుగొనబడలేదు (No pump assignments found for this filter)</td></tr>`;
     return;
   }
+
+  // Helper to render cell with active attendant AND previous replaced attendants
+  const renderCell = (key, pumpName, st) => {
+    const info = st[key];
+    if (!info || !info.employeeName) {
+      return `<span class="text-slate-400 italic text-[11px]">- ఖాళీ (Unassigned) -</span>`;
+    }
+
+    const prevList = info.previousAttendants || [];
+    const prevHtml = prevList.length > 0 ? prevList.map(p => `
+      <div class="mt-1 p-1 bg-amber-50 border border-amber-200 rounded text-[10px] text-amber-900 leading-tight">
+        <span class="font-black text-amber-800">🔄 గతంలో:</span>
+        <span class="font-bold">${p.employeeName}</span>
+        <span class="text-slate-500 block text-[9px]">సమయం: ${p.replacedAtFormatted || 'మధ్యాహ్నం'}</span>
+      </div>
+    `).join('') : '';
+
+    return `
+      <div class="space-y-0.5">
+        <div class="font-bold text-slate-900 text-xs flex items-center gap-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
+          <span>${info.employeeName}</span>
+          ${prevList.length > 0 ? '<span class="text-[9px] bg-indigo-100 text-indigo-800 font-bold px-1 rounded">ప్రస్తుతం</span>' : ''}
+        </div>
+        <div class="flex items-center gap-1">
+          <span class="text-[10px] font-mono bg-amber-100 text-amber-900 px-1.5 py-0.2 rounded font-bold">PIN: ${info.dutyPin || '-'}</span>
+        </div>
+        ${prevHtml}
+      </div>
+    `;
+  };
 
   tbody.innerHTML = list.map(item => {
     const d = item.date;
     const st = item.stations || {};
+
+    if (pumpFilter !== 'ALL') {
+      const info = st[pumpFilter];
+      const pName = pumpFilter === 'S1' || pumpFilter === 'S2' ? 'Pump 1' : 'Pump 2';
+      const prevList = info?.previousAttendants || [];
+
+      const prevCell = prevList.length > 0 ? prevList.map(p => `
+        <div class="p-1.5 bg-amber-50 border border-amber-200 rounded-lg text-xs space-y-0.5">
+          <div class="font-bold text-amber-950 flex items-center gap-1">
+            <span>👤</span>
+            <span>${p.employeeName}</span>
+            <span class="text-[10px] font-mono bg-amber-200 text-amber-900 px-1.5 py-0.2 rounded font-bold">PIN: ${p.dutyPin || '-'}</span>
+          </div>
+          <div class="text-[10px] text-slate-500">
+            సమయం: ${p.replacedAtFormatted || 'షిఫ్ట్ మధ్యలో'} • <strong>హాజరు లెక్కించబడింది ✓</strong>
+          </div>
+        </div>
+      `).join('') : `<span class="text-slate-400 italic text-[11px]">- మార్పులు లేవు (No Reassignments) -</span>`;
+
+      return `
+        <tr class="hover:bg-amber-50/40 transition-colors">
+          <td class="p-3 font-mono font-bold text-slate-800 border-r border-slate-100 whitespace-nowrap">
+            📅 ${d}
+          </td>
+          <td class="p-3 border-r border-slate-100">${renderCell(pumpFilter, pName, st)}</td>
+          <td class="p-3 border-r border-slate-100">${prevCell}</td>
+          <td class="p-3 text-center whitespace-nowrap">
+            <span class="text-[11px] font-bold px-2 py-0.5 rounded-full ${info?.employeeName ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'}">
+              ${info?.employeeName ? '● డ్యూటీ నమోదయింది' : 'ఖాళీ'}
+            </span>
+          </td>
+        </tr>
+      `;
+    }
 
     let assignedStaffCount = 0;
     ['S1', 'S2', 'S3', 'S4'].forEach(k => {
       if (st[k]?.employeeName) assignedStaffCount++;
     });
 
-    const renderCell = (key, pumpName) => {
-      const info = st[key];
-      if (!info || !info.employeeName) {
-        return `<span class="text-slate-400 italic text-[11px]">- ఖాళీ (Unassigned) -</span>`;
-      }
-      return `
-        <div class="space-y-0.5">
-          <div class="font-bold text-slate-900 text-xs flex items-center gap-1">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
-            <span>${info.employeeName}</span>
-          </div>
-          <div class="flex items-center gap-1">
-            <span class="text-[10px] font-mono bg-amber-100 text-amber-900 px-1.5 py-0.2 rounded font-bold">PIN: ${info.dutyPin || '-'}</span>
-          </div>
-        </div>
-      `;
-    };
-
     return `
       <tr class="hover:bg-amber-50/40 transition-colors">
         <td class="p-3 font-mono font-bold text-slate-800 border-r border-slate-100 whitespace-nowrap">
           📅 ${d}
         </td>
-        <td class="p-3 border-r border-slate-100">${renderCell('S1', 'Pump 1')}</td>
-        <td class="p-3 border-r border-slate-100">${renderCell('S2', 'Pump 1')}</td>
-        <td class="p-3 border-r border-slate-100">${renderCell('S3', 'Pump 2')}</td>
-        <td class="p-3 border-r border-slate-100">${renderCell('S4', 'Pump 2')}</td>
+        <td class="p-3 border-r border-slate-100">${renderCell('S1', 'Pump 1', st)}</td>
+        <td class="p-3 border-r border-slate-100">${renderCell('S2', 'Pump 1', st)}</td>
+        <td class="p-3 border-r border-slate-100">${renderCell('S3', 'Pump 2', st)}</td>
+        <td class="p-3 border-r border-slate-100">${renderCell('S4', 'Pump 2', st)}</td>
         <td class="p-3 text-center whitespace-nowrap">
           <span class="text-[11px] font-bold px-2 py-0.5 rounded-full ${assignedStaffCount === 4 ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
             ${assignedStaffCount} / 4 Staff
