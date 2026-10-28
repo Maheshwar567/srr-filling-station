@@ -118,6 +118,15 @@
       }
     ],
     "adminPin": "123",
+    "geofence": {
+      "enabled": false,
+      "latitude": 17.385044,
+      "longitude": 78.486671,
+      "updatedAt": "2026-10-28T04:53:00.000Z",
+      "stationName": "SRR FILLING STATION",
+      "radiusMeters": 200,
+      "updatedAtFormatted": "28 Oct 2026, 10:23 am (తాత్కాలికంగా ఆపబడింది)"
+    },
     "location": "Highway Point",
     "stationId": "srr-filling-station",
     "oilCompany": "Indian Oil Corporation Ltd. (IOCL)",
@@ -128,16 +137,7 @@
     "adminUsername": "admin",
     "ownerPassword": "123",
     "ownerUsername": "owner",
-    "developerPassword": "123",
-    "geofence": {
-      "enabled": false,
-      "latitude": 17.385044,
-      "longitude": 78.486671,
-      "radiusMeters": 200,
-      "stationName": "SRR FILLING STATION",
-      "updatedAt": "2026-10-28T04:53:00.000Z",
-      "updatedAtFormatted": "28 Oct 2026, 10:23 am (తాత్కాలికంగా ఆపబడింది)"
-    }
+    "developerPassword": "123"
   },
   "shifts": [
     {
@@ -550,6 +550,7 @@
           ],
           "employeeName": "Ramesh Kumar",
           "expectedCash": 165574,
+          "expensesList": [],
           "nextOpenDiesel": 2500,
           "nextOpenPetrol": 2000,
           "testingRecords": [
@@ -606,8 +607,7 @@
               "open": 1000
             },
             "joinedAt": "11:25 AM"
-          },
-          "expensesList": []
+          }
         },
         "S2": {
           "pump": "Pump 1",
@@ -629,6 +629,7 @@
           },
           "status": "pending",
           "stationId": "S2",
+          "cardSwipes": [],
           "collections": {
             "upi": 0,
             "card": 0,
@@ -637,12 +638,11 @@
             "expenses": 0,
             "expenseReason": ""
           },
+          "upiPayments": [],
           "employeeName": "",
-          "readingsHistory": [],
-          "testingRecords": [],
-          "cardSwipes": [],
           "expensesList": [],
-          "upiPayments": []
+          "testingRecords": [],
+          "readingsHistory": []
         },
         "S3": {
           "pump": "Pump 2",
@@ -664,6 +664,7 @@
           },
           "status": "pending",
           "stationId": "S3",
+          "cardSwipes": [],
           "collections": {
             "upi": 0,
             "card": 0,
@@ -672,12 +673,11 @@
             "expenses": 0,
             "expenseReason": ""
           },
+          "upiPayments": [],
           "employeeName": "",
-          "readingsHistory": [],
-          "testingRecords": [],
-          "cardSwipes": [],
           "expensesList": [],
-          "upiPayments": []
+          "testingRecords": [],
+          "readingsHistory": []
         },
         "S4": {
           "pump": "Pump 2",
@@ -699,6 +699,7 @@
           },
           "status": "pending",
           "stationId": "S4",
+          "cardSwipes": [],
           "collections": {
             "upi": 0,
             "card": 0,
@@ -707,12 +708,11 @@
             "expenses": 0,
             "expenseReason": ""
           },
+          "upiPayments": [],
           "employeeName": "",
-          "readingsHistory": [],
-          "testingRecords": [],
-          "cardSwipes": [],
           "expensesList": [],
-          "upiPayments": []
+          "testingRecords": [],
+          "readingsHistory": []
         }
       },
       "dieselRate": 105.23,
@@ -743,6 +743,7 @@
           },
           "status": "pending",
           "stationId": "S1",
+          "cardSwipes": [],
           "collections": {
             "upi": 0,
             "card": 0,
@@ -751,12 +752,11 @@
             "expenses": 0,
             "expenseReason": ""
           },
+          "upiPayments": [],
           "employeeName": "Ramesh Kumar",
-          "readingsHistory": [],
-          "testingRecords": [],
-          "cardSwipes": [],
           "expensesList": [],
-          "upiPayments": []
+          "testingRecords": [],
+          "readingsHistory": []
         },
         "S2": {
           "pump": "Pump 1",
@@ -778,6 +778,7 @@
           },
           "status": "pending",
           "stationId": "S2",
+          "cardSwipes": [],
           "collections": {
             "upi": 0,
             "card": 0,
@@ -786,12 +787,11 @@
             "expenses": 0,
             "expenseReason": ""
           },
+          "upiPayments": [],
           "employeeName": "Suresh Reddy",
-          "readingsHistory": [],
-          "testingRecords": [],
-          "cardSwipes": [],
           "expensesList": [],
-          "upiPayments": []
+          "testingRecords": [],
+          "readingsHistory": []
         },
         "S3": {
           "pump": "Pump 2",
@@ -813,6 +813,7 @@
           },
           "status": "pending",
           "stationId": "S3",
+          "cardSwipes": [],
           "collections": {
             "upi": 0,
             "card": 0,
@@ -821,12 +822,11 @@
             "expenses": 0,
             "expenseReason": ""
           },
+          "upiPayments": [],
           "employeeName": "Venkatesh Rao",
-          "readingsHistory": [],
-          "testingRecords": [],
-          "cardSwipes": [],
           "expensesList": [],
-          "upiPayments": []
+          "testingRecords": [],
+          "readingsHistory": []
         },
         "S4": {
           "pump": "Pump 2",
@@ -848,6 +848,7 @@
           },
           "status": "pending",
           "stationId": "S4",
+          "cardSwipes": [],
           "collections": {
             "upi": 0,
             "card": 0,
@@ -856,12 +857,11 @@
             "expenses": 0,
             "expenseReason": ""
           },
+          "upiPayments": [],
           "employeeName": "Naresh Babu",
-          "readingsHistory": [],
-          "testingRecords": [],
-          "cardSwipes": [],
           "expensesList": [],
-          "upiPayments": []
+          "testingRecords": [],
+          "readingsHistory": []
         }
       },
       "dieselRate": 105.23,
@@ -892,6 +892,7 @@
           },
           "status": "readings-entered",
           "stationId": "S1",
+          "cardSwipes": [],
           "collections": {
             "upi": 0,
             "card": 0,
@@ -900,9 +901,12 @@
             "expenses": 0,
             "expenseReason": ""
           },
+          "upiPayments": [],
           "employeeName": "Ramesh Kumar",
+          "expensesList": [],
           "nextOpenDiesel": 250,
           "nextOpenPetrol": 150,
+          "testingRecords": [],
           "readingsHistory": [
             {
               "id": "sess-1793075260557",
@@ -951,11 +955,161 @@
               "open": 100
             },
             "joinedAt": "09:56 AM"
+          }
+        },
+        "S2": {
+          "pump": "Pump 1",
+          "meters": {
+            "diesel": {
+              "code": "B2",
+              "open": 0,
+              "close": 0,
+              "testing": 0,
+              "saleLitres": 0
+            },
+            "petrol": {
+              "code": "B1",
+              "open": 0,
+              "close": 0,
+              "testing": 0,
+              "saleLitres": 0
+            }
           },
-          "testingRecords": [],
+          "status": "pending",
+          "stationId": "S2",
           "cardSwipes": [],
+          "collections": {
+            "upi": 0,
+            "card": 0,
+            "cash": 0,
+            "notes": "",
+            "expenses": 0,
+            "expenseReason": ""
+          },
+          "upiPayments": [],
+          "employeeName": "Suresh Reddy",
           "expensesList": [],
-          "upiPayments": []
+          "testingRecords": [],
+          "readingsHistory": []
+        },
+        "S3": {
+          "pump": "Pump 2",
+          "meters": {
+            "diesel": {
+              "code": "A2",
+              "open": 0,
+              "close": 0,
+              "testing": 0,
+              "saleLitres": 0
+            },
+            "petrol": {
+              "code": "A1",
+              "open": 0,
+              "close": 0,
+              "testing": 0,
+              "saleLitres": 0
+            }
+          },
+          "status": "pending",
+          "stationId": "S3",
+          "cardSwipes": [],
+          "collections": {
+            "upi": 0,
+            "card": 0,
+            "cash": 0,
+            "notes": "",
+            "expenses": 0,
+            "expenseReason": ""
+          },
+          "upiPayments": [],
+          "employeeName": "Venkat Rao",
+          "expensesList": [],
+          "testingRecords": [],
+          "readingsHistory": []
+        },
+        "S4": {
+          "pump": "Pump 2",
+          "meters": {
+            "diesel": {
+              "code": "B2",
+              "open": 0,
+              "close": 0,
+              "testing": 0,
+              "saleLitres": 0
+            },
+            "petrol": {
+              "code": "B1",
+              "open": 0,
+              "close": 0,
+              "testing": 0,
+              "saleLitres": 0
+            }
+          },
+          "status": "pending",
+          "stationId": "S4",
+          "cardSwipes": [],
+          "collections": {
+            "upi": 0,
+            "card": 0,
+            "cash": 0,
+            "notes": "",
+            "expenses": 0,
+            "expenseReason": ""
+          },
+          "upiPayments": [],
+          "employeeName": "Naresh Kumar",
+          "expensesList": [],
+          "testingRecords": [],
+          "readingsHistory": []
+        }
+      },
+      "dieselRate": 105.23,
+      "petrolRate": 117.07
+    },
+    {
+      "id": "shift-2026-10-28",
+      "date": "2026-10-28",
+      "status": "active",
+      "stations": {
+        "S1": {
+          "pump": "Pump 1",
+          "meters": {
+            "diesel": {
+              "code": "A2",
+              "open": 250,
+              "close": 0,
+              "testing": 0,
+              "saleLitres": 0
+            },
+            "petrol": {
+              "code": "A1",
+              "open": 150,
+              "close": 0,
+              "testing": 0,
+              "saleLitres": 0
+            }
+          },
+          "status": "pending",
+          "stationId": "S1",
+          "collections": {
+            "upi": 0,
+            "card": 0,
+            "cash": 0,
+            "notes": "",
+            "expenses": 0,
+            "expenseReason": ""
+          },
+          "employeeName": "Staff One",
+          "readingsHistory": [],
+          "previousAttendants": [
+            {
+              "employeeName": "Ramesh Kumar",
+              "dutyPin": "4829",
+              "replacedAt": "2026-10-28T11:15:28.845Z",
+              "replacedAtFormatted": "28 Oct 2026, 4:45 pm",
+              "replacedBy": "Staff One"
+            }
+          ]
         },
         "S2": {
           "pump": "Pump 1",
@@ -985,12 +1139,17 @@
             "expenses": 0,
             "expenseReason": ""
           },
-          "employeeName": "Suresh Reddy",
+          "employeeName": "Staff Two",
           "readingsHistory": [],
-          "testingRecords": [],
-          "cardSwipes": [],
-          "expensesList": [],
-          "upiPayments": []
+          "previousAttendants": [
+            {
+              "employeeName": "Suresh Reddy",
+              "dutyPin": "7163",
+              "replacedAt": "2026-10-28T11:15:28.845Z",
+              "replacedAtFormatted": "28 Oct 2026, 4:45 pm",
+              "replacedBy": "Staff Two"
+            }
+          ]
         },
         "S3": {
           "pump": "Pump 2",
@@ -1020,12 +1179,17 @@
             "expenses": 0,
             "expenseReason": ""
           },
-          "employeeName": "Venkat Rao",
+          "employeeName": "Dual Attendant",
           "readingsHistory": [],
-          "testingRecords": [],
-          "cardSwipes": [],
-          "expensesList": [],
-          "upiPayments": []
+          "previousAttendants": [
+            {
+              "employeeName": "Venkatesh Rao",
+              "dutyPin": "2594",
+              "replacedAt": "2026-10-28T11:15:28.845Z",
+              "replacedAtFormatted": "28 Oct 2026, 4:45 pm",
+              "replacedBy": "Dual Attendant"
+            }
+          ]
         },
         "S4": {
           "pump": "Pump 2",
@@ -1055,166 +1219,191 @@
             "expenses": 0,
             "expenseReason": ""
           },
-          "employeeName": "Naresh Kumar",
+          "employeeName": "Dual Attendant",
           "readingsHistory": [],
-          "testingRecords": [],
-          "cardSwipes": [],
-          "expensesList": [],
-          "upiPayments": []
+          "previousAttendants": [
+            {
+              "employeeName": "Naresh Babu",
+              "dutyPin": "8341",
+              "replacedAt": "2026-10-28T11:15:28.845Z",
+              "replacedAtFormatted": "28 Oct 2026, 4:45 pm",
+              "replacedBy": "Dual Attendant"
+            }
+          ]
         }
       },
       "dieselRate": 105.23,
-      "petrolRate": 117.07
+      "petrolRate": 117.07,
+      "handoverHistory": [
+        {
+          "date": "2026-10-28",
+          "stationId": "S1",
+          "stationName": "S1 (Pump 1)",
+          "previousEmployee": "Ramesh Kumar",
+          "previousDutyPin": "4829",
+          "newEmployee": "Staff One",
+          "newDutyPin": "7111",
+          "timestamp": "2026-10-28T11:15:28.845Z",
+          "formattedTime": "28 Oct 2026, 4:45 pm",
+          "note": "హ్యాండోవర్: Ramesh Kumar పని ముగించారు, Staff One బాధ్యతలు తీసుకున్నారు"
+        },
+        {
+          "date": "2026-10-28",
+          "stationId": "S2",
+          "stationName": "S2 (Pump 1)",
+          "previousEmployee": "Suresh Reddy",
+          "previousDutyPin": "7163",
+          "newEmployee": "Staff Two",
+          "newDutyPin": "7222",
+          "timestamp": "2026-10-28T11:15:28.845Z",
+          "formattedTime": "28 Oct 2026, 4:45 pm",
+          "note": "హ్యాండోవర్: Suresh Reddy పని ముగించారు, Staff Two బాధ్యతలు తీసుకున్నారు"
+        },
+        {
+          "date": "2026-10-28",
+          "stationId": "S3",
+          "stationName": "S3 (Pump 2)",
+          "previousEmployee": "Venkatesh Rao",
+          "previousDutyPin": "2594",
+          "newEmployee": "Dual Attendant",
+          "newDutyPin": "7333",
+          "timestamp": "2026-10-28T11:15:28.845Z",
+          "formattedTime": "28 Oct 2026, 4:45 pm",
+          "note": "హ్యాండోవర్: Venkatesh Rao పని ముగించారు, Dual Attendant బాధ్యతలు తీసుకున్నారు"
+        },
+        {
+          "date": "2026-10-28",
+          "stationId": "S4",
+          "stationName": "S4 (Pump 2)",
+          "previousEmployee": "Naresh Babu",
+          "previousDutyPin": "8341",
+          "newEmployee": "Dual Attendant",
+          "newDutyPin": "7333",
+          "timestamp": "2026-10-28T11:15:28.845Z",
+          "formattedTime": "28 Oct 2026, 4:45 pm",
+          "note": "హ్యాండోవర్: Naresh Babu పని ముగించారు, Dual Attendant బాధ్యతలు తీసుకున్నారు"
+        }
+      ]
     }
   ],
   "employees": [
     {
-      "id": "emp1",
-      "name": "Ramesh Kumar",
+      "id": "emp-1793183053049",
+      "name": "B Parsha ramudu",
       "role": "Attendant",
-      "phone": "9848011223",
+      "phone": "1234567890",
       "active": true,
-      "address": "Plot 14, Near IOCL Bunk, Main Road",
+      "address": "",
       "password": "123",
-      "username": "9848011223",
-      "fatherName": "K. Narayana Swamy",
-      "joiningDate": "2024-01-10",
-      "villageName": "Kalyandurg, Anantapur Dist",
-      "aadhaarNumber": "4589 1234 5678",
-      "emergencyContact": "9440123999 (Brother - Siva)"
-    },
-    {
-      "id": "emp2",
-      "name": "Suresh Reddy",
-      "role": "Attendant",
-      "phone": "9848022334",
-      "active": true,
-      "address": "Door 2-45, Brahmin Street, Beluguppa",
-      "password": "123",
-      "username": "9848022334",
-      "fatherName": "M. Ramachandra Reddy",
-      "joiningDate": "2024-03-15",
-      "villageName": "Beluguppa Village",
-      "aadhaarNumber": "6712 3456 7890",
-      "emergencyContact": "9848088771 (Wife - Lakshmi)"
-    },
-    {
-      "id": "emp3",
-      "name": "Venkatesh Rao",
-      "role": "Attendant",
-      "phone": "9848033445",
-      "active": true,
-      "address": "H.No 4-89, Near Old Bus Stand, Rayadurg",
-      "password": "123",
-      "username": "9848033445",
-      "fatherName": "G. Venkateswarlu",
-      "joiningDate": "2024-05-20",
-      "villageName": "Rayadurg Mandal",
-      "aadhaarNumber": "8899 4321 0987",
-      "emergencyContact": "9441122334 (Father)"
-    },
-    {
-      "id": "emp4",
-      "name": "Naresh Babu",
-      "role": "Attendant",
-      "phone": "9848044556",
-      "active": true,
-      "address": "3-12, Atmakur",
-      "password": "123",
-      "username": "9848044556",
-      "fatherName": "B. Venkataramana",
-      "joiningDate": "2024-08-01",
-      "villageName": "Atmakur Village",
-      "aadhaarNumber": "3344 5566 7788",
-      "emergencyContact": "9988112233 (Uncle - Prasad)"
-    },
-    {
-      "id": "emp5",
-      "name": "Rajesh Varma",
-      "role": "Attendant",
-      "phone": "9848055667",
-      "active": true,
-      "address": "5-67, Weaver Colony, Dharmavaram",
-      "password": "123",
-      "username": "9848055667",
-      "fatherName": "D. Satyanarayana",
-      "joiningDate": "2025-01-05",
-      "villageName": "Dharmavaram",
-      "aadhaarNumber": "9988 7766 5544",
-      "emergencyContact": "9701122334 (Brother)"
-    },
-    {
-      "id": "emp6",
-      "name": "Prasad Rao",
-      "role": "Attendant",
-      "phone": "9848066778",
-      "active": true,
-      "address": "Railway Station Road, Guntakal",
-      "password": "123",
-      "username": "9848066778",
-      "fatherName": "P. Subba Rao",
-      "joiningDate": "2025-03-12",
-      "villageName": "Guntakal",
-      "aadhaarNumber": "2233 4455 6677",
-      "emergencyContact": "9866112244 (Father)"
-    },
-    {
-      "id": "emp-1792838466290",
-      "name": "Mahesh reddy",
-      "role": "Attendant",
-      "phone": "7799532888",
-      "active": true,
-      "address": "Ieeja",
-      "password": "123",
-      "username": "7799532888",
-      "fatherName": "Maheswar Reddy",
-      "joiningDate": "2026-10-24",
-      "villageName": "Ieeja",
+      "username": "1234567890",
+      "fatherName": "Test1",
+      "joiningDate": "2026-10-28",
+      "villageName": "",
       "aadhaarNumber": "",
       "emergencyContact": ""
     },
     {
-      "id": "emp-1792839909945",
-      "name": "Maheswar Reddy",
+      "id": "emp-1793183070630",
+      "name": "Ravi",
       "role": "Attendant",
-      "phone": "1234576890",
+      "phone": "1234567891",
       "active": true,
       "address": "",
       "password": "123",
-      "username": "1234576890",
-      "fatherName": "S Maheswar Reddy",
-      "joiningDate": "2026-10-24",
-      "villageName": "Ieeja",
-      "aadhaarNumber": "",
-      "emergencyContact": "1234567788"
-    },
-    {
-      "id": "emp-1792840783873",
-      "name": "Mahesh reddy",
-      "role": "Attendant",
-      "phone": "7795628848",
-      "active": true,
-      "address": "",
-      "password": "123",
-      "username": "7795628848",
-      "fatherName": "Raghav reddy",
-      "joiningDate": "2026-10-24",
-      "villageName": "Ieeja",
+      "username": "1234567891",
+      "fatherName": "",
+      "joiningDate": "2026-10-28",
+      "villageName": "",
       "aadhaarNumber": "",
       "emergencyContact": ""
     },
     {
-      "id": "emp-1792842606451",
-      "name": "Siva Shankar",
+      "id": "emp-1793183094874",
+      "name": "B Narasimhulu",
       "role": "Attendant",
-      "phone": "9900409848",
+      "phone": "1234567892",
       "active": true,
       "address": "",
       "password": "123",
-      "username": "9900409848",
-      "fatherName": "Ramanaiah",
-      "joiningDate": "2026-10-24",
-      "villageName": "Rayadurg",
+      "username": "1234567892",
+      "fatherName": "",
+      "joiningDate": "2026-10-28",
+      "villageName": "",
+      "aadhaarNumber": "",
+      "emergencyContact": ""
+    },
+    {
+      "id": "emp-1793183183213",
+      "name": "Narendra",
+      "role": "Attendant",
+      "phone": "1234567893",
+      "active": true,
+      "address": "",
+      "password": "123",
+      "username": "1234567893",
+      "fatherName": "",
+      "joiningDate": "2026-10-28",
+      "villageName": "",
+      "aadhaarNumber": "",
+      "emergencyContact": ""
+    },
+    {
+      "id": "emp-1793183198625",
+      "name": "Pedha Ramanji",
+      "role": "Attendant",
+      "phone": "1234567894",
+      "active": true,
+      "address": "",
+      "password": "123",
+      "username": "1234567894",
+      "fatherName": "",
+      "joiningDate": "2026-10-28",
+      "villageName": "",
+      "aadhaarNumber": "",
+      "emergencyContact": ""
+    },
+    {
+      "id": "emp-1793183218350",
+      "name": "Surendra",
+      "role": "Attendant",
+      "phone": "1234567895",
+      "active": true,
+      "address": "",
+      "password": "123",
+      "username": "1234567895",
+      "fatherName": "",
+      "joiningDate": "2026-10-28",
+      "villageName": "",
+      "aadhaarNumber": "",
+      "emergencyContact": ""
+    },
+    {
+      "id": "emp-1793183392438",
+      "name": "B Mahesh",
+      "role": "Attendant",
+      "phone": "1234567896",
+      "active": true,
+      "address": "",
+      "password": "123",
+      "username": "1234567896",
+      "fatherName": "",
+      "joiningDate": "2026-10-28",
+      "villageName": "",
+      "aadhaarNumber": "",
+      "emergencyContact": ""
+    },
+    {
+      "id": "emp-1793183410025",
+      "name": "Balu",
+      "role": "Attendant",
+      "phone": "1234567897",
+      "active": true,
+      "address": "",
+      "password": "123",
+      "username": "1234567897",
+      "fatherName": "",
+      "joiningDate": "2026-10-28",
+      "villageName": "",
       "aadhaarNumber": "",
       "emergencyContact": ""
     }
@@ -1594,29 +1783,29 @@
     },
     "2026-10-27": {
       "S1": {
-        "employeeName": "Ramesh Kumar",
         "dutyPin": "5931",
+        "employeeName": "Ramesh Kumar",
         "previousAttendants": []
       },
       "S2": {
-        "employeeName": "Suresh Reddy",
         "dutyPin": "4182",
+        "employeeName": "Suresh Reddy",
         "previousAttendants": []
       },
       "S3": {
-        "employeeName": "Venkatesh Rao",
         "dutyPin": "6824",
+        "employeeName": "Venkatesh Rao",
         "previousAttendants": []
       },
       "S4": {
-        "employeeName": "Naresh Babu",
         "dutyPin": "3790",
+        "employeeName": "Naresh Babu",
         "previousAttendants": []
       },
       "savedAt": "2026-10-27T07:32:01.867Z",
-      "savedAtFormatted": "27 Oct 2026, 1:02 pm",
       "updatedAt": "2026-10-27T07:32:01.867Z",
       "handoverHistory": [],
+      "savedAtFormatted": "27 Oct 2026, 1:02 pm",
       "allEmployeesWorked": [
         "Ramesh Kumar",
         "Suresh Reddy",
@@ -1626,35 +1815,35 @@
     },
     "2026-10-28": {
       "S1": {
-        "employeeName": "Ramesh Kumar",
+        "employeeName": "B Parsha ramudu",
         "dutyPin": "4829",
         "previousAttendants": []
       },
       "S2": {
-        "employeeName": "Suresh Reddy",
+        "employeeName": "Ravi",
         "dutyPin": "7163",
         "previousAttendants": []
       },
       "S3": {
-        "employeeName": "Venkatesh Rao",
+        "employeeName": "B Narasimhulu",
         "dutyPin": "2594",
         "previousAttendants": []
       },
       "S4": {
-        "employeeName": "Naresh Babu",
+        "employeeName": "Narendra",
         "dutyPin": "8341",
         "previousAttendants": []
       },
       "handoverHistory": [],
       "allEmployeesWorked": [
-        "Ramesh Kumar",
-        "Suresh Reddy",
-        "Venkatesh Rao",
-        "Naresh Babu"
+        "B Parsha ramudu",
+        "Ravi",
+        "B Narasimhulu",
+        "Narendra"
       ],
-      "savedAt": "2026-10-28T04:53:00.000Z",
-      "savedAtFormatted": "28 Oct 2026, 10:23 am",
-      "updatedAt": "2026-10-28T04:53:00.000Z"
+      "savedAt": "2026-10-28T11:18:50.166Z",
+      "savedAtFormatted": "28 Oct 2026, 4:50 pm",
+      "updatedAt": "2026-10-28T11:18:50.167Z"
     }
   }
 }

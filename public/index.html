@@ -685,7 +685,7 @@
                   <label class="text-[11px] font-bold text-slate-700 block mb-0.5">
                     <span>మొబైల్ నంబర్ (Mobile - 10 Digits)</span> <span class="text-rose-600 font-black">*</span>:
                   </label>
-                  <input type="tel" id="vlogMobileNumber" maxlength="10" placeholder="98480xxxxx" class="w-full bg-white border-2 border-blue-400 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-slate-900 focus:outline-none focus:border-blue-600">
+                  <input type="tel" id="vlogMobileNumber" maxlength="10" oninput="formatMobileInput(this)" onkeydown="preventMoreThan10Digits(event)" onpaste="enforce10DigitsOnPaste(event)" placeholder="98480xxxxx" class="w-full bg-white border-2 border-blue-400 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-slate-900 focus:outline-none focus:border-blue-600">
                 </div>
                 <div>
                   <label class="text-[11px] font-bold text-slate-700 block mb-0.5">ఇంధనం (Fuel Type):</label>
@@ -2410,7 +2410,7 @@
         <div class="grid grid-cols-2 gap-2">
           <div>
             <label class="font-bold text-slate-700 block mb-0.5">మొబైల్ (10 అంకెలు - 6/7/8/9 తో మొదలు) *:</label>
-            <input type="tel" id="modalEmpPhone" maxlength="10" oninput="formatMobileInput(this)" placeholder="e.g. 9848011223" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 font-mono font-bold focus:bg-white focus:outline-none focus:border-orange-500">
+            <input type="tel" id="modalEmpPhone" maxlength="10" oninput="formatMobileInput(this)" onkeydown="preventMoreThan10Digits(event)" onpaste="enforce10DigitsOnPaste(event)" placeholder="e.g. 9848011223" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 font-mono font-bold focus:bg-white focus:outline-none focus:border-orange-500">
             <p id="empPhoneError" class="text-rose-600 font-bold text-[10px] hidden mt-0.5"></p>
           </div>
           <div>
@@ -2647,6 +2647,6 @@
     </div>
   </footer>
 
-  <script src="app.js?v=16"></script>
+  <script src="app.js?v=17"></script>
 </body>
 </html>

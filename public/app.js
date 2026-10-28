@@ -573,43 +573,81 @@ function routeUserView() {
 
 // Resolve duty station assigned by Admin (attendant cannot tamper/choose)
 function resolveEmployeePumpLock() {
+  if (!STATE.currentUser) return;
   const empName = STATE.currentUser.name;
   const assignments = STATE.dutyAssignments || {};
 
-  let assignedStation = null;
+  // Check all stations assigned to this attendant
+  const myAssignedStations = [];
   for (const stKey of ['S1', 'S2', 'S3', 'S4']) {
     if (assignments[stKey]?.employeeName === empName || assignments[stKey]?.employeeId === STATE.currentUser.id) {
-      assignedStation = stKey;
-      break;
+      myAssignedStations.push(stKey);
     }
   }
 
   // Check shift stations fallback
-  if (!assignedStation && STATE.shift?.stations) {
+  if (myAssignedStations.length === 0 && STATE.shift?.stations) {
     for (const stKey of ['S1', 'S2', 'S3', 'S4']) {
       if (STATE.shift.stations[stKey]?.employeeName === empName) {
-        assignedStation = stKey;
-        break;
+        myAssignedStations.push(stKey);
       }
     }
   }
 
+  // Resolve active station: retain current if valid, else pick assigned
+  let currentStation = STATE.selectedStation;
+  if (!currentStation || !myAssignedStations.includes(currentStation)) {
+    currentStation = STATE.currentUser.assignedStation && myAssignedStations.includes(STATE.currentUser.assignedStation)
+      ? STATE.currentUser.assignedStation
+      : (myAssignedStations[0] || 'S1');
+  }
+
   // Set selected station & attendant
   STATE.selectedEmployeeName = empName;
-  STATE.selectedStation = assignedStation || 'S1';
-  STATE.currentUser.assignedStation = assignedStation;
+  STATE.selectedStation = currentStation;
+  STATE.currentUser.assignedStation = currentStation;
 
-  // Update Attendant Duty Banner (Clean: shows Name and S1 only)
-  // User requirement: "just keep emy name and S1 only (because as we know S1 means from pump1 only - so no need to mentions all other)"
+  // Update Attendant Duty Banner
   const nameEl = document.getElementById('empLoggedInName');
   const badgeEl = document.getElementById('empAssignedStationBadge');
   const stCodeEl = document.getElementById('empReadingStationCode');
   const hoBadge = document.getElementById('hoStationBadge');
 
   if (nameEl) nameEl.innerText = empName;
-  if (badgeEl) badgeEl.innerText = assignedStation || 'S1';
-  if (stCodeEl) stCodeEl.innerText = assignedStation || 'S1';
-  if (hoBadge) hoBadge.innerText = assignedStation || 'S1';
+  if (stCodeEl) stCodeEl.innerText = currentStation;
+  if (hoBadge) hoBadge.innerText = currentStation;
+
+  if (badgeEl) {
+    // If attendant is assigned to multiple stations (S3 & S4 due to staff starvation),
+    // display interactive toggle buttons so they can switch between both sides of Pump 2 easily!
+    if (myAssignedStations.length > 1) {
+      badgeEl.className = "flex items-center gap-1 bg-slate-900/80 p-0.5 rounded-full border border-amber-400/50 shadow-inner";
+      badgeEl.innerHTML = myAssignedStations.map(st => {
+        const isActive = st === currentStation;
+        return `<button type="button" onclick="switchAttendantStation('${st}')" class="px-2.5 py-0.5 rounded-full font-mono font-black text-xs transition-all ${
+          isActive 
+            ? 'bg-amber-400 text-slate-950 shadow scale-105 ring-1 ring-white' 
+            : 'text-amber-200 hover:text-white hover:bg-white/10'
+        }">${st}</button>`;
+      }).join('');
+    } else {
+      badgeEl.className = "bg-amber-400 text-slate-900 text-xs sm:text-sm font-mono font-black px-3 py-0.5 rounded-full uppercase tracking-wider";
+      badgeEl.innerText = currentStation;
+    }
+  }
+}
+
+function switchAttendantStation(stKey) {
+  if (STATE.selectedStation === stKey) return;
+  STATE.selectedStation = stKey;
+  if (STATE.currentUser) STATE.currentUser.assignedStation = stKey;
+  resolveEmployeePumpLock();
+  renderEmployeeReadingSection();
+  renderEmployeeTestingSection();
+  renderEmployeeCardSection();
+  renderEmployeeUpiSection();
+  calculateLiveHandoverTally();
+  showToast(STATE.lang === 'te' ? `స్టేషన్ ${stKey} కు మార్చబడింది` : `Switched to Station ${stKey}`);
 }
 
 // Helper to get GPS location (Location tracking removed for now per user requirement)
@@ -4140,18 +4178,67 @@ function formatTitleCaseInput(input) {
   }
 }
 
+function preventMoreThan10Digits(e) {
+  // Allow control and navigation keys
+  const allowedKeys = [
+    'Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 
+    'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 
+    'Home', 'End'
+  ];
+  if (allowedKeys.includes(e.key) || e.ctrlKey || e.metaKey || e.altKey) {
+    return;
+  }
+  const input = e.target;
+  const selStart = input.selectionStart || 0;
+  const selEnd = input.selectionEnd || 0;
+  // If user selected text to overwrite, allow it
+  if (selStart !== selEnd) return;
+
+  // Block any non-digit keys
+  if (!/^\d$/.test(e.key)) {
+    e.preventDefault();
+    return;
+  }
+
+  // Strictly block typing if already at 10 digits
+  const digits = (input.value || '').replace(/\D/g, '');
+  if (digits.length >= 10) {
+    e.preventDefault();
+  }
+}
+
+function enforce10DigitsOnPaste(e) {
+  e.preventDefault();
+  const pasted = (e.clipboardData || window.clipboardData)?.getData('text') || '';
+  const digits = pasted.replace(/\D/g, '');
+  const input = e.target;
+  const current = (input.value || '').replace(/\D/g, '');
+  const selStart = input.selectionStart || 0;
+  const selEnd = input.selectionEnd || 0;
+
+  const before = current.slice(0, selStart);
+  const after = current.slice(selEnd);
+  const combined = (before + digits + after).slice(0, 10);
+
+  input.value = combined;
+  formatMobileInput(input);
+}
+
 function formatMobileInput(input) {
   if (!input) return;
   const start = input.selectionStart;
   const origLen = input.value.length;
-  let val = input.value.replace(/\D/g, '').slice(0, 10);
+  let val = input.value.replace(/\D/g, '');
+  if (val.length > 10) {
+    val = val.slice(0, 10);
+  }
   if (input.value !== val) {
     input.value = val;
-    const newPos = Math.max(0, start - (origLen - val.length));
+    const newPos = Math.min(val.length, Math.max(0, start - (origLen - val.length)));
     try { input.setSelectionRange(newPos, newPos); } catch (e) {}
   }
 
-  const errEl = document.getElementById('empPhoneError');
+  const errEl = input.id === 'modalEmpPhone' ? document.getElementById('empPhoneError') : null;
   if (!errEl) return;
 
   if (!val) {
@@ -4467,6 +4554,7 @@ function setLiveRosterStationFilter(stKey) {
 
 
 // User requirement: "S2 and S3 allowed duplicate staff - it should not allow - who assign to S1 cannot be allowed to any other pump .."
+// User requirement: "some times S3 and S4 can be allocated to same person due to staff starvation"
 function onRosterAttendantSelect(changedStationKey) {
   const curSelect = document.getElementById(`rosterAssign-${changedStationKey}`);
   if (!curSelect || !curSelect.value.trim()) return;
@@ -4476,21 +4564,41 @@ function onRosterAttendantSelect(changedStationKey) {
 
   for (const st of ['S1', 'S2', 'S3', 'S4']) {
     if (st === changedStationKey) continue;
+    const isS3S4Pair = (changedStationKey === 'S3' && st === 'S4') || (changedStationKey === 'S4' && st === 'S3');
     const otherSelect = document.getElementById(`rosterAssign-${st}`);
-    if (otherSelect && otherSelect.value.trim().toLowerCase() === chosenLower) {
-      showToast(
-        STATE.lang === 'te'
-          ? `సిబ్బంది ఇప్పటికే కేటాయించబడ్డారు! (${chosenName} ఇప్పటికే Station ${st} కు కేటాయించబడ్డారు. ఒకే సిబ్బందిని ఒకే రోజు రెండు పంపులకు కేటాయించలేరు)`
-          : `Staff already assigned! (${chosenName} is already assigned to Station ${st}. One staff cannot be assigned to multiple pumps on the same day)`,
-        'error'
-      );
-      curSelect.value = "";
-      curSelect.focus();
-      curSelect.classList.add('border-rose-500', 'ring-4', 'ring-rose-300');
-      setTimeout(() => {
-        curSelect.classList.remove('border-rose-500', 'ring-4', 'ring-rose-300');
-      }, 3000);
-      return;
+    const isSamePerson = otherSelect && otherSelect.value.trim().toLowerCase() === chosenLower;
+
+    if (isSamePerson) {
+      if (isS3S4Pair) {
+        // User requirement: "some times S3 and S4 can be allocated to same person due to staff starvation"
+        // Sync dutyPin for single PIN login convenience across Pump 2
+        const otherPin = document.getElementById(`rosterPin-${st}`)?.value;
+        const curPin = document.getElementById(`rosterPin-${changedStationKey}`);
+        if (otherPin && curPin) {
+          curPin.value = otherPin;
+        }
+        showToast(
+          STATE.lang === 'te'
+            ? `గమనిక: సిబ్బంది కొరత కారణంగా S3 & S4 రెండింటికీ "${chosenName}" కేటాయించబడ్డారు. డ్యూటీ పిన్ సమకాలీకరించబడింది.`
+            : `Note: "${chosenName}" allocated to both S3 & S4 due to staff starvation. Duty PIN synced.`
+        );
+        return;
+      } else {
+        // Block duplicates on any other combination (S1 cannot share with any pump, S2 cannot share with any pump)
+        showToast(
+          STATE.lang === 'te'
+            ? `సిబ్బంది ఇప్పటికే కేటాయించబడ్డారు! (${chosenName} ఇప్పటికే Station ${st} కు కేటాయించబడ్డారు. S1 మరియు S2 లకు ప్రత్యేక సిబ్బంది ఉండాలి; S3 మరియు S4 లకు మాత్రమే సిబ్బంది కొరత ఉన్నప్పుడు ఒకే వ్యక్తిని కేటాయించవచ్చు)`
+            : `Staff already assigned! (${chosenName} is already assigned to Station ${st}. Only S3 and S4 can share the same attendant due to staff starvation)`,
+          'error'
+        );
+        curSelect.value = "";
+        curSelect.focus();
+        curSelect.classList.add('border-rose-500', 'ring-4', 'ring-rose-300');
+        setTimeout(() => {
+          curSelect.classList.remove('border-rose-500', 'ring-4', 'ring-rose-300');
+        }, 3000);
+        return;
+      }
     }
   }
 
@@ -4530,6 +4638,7 @@ function generateAllRandomDutyPins() {
 
 // User requirement: "once click on save allocation -> then if again click on save allocation without changing anything on same day not allow to save say data already save (onlve save allow if any changes in fields, atleast one field has to change and that also to be saved with date when saved and all)"
 // User requirement: "S2 and S3 allowed duplicate staff - it should not allow - who assign to S1 cannot be allowed to any other pump .."
+// User requirement: "some times S3 and S4 can be allocated to same person due to staff starvation"
 async function saveDutyRosterAssignments() {
   const assignments = {};
   ['S1', 'S2', 'S3', 'S4'].forEach(stKey => {
@@ -4541,7 +4650,8 @@ async function saveDutyRosterAssignments() {
     assignments[stKey] = { employeeName: empName, dutyPin: dutyPin.trim() };
   });
 
-  // Client check: Ensure no duplicate employee assignments across S1, S2, S3, S4
+  // Client check: Ensure no duplicate employee assignments across stations,
+  // EXCEPT S3 & S4 which can share the same attendant during staff starvation
   const seenStaff = {};
   for (const stKey of ['S1', 'S2', 'S3', 'S4']) {
     const rawName = (assignments[stKey]?.employeeName || "").trim();
@@ -4549,19 +4659,22 @@ async function saveDutyRosterAssignments() {
       const cleanLower = rawName.toLowerCase();
       if (seenStaff[cleanLower]) {
         const prevSt = seenStaff[cleanLower];
-        showToast(
-          STATE.lang === 'te'
-            ? `ఒకే సిబ్బందిని రెండు వేర్వేరు పంపులకు కేటాయించలేరు! (${rawName} ఇప్పటికే Station ${prevSt} కు కేటాయించబడ్డారు. దయచేసి వేరే సిబ్బందిని ఎంచుకోండి)`
-            : `Duplicate assignment blocked! (${rawName} is already assigned to Station ${prevSt}. Cannot assign to multiple pumps on same day)`,
-          'error'
-        );
-        const curSelect = document.getElementById(`rosterAssign-${stKey}`);
-        if (curSelect) {
-          curSelect.focus();
-          curSelect.classList.add('border-rose-500', 'ring-4', 'ring-rose-300');
-          setTimeout(() => curSelect.classList.remove('border-rose-500', 'ring-4', 'ring-rose-300'), 3000);
+        const isS3S4Pair = (prevSt === 'S3' && stKey === 'S4') || (prevSt === 'S4' && stKey === 'S3');
+        if (!isS3S4Pair) {
+          showToast(
+            STATE.lang === 'te'
+              ? `ఒకే సిబ్బందిని రెండు వేర్వేరు పంపులకు కేటాయించలేరు! (${rawName} ఇప్పటికే Station ${prevSt} కు కేటాయించబడ్డారు. S1 మరియు S2 లకు ప్రత్యేక సిబ్బంది ఉండాలి; S3 మరియు S4 లకు మాత్రమే సిబ్బంది కొరత ఉన్నప్పుడు ఒకే వ్యక్తిని కేటాయించవచ్చు)`
+              : `Duplicate assignment blocked! (${rawName} is already assigned to Station ${prevSt}. Only S3 & S4 can share the same attendant due to staff starvation)`,
+            'error'
+          );
+          const curSelect = document.getElementById(`rosterAssign-${stKey}`);
+          if (curSelect) {
+            curSelect.focus();
+            curSelect.classList.add('border-rose-500', 'ring-4', 'ring-rose-300');
+            setTimeout(() => curSelect.classList.remove('border-rose-500', 'ring-4', 'ring-rose-300'), 3000);
+          }
+          return;
         }
-        return;
       }
       seenStaff[cleanLower] = stKey;
     }

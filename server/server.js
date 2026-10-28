@@ -261,11 +261,21 @@ app.post('/api/auth/login', (req, res) => {
       (e.name && e.name.toLowerCase() === cleanUser);
   });
 
-  if (isDirectStation || isGenericEmp || emp) {
-    let assignedStation = isDirectStation ? upperSt : null;
-    let stationDutyPin = null;
+  // Check if assigned in shift directly
+  const isAssignedInShift = Object.values(assignments).some(asgn => {
+    if (!asgn?.employeeName) return false;
+    const fn = asgn.employeeName.trim().toLowerCase().split(/\s+/)[0];
+    return fn === cleanUser || asgn.employeeName.trim().toLowerCase() === cleanUser;
+  });
 
-    if (!assignedStation) {
+  if (isDirectStation || isGenericEmp || emp || isAssignedInShift) {
+    // User requirement: "some times S3 and S4 can be allocated to same person due to staff starvation"
+    const matchingStations = [];
+    if (isDirectStation) {
+      if (assignments[upperSt]?.dutyPin) {
+        matchingStations.push({ stKey: upperSt, dutyPin: assignments[upperSt].dutyPin });
+      }
+    } else {
       for (const stKey of ['S1', 'S2', 'S3', 'S4']) {
         const asgn = assignments[stKey];
         if (asgn && asgn.employeeName) {
@@ -274,53 +284,48 @@ app.post('/api/auth/login', (req, res) => {
           if ((emp && (asgn.employeeName.toLowerCase() === emp.name.toLowerCase() || asgn.employeeId === emp.id)) ||
               asgnFn === cleanUser ||
               asgnFull === cleanUser) {
-            assignedStation = stKey;
-            stationDutyPin = asgn.dutyPin;
-            break;
+            matchingStations.push({ stKey, dutyPin: asgn.dutyPin });
           }
         }
       }
     }
 
-    if (!assignedStation && isGenericEmp) {
+    if (matchingStations.length === 0 && isGenericEmp) {
       // Find first allocated station for test login
       for (const stKey of ['S1', 'S2', 'S3', 'S4']) {
         if (assignments[stKey]?.dutyPin) {
-          assignedStation = stKey;
-          stationDutyPin = assignments[stKey].dutyPin;
+          matchingStations.push({ stKey, dutyPin: assignments[stKey].dutyPin });
           break;
         }
       }
-      if (!assignedStation) assignedStation = 'S1';
+      if (matchingStations.length === 0) matchingStations.push({ stKey: 'S1', dutyPin: assignments.S1?.dutyPin || '1234' });
     }
 
     // If staff is NOT allocated to any pump for this target date, reject
-    if (!assignedStation || (!assignments[assignedStation]?.employeeName && !isDirectStation && !isGenericEmp)) {
+    if (matchingStations.length === 0) {
       return res.status(403).json({
         error: `ఈ తేదీన (${targetDate}) ${emp?.name || username} కు పంపు కేటాయింపు జరగలేదు! మేనేజ్‌మెంట్ లేదా ఓనర్ ద్వారా పంపు కేటాయించి కొత్త డ్యూటీ పిన్ పొందండి (No pump allocated to ${emp?.name || username} for date ${targetDate}. Management must allocate the pump and generate a new random PIN).`
       });
     }
 
-    stationDutyPin = assignments[assignedStation]?.dutyPin || stationDutyPin;
-    if (!stationDutyPin) {
-      return res.status(403).json({
-        error: `స్టేషన్ ${assignedStation} కొరకు డ్యూటీ పిన్ సెట్ కాలేదు. దయచేసి మేనేజ్‌మెంట్ లేదా ఓనర్‌ను సంప్రదించండి (No duty PIN generated for station ${assignedStation}).`
-      });
-    }
-
-    // Staff authentication: Duty PIN strictly checked (no universal bypass)
     const enteredPin = cleanDutyPin || cleanPass;
+    const stNames = matchingStations.map(m => m.stKey).join(' & ');
     if (!enteredPin) {
       return res.status(401).json({
-        error: `డ్యూటీ పిన్ తప్పనిసరి! (${assignedStation} కొరకు మేనేజ్‌మెంట్ కేటాయించిన డ్యూటీ పిన్ నమోదు చేయండి. Duty PIN required for station ${assignedStation}).`
+        error: `డ్యూటీ పిన్ తప్పనిసరి! (${stNames} కొరకు మేనేజ్‌మెంట్ కేటాయించిన డ్యూటీ పిన్ నమోదు చేయండి. Duty PIN required for station ${stNames}).`
       });
     }
 
-    if (enteredPin !== String(stationDutyPin)) {
+    // Match duty PIN against any assigned station
+    const exactMatch = matchingStations.find(m => String(m.dutyPin) === String(enteredPin));
+    if (!exactMatch) {
       return res.status(401).json({
-        error: `డ్యూటీ పిన్ తప్పుగా ఉంది! (${assignedStation} కొరకు మేనేజ్‌మెంట్ కేటాయించిన సరైన డ్యూటీ పిన్ నమోదు చేయండి. Invalid Duty PIN for station ${assignedStation}).`
+        error: `డ్యూటీ పిన్ తప్పుగా ఉంది! (${stNames} కొరకు మేనేజ్‌మెంట్ కేటాయించిన సరైన డ్యూటీ పిన్ నమోదు చేయండి. Invalid Duty PIN for station ${stNames}).`
       });
     }
+
+    const assignedStation = exactMatch.stKey;
+    const stationDutyPin = exactMatch.dutyPin;
 
     // Location tracking removed for now per user requirement: "remove the location tracking for now"
 
@@ -828,6 +833,7 @@ app.post('/api/duty-assignments', (req, res) => {
   if (!data.shiftAssignments) data.shiftAssignments = {};
 
   // User requirement: "S2 and S3 allowed duplicate staff - it should not allow - who assign to S1 cannot be allowed to any other pump .."
+  // User requirement: "some times S3 and S4 can be allocated to same person due to staff starvation"
   const assignedMap = {};
   for (const stKey of ['S1', 'S2', 'S3', 'S4']) {
     const rawName = (assignments[stKey]?.employeeName || "").trim();
@@ -835,13 +841,16 @@ app.post('/api/duty-assignments', (req, res) => {
       const clean = rawName.toLowerCase();
       if (assignedMap[clean]) {
         const prevSt = assignedMap[clean];
-        return res.status(400).json({
-          error: `ఒకే సిబ్బందిని రెండు వేర్వేరు పంపులకు కేటాయించలేరు! (${rawName} ఇప్పటికే ${prevSt} కు కేటాయించబడ్డారు. దయచేసి వేరే సిబ్బందిని ఎంచుకోండి - Cannot assign ${rawName} to multiple stations).`,
-          duplicateStaff: true,
-          employeeName: rawName,
-          firstStation: prevSt,
-          secondStation: stKey
-        });
+        const isS3S4Pair = (prevSt === 'S3' && stKey === 'S4') || (prevSt === 'S4' && stKey === 'S3');
+        if (!isS3S4Pair) {
+          return res.status(400).json({
+            error: `ఒకే సిబ్బందిని రెండు వేర్వేరు పంపులకు కేటాయించలేరు! (${rawName} ఇప్పటికే ${prevSt} కు కేటాయించబడ్డారు. S1 మరియు S2 లకు ప్రత్యేక సిబ్బంది ఉండాలి; S3 మరియు S4 లకు మాత్రమే సిబ్బంది కొరత ఉన్నప్పుడు ఒకే వ్యక్తిని కేటాయించవచ్చు - Only S3 & S4 can share same attendant due to staff starvation).`,
+            duplicateStaff: true,
+            employeeName: rawName,
+            firstStation: prevSt,
+            secondStation: stKey
+          });
+        }
       }
       assignedMap[clean] = stKey;
     }
