@@ -4267,7 +4267,7 @@ function renderAdminDutyRoster() {
         </div>
         <div>
           <label class="text-[11px] font-bold text-slate-700 block mb-1">Assign Attendant (సిబ్బంది ఎంపిక):</label>
-          <select id="rosterAssign-${stKey}" class="w-full bg-slate-50 border-2 border-slate-200 focus:border-orange-500 rounded-lg p-2 text-xs font-bold text-slate-900 focus:outline-none">
+          <select id="rosterAssign-${stKey}" onchange="onRosterAttendantSelect('${stKey}')" class="w-full bg-slate-50 border-2 border-slate-200 focus:border-orange-500 rounded-lg p-2 text-xs font-bold text-slate-900 focus:outline-none">
             <option value="">-- Choose Staff (ఎంపిక చేయండి) --</option>
             ${STATE.employees.map(e => `
               <option value="${e.name}" ${e.name === assignedName ? 'selected' : ''}>
@@ -4346,6 +4346,35 @@ function setLiveRosterStationFilter(stKey) {
 }
 
 
+// User requirement: "S2 and S3 allowed duplicate staff - it should not allow - who assign to S1 cannot be allowed to any other pump .."
+function onRosterAttendantSelect(changedStationKey) {
+  const curSelect = document.getElementById(`rosterAssign-${changedStationKey}`);
+  if (!curSelect || !curSelect.value.trim()) return;
+
+  const chosenName = curSelect.value.trim();
+  const chosenLower = chosenName.toLowerCase();
+
+  for (const st of ['S1', 'S2', 'S3', 'S4']) {
+    if (st === changedStationKey) continue;
+    const otherSelect = document.getElementById(`rosterAssign-${st}`);
+    if (otherSelect && otherSelect.value.trim().toLowerCase() === chosenLower) {
+      showToast(
+        STATE.lang === 'te'
+          ? `సిబ్బంది ఇప్పటికే కేటాయించబడ్డారు! (${chosenName} ఇప్పటికే Station ${st} కు కేటాయించబడ్డారు. ఒకే సిబ్బందిని ఒకే రోజు రెండు పంపులకు కేటాయించలేరు)`
+          : `Staff already assigned! (${chosenName} is already assigned to Station ${st}. One staff cannot be assigned to multiple pumps on the same day)`,
+        'error'
+      );
+      curSelect.value = "";
+      curSelect.focus();
+      curSelect.classList.add('border-rose-500', 'ring-4', 'ring-rose-300');
+      setTimeout(() => {
+        curSelect.classList.remove('border-rose-500', 'ring-4', 'ring-rose-300');
+      }, 3000);
+      return;
+    }
+  }
+}
+
 function generateRandomDutyPin(stKey) {
   const pinInput = document.getElementById(`rosterPin-${stKey}`);
   if (pinInput) {
@@ -4355,6 +4384,7 @@ function generateRandomDutyPin(stKey) {
 }
 
 // User requirement: "once click on save allocation -> then if again click on save allocation without changing anything on same day not allow to save say data already save (onlve save allow if any changes in fields, atleast one field has to change and that also to be saved with date when saved and all)"
+// User requirement: "S2 and S3 allowed duplicate staff - it should not allow - who assign to S1 cannot be allowed to any other pump .."
 async function saveDutyRosterAssignments() {
   const assignments = {};
   const defaultPins = { S1: "1122", S2: "3344", S3: "5566", S4: "7788" };
@@ -4363,6 +4393,32 @@ async function saveDutyRosterAssignments() {
     const dutyPin = document.getElementById(`rosterPin-${stKey}`)?.value || defaultPins[stKey] || "1122";
     assignments[stKey] = { employeeName: empName, dutyPin };
   });
+
+  // Client check: Ensure no duplicate employee assignments across S1, S2, S3, S4
+  const seenStaff = {};
+  for (const stKey of ['S1', 'S2', 'S3', 'S4']) {
+    const rawName = (assignments[stKey]?.employeeName || "").trim();
+    if (rawName) {
+      const cleanLower = rawName.toLowerCase();
+      if (seenStaff[cleanLower]) {
+        const prevSt = seenStaff[cleanLower];
+        showToast(
+          STATE.lang === 'te'
+            ? `ఒకే సిబ్బందిని రెండు వేర్వేరు పంపులకు కేటాయించలేరు! (${rawName} ఇప్పటికే Station ${prevSt} కు కేటాయించబడ్డారు. దయచేసి వేరే సిబ్బందిని ఎంచుకోండి)`
+            : `Duplicate assignment blocked! (${rawName} is already assigned to Station ${prevSt}. Cannot assign to multiple pumps on same day)`,
+          'error'
+        );
+        const curSelect = document.getElementById(`rosterAssign-${stKey}`);
+        if (curSelect) {
+          curSelect.focus();
+          curSelect.classList.add('border-rose-500', 'ring-4', 'ring-rose-300');
+          setTimeout(() => curSelect.classList.remove('border-rose-500', 'ring-4', 'ring-rose-300'), 3000);
+        }
+        return;
+      }
+      seenStaff[cleanLower] = stKey;
+    }
+  }
 
   // Client check: Check if any field actually changed compared to current STATE.dutyAssignments
   if (STATE.dutyAssignments) {

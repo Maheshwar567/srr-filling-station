@@ -816,6 +816,26 @@ app.post('/api/duty-assignments', (req, res) => {
   if (!data.shiftAssignments) data.shiftAssignments = {};
   const defaultPins = { S1: "1122", S2: "3344", S3: "5566", S4: "7788" };
 
+  // User requirement: "S2 and S3 allowed duplicate staff - it should not allow - who assign to S1 cannot be allowed to any other pump .."
+  const assignedMap = {};
+  for (const stKey of ['S1', 'S2', 'S3', 'S4']) {
+    const rawName = (assignments[stKey]?.employeeName || "").trim();
+    if (rawName) {
+      const clean = rawName.toLowerCase();
+      if (assignedMap[clean]) {
+        const prevSt = assignedMap[clean];
+        return res.status(400).json({
+          error: `ఒకే సిబ్బందిని రెండు వేర్వేరు పంపులకు కేటాయించలేరు! (${rawName} ఇప్పటికే ${prevSt} కు కేటాయించబడ్డారు. దయచేసి వేరే సిబ్బందిని ఎంచుకోండి - Cannot assign ${rawName} to multiple stations).`,
+          duplicateStaff: true,
+          employeeName: rawName,
+          firstStation: prevSt,
+          secondStation: stKey
+        });
+      }
+      assignedMap[clean] = stKey;
+    }
+  }
+
   // User requirement: "once click on save allocation -> then if again click on save allocation without changing anything on same day not allow to save say data already save (onlve save allow if any changes in fields, atleast one field has to change and that also to be saved with date when saved and all)"
   const existing = data.shiftAssignments[date];
   if (existing) {
