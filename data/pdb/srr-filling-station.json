@@ -1099,15 +1099,36 @@
             "expenses": 0,
             "expenseReason": ""
           },
-          "employeeName": "Staff One",
+          "employeeName": "B Parsha ramudu",
           "readingsHistory": [],
           "previousAttendants": [
             {
-              "employeeName": "Ramesh Kumar",
               "dutyPin": "4829",
               "replacedAt": "2026-10-28T11:15:28.845Z",
-              "replacedAtFormatted": "28 Oct 2026, 4:45 pm",
-              "replacedBy": "Staff One"
+              "replacedBy": "Staff One",
+              "employeeName": "Ramesh Kumar",
+              "replacedAtFormatted": "28 Oct 2026, 4:45 pm"
+            },
+            {
+              "dutyPin": "7111",
+              "replacedAt": "2026-10-28T11:25:51.331Z",
+              "replacedBy": "B Parsha ramudu",
+              "employeeName": "Staff One",
+              "replacedAtFormatted": "28 Oct 2026, 4:55 pm"
+            },
+            {
+              "employeeName": "B Parsha ramudu",
+              "dutyPin": "8859",
+              "replacedAt": "2026-10-28T11:55:55.330Z",
+              "replacedAtFormatted": "28 Oct 2026, 5:25 pm",
+              "replacedBy": "B Mahesh Kumar"
+            },
+            {
+              "employeeName": "B Mahesh Kumar",
+              "dutyPin": "4567",
+              "replacedAt": "2026-10-28T11:55:55.408Z",
+              "replacedAtFormatted": "28 Oct 2026, 5:25 pm",
+              "replacedBy": "B Parsha ramudu"
             }
           ]
         },
@@ -1139,15 +1160,22 @@
             "expenses": 0,
             "expenseReason": ""
           },
-          "employeeName": "Staff Two",
+          "employeeName": "Ravi",
           "readingsHistory": [],
           "previousAttendants": [
             {
-              "employeeName": "Suresh Reddy",
               "dutyPin": "7163",
               "replacedAt": "2026-10-28T11:15:28.845Z",
-              "replacedAtFormatted": "28 Oct 2026, 4:45 pm",
-              "replacedBy": "Staff Two"
+              "replacedBy": "Staff Two",
+              "employeeName": "Suresh Reddy",
+              "replacedAtFormatted": "28 Oct 2026, 4:45 pm"
+            },
+            {
+              "dutyPin": "7222",
+              "replacedAt": "2026-10-28T11:25:51.331Z",
+              "replacedBy": "Ravi",
+              "employeeName": "Staff Two",
+              "replacedAtFormatted": "28 Oct 2026, 4:55 pm"
             }
           ]
         },
@@ -1179,15 +1207,22 @@
             "expenses": 0,
             "expenseReason": ""
           },
-          "employeeName": "Dual Attendant",
+          "employeeName": "B Narasimhulu",
           "readingsHistory": [],
           "previousAttendants": [
             {
-              "employeeName": "Venkatesh Rao",
               "dutyPin": "2594",
               "replacedAt": "2026-10-28T11:15:28.845Z",
-              "replacedAtFormatted": "28 Oct 2026, 4:45 pm",
-              "replacedBy": "Dual Attendant"
+              "replacedBy": "Dual Attendant",
+              "employeeName": "Venkatesh Rao",
+              "replacedAtFormatted": "28 Oct 2026, 4:45 pm"
+            },
+            {
+              "dutyPin": "7333",
+              "replacedAt": "2026-10-28T11:25:51.331Z",
+              "replacedBy": "B Narasimhulu",
+              "employeeName": "Dual Attendant",
+              "replacedAtFormatted": "28 Oct 2026, 4:55 pm"
             }
           ]
         },
@@ -1219,15 +1254,29 @@
             "expenses": 0,
             "expenseReason": ""
           },
-          "employeeName": "Dual Attendant",
+          "employeeName": "Narendra",
           "readingsHistory": [],
           "previousAttendants": [
             {
-              "employeeName": "Naresh Babu",
               "dutyPin": "8341",
               "replacedAt": "2026-10-28T11:15:28.845Z",
-              "replacedAtFormatted": "28 Oct 2026, 4:45 pm",
-              "replacedBy": "Dual Attendant"
+              "replacedBy": "Dual Attendant",
+              "employeeName": "Naresh Babu",
+              "replacedAtFormatted": "28 Oct 2026, 4:45 pm"
+            },
+            {
+              "dutyPin": "7333",
+              "replacedAt": "2026-10-28T11:25:51.331Z",
+              "replacedBy": "B Narasimhulu",
+              "employeeName": "Dual Attendant",
+              "replacedAtFormatted": "28 Oct 2026, 4:55 pm"
+            },
+            {
+              "employeeName": "B Narasimhulu",
+              "dutyPin": "5321",
+              "replacedAt": "2026-10-28T11:55:55.330Z",
+              "replacedAtFormatted": "28 Oct 2026, 5:25 pm",
+              "replacedBy": "Narendra"
             }
           ]
         }
@@ -1237,53 +1286,275 @@
       "handoverHistory": [
         {
           "date": "2026-10-28",
+          "note": "హ్యాండోవర్: Ramesh Kumar పని ముగించారు, Staff One బాధ్యతలు తీసుకున్నారు",
+          "stationId": "S1",
+          "timestamp": "2026-10-28T11:15:28.845Z",
+          "newDutyPin": "7111",
+          "newEmployee": "Staff One",
+          "stationName": "S1 (Pump 1)",
+          "formattedTime": "28 Oct 2026, 4:45 pm",
+          "previousDutyPin": "4829",
+          "previousEmployee": "Ramesh Kumar"
+        },
+        {
+          "date": "2026-10-28",
+          "note": "హ్యాండోవర్: Suresh Reddy పని ముగించారు, Staff Two బాధ్యతలు తీసుకున్నారు",
+          "stationId": "S2",
+          "timestamp": "2026-10-28T11:15:28.845Z",
+          "newDutyPin": "7222",
+          "newEmployee": "Staff Two",
+          "stationName": "S2 (Pump 1)",
+          "formattedTime": "28 Oct 2026, 4:45 pm",
+          "previousDutyPin": "7163",
+          "previousEmployee": "Suresh Reddy"
+        },
+        {
+          "date": "2026-10-28",
+          "note": "హ్యాండోవర్: Venkatesh Rao పని ముగించారు, Dual Attendant బాధ్యతలు తీసుకున్నారు",
+          "stationId": "S3",
+          "timestamp": "2026-10-28T11:15:28.845Z",
+          "newDutyPin": "7333",
+          "newEmployee": "Dual Attendant",
+          "stationName": "S3 (Pump 2)",
+          "formattedTime": "28 Oct 2026, 4:45 pm",
+          "previousDutyPin": "2594",
+          "previousEmployee": "Venkatesh Rao"
+        },
+        {
+          "date": "2026-10-28",
+          "note": "హ్యాండోవర్: Naresh Babu పని ముగించారు, Dual Attendant బాధ్యతలు తీసుకున్నారు",
+          "stationId": "S4",
+          "timestamp": "2026-10-28T11:15:28.845Z",
+          "newDutyPin": "7333",
+          "newEmployee": "Dual Attendant",
+          "stationName": "S4 (Pump 2)",
+          "formattedTime": "28 Oct 2026, 4:45 pm",
+          "previousDutyPin": "8341",
+          "previousEmployee": "Naresh Babu"
+        },
+        {
+          "date": "2026-10-28",
+          "note": "హ్యాండోవర్: Staff One పని ముగించారు, B Parsha ramudu బాధ్యతలు తీసుకున్నారు",
+          "stationId": "S1",
+          "timestamp": "2026-10-28T11:25:51.331Z",
+          "newDutyPin": "8859",
+          "newEmployee": "B Parsha ramudu",
+          "stationName": "S1 (Pump 1)",
+          "formattedTime": "28 Oct 2026, 4:55 pm",
+          "previousDutyPin": "7111",
+          "previousEmployee": "Staff One"
+        },
+        {
+          "date": "2026-10-28",
+          "note": "హ్యాండోవర్: Staff Two పని ముగించారు, Ravi బాధ్యతలు తీసుకున్నారు",
+          "stationId": "S2",
+          "timestamp": "2026-10-28T11:25:51.331Z",
+          "newDutyPin": "9350",
+          "newEmployee": "Ravi",
+          "stationName": "S2 (Pump 1)",
+          "formattedTime": "28 Oct 2026, 4:55 pm",
+          "previousDutyPin": "7222",
+          "previousEmployee": "Staff Two"
+        },
+        {
+          "date": "2026-10-28",
+          "note": "హ్యాండోవర్: Dual Attendant పని ముగించారు, B Narasimhulu బాధ్యతలు తీసుకున్నారు",
+          "stationId": "S3",
+          "timestamp": "2026-10-28T11:25:51.331Z",
+          "newDutyPin": "5321",
+          "newEmployee": "B Narasimhulu",
+          "stationName": "S3 (Pump 2)",
+          "formattedTime": "28 Oct 2026, 4:55 pm",
+          "previousDutyPin": "7333",
+          "previousEmployee": "Dual Attendant"
+        },
+        {
+          "date": "2026-10-28",
+          "note": "హ్యాండోవర్: Dual Attendant పని ముగించారు, B Narasimhulu బాధ్యతలు తీసుకున్నారు",
+          "stationId": "S4",
+          "timestamp": "2026-10-28T11:25:51.331Z",
+          "newDutyPin": "5321",
+          "newEmployee": "B Narasimhulu",
+          "stationName": "S4 (Pump 2)",
+          "formattedTime": "28 Oct 2026, 4:55 pm",
+          "previousDutyPin": "7333",
+          "previousEmployee": "Dual Attendant"
+        },
+        {
+          "date": "2026-10-28",
           "stationId": "S1",
           "stationName": "S1 (Pump 1)",
-          "previousEmployee": "Ramesh Kumar",
-          "previousDutyPin": "4829",
-          "newEmployee": "Staff One",
-          "newDutyPin": "7111",
-          "timestamp": "2026-10-28T11:15:28.845Z",
-          "formattedTime": "28 Oct 2026, 4:45 pm",
-          "note": "హ్యాండోవర్: Ramesh Kumar పని ముగించారు, Staff One బాధ్యతలు తీసుకున్నారు"
-        },
-        {
-          "date": "2026-10-28",
-          "stationId": "S2",
-          "stationName": "S2 (Pump 1)",
-          "previousEmployee": "Suresh Reddy",
-          "previousDutyPin": "7163",
-          "newEmployee": "Staff Two",
-          "newDutyPin": "7222",
-          "timestamp": "2026-10-28T11:15:28.845Z",
-          "formattedTime": "28 Oct 2026, 4:45 pm",
-          "note": "హ్యాండోవర్: Suresh Reddy పని ముగించారు, Staff Two బాధ్యతలు తీసుకున్నారు"
-        },
-        {
-          "date": "2026-10-28",
-          "stationId": "S3",
-          "stationName": "S3 (Pump 2)",
-          "previousEmployee": "Venkatesh Rao",
-          "previousDutyPin": "2594",
-          "newEmployee": "Dual Attendant",
-          "newDutyPin": "7333",
-          "timestamp": "2026-10-28T11:15:28.845Z",
-          "formattedTime": "28 Oct 2026, 4:45 pm",
-          "note": "హ్యాండోవర్: Venkatesh Rao పని ముగించారు, Dual Attendant బాధ్యతలు తీసుకున్నారు"
+          "previousEmployee": "B Parsha ramudu",
+          "previousDutyPin": "8859",
+          "newEmployee": "B Mahesh Kumar",
+          "newDutyPin": "4567",
+          "timestamp": "2026-10-28T11:55:55.330Z",
+          "formattedTime": "28 Oct 2026, 5:25 pm",
+          "note": "హ్యాండోవర్: B Parsha ramudu పని ముగించారు, B Mahesh Kumar బాధ్యతలు తీసుకున్నారు"
         },
         {
           "date": "2026-10-28",
           "stationId": "S4",
           "stationName": "S4 (Pump 2)",
-          "previousEmployee": "Naresh Babu",
-          "previousDutyPin": "8341",
-          "newEmployee": "Dual Attendant",
-          "newDutyPin": "7333",
-          "timestamp": "2026-10-28T11:15:28.845Z",
-          "formattedTime": "28 Oct 2026, 4:45 pm",
-          "note": "హ్యాండోవర్: Naresh Babu పని ముగించారు, Dual Attendant బాధ్యతలు తీసుకున్నారు"
+          "previousEmployee": "B Narasimhulu",
+          "previousDutyPin": "5321",
+          "newEmployee": "Narendra",
+          "newDutyPin": "8341",
+          "timestamp": "2026-10-28T11:55:55.330Z",
+          "formattedTime": "28 Oct 2026, 5:25 pm",
+          "note": "హ్యాండోవర్: B Narasimhulu పని ముగించారు, Narendra బాధ్యతలు తీసుకున్నారు"
+        },
+        {
+          "date": "2026-10-28",
+          "stationId": "S1",
+          "stationName": "S1 (Pump 1)",
+          "previousEmployee": "B Mahesh Kumar",
+          "previousDutyPin": "4567",
+          "newEmployee": "B Parsha ramudu",
+          "newDutyPin": "4829",
+          "timestamp": "2026-10-28T11:55:55.408Z",
+          "formattedTime": "28 Oct 2026, 5:25 pm",
+          "note": "హ్యాండోవర్: B Mahesh Kumar పని ముగించారు, B Parsha ramudu బాధ్యతలు తీసుకున్నారు"
         }
       ]
+    },
+    {
+      "id": "shift-2026-10-12",
+      "date": "2026-10-12",
+      "status": "active",
+      "stations": {
+        "S1": {
+          "pump": "Pump 1",
+          "meters": {
+            "diesel": {
+              "code": "A2",
+              "open": 0,
+              "close": 0,
+              "testing": 0,
+              "saleLitres": 0
+            },
+            "petrol": {
+              "code": "A1",
+              "open": 0,
+              "close": 0,
+              "testing": 0,
+              "saleLitres": 0
+            }
+          },
+          "status": "pending",
+          "stationId": "S1",
+          "collections": {
+            "upi": 0,
+            "card": 0,
+            "cash": 0,
+            "notes": "",
+            "expenses": 0,
+            "expenseReason": ""
+          },
+          "employeeName": "B Parsha ramudu",
+          "readingsHistory": [],
+          "previousAttendants": []
+        },
+        "S2": {
+          "pump": "Pump 1",
+          "meters": {
+            "diesel": {
+              "code": "B2",
+              "open": 0,
+              "close": 0,
+              "testing": 0,
+              "saleLitres": 0
+            },
+            "petrol": {
+              "code": "B1",
+              "open": 0,
+              "close": 0,
+              "testing": 0,
+              "saleLitres": 0
+            }
+          },
+          "status": "pending",
+          "stationId": "S2",
+          "collections": {
+            "upi": 0,
+            "card": 0,
+            "cash": 0,
+            "notes": "",
+            "expenses": 0,
+            "expenseReason": ""
+          },
+          "employeeName": "Ravi",
+          "readingsHistory": [],
+          "previousAttendants": []
+        },
+        "S3": {
+          "pump": "Pump 2",
+          "meters": {
+            "diesel": {
+              "code": "A2",
+              "open": 0,
+              "close": 0,
+              "testing": 0,
+              "saleLitres": 0
+            },
+            "petrol": {
+              "code": "A1",
+              "open": 0,
+              "close": 0,
+              "testing": 0,
+              "saleLitres": 0
+            }
+          },
+          "status": "pending",
+          "stationId": "S3",
+          "collections": {
+            "upi": 0,
+            "card": 0,
+            "cash": 0,
+            "notes": "",
+            "expenses": 0,
+            "expenseReason": ""
+          },
+          "employeeName": "B Narasimhulu",
+          "readingsHistory": [],
+          "previousAttendants": []
+        },
+        "S4": {
+          "pump": "Pump 2",
+          "meters": {
+            "diesel": {
+              "code": "B2",
+              "open": 0,
+              "close": 0,
+              "testing": 0,
+              "saleLitres": 0
+            },
+            "petrol": {
+              "code": "B1",
+              "open": 0,
+              "close": 0,
+              "testing": 0,
+              "saleLitres": 0
+            }
+          },
+          "status": "pending",
+          "stationId": "S4",
+          "collections": {
+            "upi": 0,
+            "card": 0,
+            "cash": 0,
+            "notes": "",
+            "expenses": 0,
+            "expenseReason": ""
+          },
+          "employeeName": "B Narasimhulu",
+          "readingsHistory": [],
+          "previousAttendants": []
+        }
+      },
+      "dieselRate": 105.23,
+      "petrolRate": 117.07,
+      "handoverHistory": []
     }
   ],
   "employees": [
@@ -1401,6 +1672,21 @@
       "address": "",
       "password": "123",
       "username": "1234567897",
+      "fatherName": "",
+      "joiningDate": "2026-10-28",
+      "villageName": "",
+      "aadhaarNumber": "",
+      "emergencyContact": ""
+    },
+    {
+      "id": "emp-1793186671911",
+      "name": "SNR",
+      "role": "Attendant",
+      "phone": "6454545545",
+      "active": true,
+      "address": "",
+      "password": "123",
+      "username": "6454545545",
       "fatherName": "",
       "joiningDate": "2026-10-28",
       "villageName": "",
@@ -1709,6 +1995,37 @@
     }
   ],
   "shiftAssignments": {
+    "2026-10-12": {
+      "S1": {
+        "dutyPin": "1497",
+        "employeeName": "B Parsha ramudu",
+        "previousAttendants": []
+      },
+      "S2": {
+        "dutyPin": "9309",
+        "employeeName": "Ravi",
+        "previousAttendants": []
+      },
+      "S3": {
+        "dutyPin": "7177",
+        "employeeName": "B Narasimhulu",
+        "previousAttendants": []
+      },
+      "S4": {
+        "dutyPin": "7177",
+        "employeeName": "B Narasimhulu",
+        "previousAttendants": []
+      },
+      "savedAt": "2026-10-28T11:28:26.048Z",
+      "updatedAt": "2026-10-28T11:28:26.048Z",
+      "handoverHistory": [],
+      "savedAtFormatted": "28 Oct 2026, 4:58 pm",
+      "allEmployeesWorked": [
+        "B Parsha ramudu",
+        "Ravi",
+        "B Narasimhulu"
+      ]
+    },
     "2026-10-23": {
       "S1": {
         "dutyPin": "1122",
@@ -1817,33 +2134,255 @@
       "S1": {
         "employeeName": "B Parsha ramudu",
         "dutyPin": "4829",
-        "previousAttendants": []
+        "previousAttendants": [
+          {
+            "dutyPin": "4829",
+            "replacedAt": "2026-10-28T11:15:28.845Z",
+            "replacedBy": "Staff One",
+            "employeeName": "Ramesh Kumar",
+            "replacedAtFormatted": "28 Oct 2026, 4:45 pm"
+          },
+          {
+            "dutyPin": "7111",
+            "replacedAt": "2026-10-28T11:25:51.331Z",
+            "replacedBy": "B Parsha ramudu",
+            "employeeName": "Staff One",
+            "replacedAtFormatted": "28 Oct 2026, 4:55 pm"
+          },
+          {
+            "employeeName": "B Parsha ramudu",
+            "dutyPin": "8859",
+            "replacedAt": "2026-10-28T11:55:55.330Z",
+            "replacedAtFormatted": "28 Oct 2026, 5:25 pm",
+            "replacedBy": "B Mahesh Kumar"
+          },
+          {
+            "employeeName": "B Mahesh Kumar",
+            "dutyPin": "4567",
+            "replacedAt": "2026-10-28T11:55:55.408Z",
+            "replacedAtFormatted": "28 Oct 2026, 5:25 pm",
+            "replacedBy": "B Parsha ramudu"
+          }
+        ]
       },
       "S2": {
         "employeeName": "Ravi",
         "dutyPin": "7163",
-        "previousAttendants": []
+        "previousAttendants": [
+          {
+            "dutyPin": "7163",
+            "replacedAt": "2026-10-28T11:15:28.845Z",
+            "replacedBy": "Staff Two",
+            "employeeName": "Suresh Reddy",
+            "replacedAtFormatted": "28 Oct 2026, 4:45 pm"
+          },
+          {
+            "dutyPin": "7222",
+            "replacedAt": "2026-10-28T11:25:51.331Z",
+            "replacedBy": "Ravi",
+            "employeeName": "Staff Two",
+            "replacedAtFormatted": "28 Oct 2026, 4:55 pm"
+          }
+        ]
       },
       "S3": {
         "employeeName": "B Narasimhulu",
         "dutyPin": "2594",
-        "previousAttendants": []
+        "previousAttendants": [
+          {
+            "dutyPin": "2594",
+            "replacedAt": "2026-10-28T11:15:28.845Z",
+            "replacedBy": "Dual Attendant",
+            "employeeName": "Venkatesh Rao",
+            "replacedAtFormatted": "28 Oct 2026, 4:45 pm"
+          },
+          {
+            "dutyPin": "7333",
+            "replacedAt": "2026-10-28T11:25:51.331Z",
+            "replacedBy": "B Narasimhulu",
+            "employeeName": "Dual Attendant",
+            "replacedAtFormatted": "28 Oct 2026, 4:55 pm"
+          }
+        ]
       },
       "S4": {
         "employeeName": "Narendra",
         "dutyPin": "8341",
-        "previousAttendants": []
+        "previousAttendants": [
+          {
+            "dutyPin": "8341",
+            "replacedAt": "2026-10-28T11:15:28.845Z",
+            "replacedBy": "Dual Attendant",
+            "employeeName": "Naresh Babu",
+            "replacedAtFormatted": "28 Oct 2026, 4:45 pm"
+          },
+          {
+            "dutyPin": "7333",
+            "replacedAt": "2026-10-28T11:25:51.331Z",
+            "replacedBy": "B Narasimhulu",
+            "employeeName": "Dual Attendant",
+            "replacedAtFormatted": "28 Oct 2026, 4:55 pm"
+          },
+          {
+            "employeeName": "B Narasimhulu",
+            "dutyPin": "5321",
+            "replacedAt": "2026-10-28T11:55:55.330Z",
+            "replacedAtFormatted": "28 Oct 2026, 5:25 pm",
+            "replacedBy": "Narendra"
+          }
+        ]
       },
-      "handoverHistory": [],
+      "handoverHistory": [
+        {
+          "date": "2026-10-28",
+          "note": "హ్యాండోవర్: Ramesh Kumar పని ముగించారు, Staff One బాధ్యతలు తీసుకున్నారు",
+          "stationId": "S1",
+          "timestamp": "2026-10-28T11:15:28.845Z",
+          "newDutyPin": "7111",
+          "newEmployee": "Staff One",
+          "stationName": "S1 (Pump 1)",
+          "formattedTime": "28 Oct 2026, 4:45 pm",
+          "previousDutyPin": "4829",
+          "previousEmployee": "Ramesh Kumar"
+        },
+        {
+          "date": "2026-10-28",
+          "note": "హ్యాండోవర్: Suresh Reddy పని ముగించారు, Staff Two బాధ్యతలు తీసుకున్నారు",
+          "stationId": "S2",
+          "timestamp": "2026-10-28T11:15:28.845Z",
+          "newDutyPin": "7222",
+          "newEmployee": "Staff Two",
+          "stationName": "S2 (Pump 1)",
+          "formattedTime": "28 Oct 2026, 4:45 pm",
+          "previousDutyPin": "7163",
+          "previousEmployee": "Suresh Reddy"
+        },
+        {
+          "date": "2026-10-28",
+          "note": "హ్యాండోవర్: Venkatesh Rao పని ముగించారు, Dual Attendant బాధ్యతలు తీసుకున్నారు",
+          "stationId": "S3",
+          "timestamp": "2026-10-28T11:15:28.845Z",
+          "newDutyPin": "7333",
+          "newEmployee": "Dual Attendant",
+          "stationName": "S3 (Pump 2)",
+          "formattedTime": "28 Oct 2026, 4:45 pm",
+          "previousDutyPin": "2594",
+          "previousEmployee": "Venkatesh Rao"
+        },
+        {
+          "date": "2026-10-28",
+          "note": "హ్యాండోవర్: Naresh Babu పని ముగించారు, Dual Attendant బాధ్యతలు తీసుకున్నారు",
+          "stationId": "S4",
+          "timestamp": "2026-10-28T11:15:28.845Z",
+          "newDutyPin": "7333",
+          "newEmployee": "Dual Attendant",
+          "stationName": "S4 (Pump 2)",
+          "formattedTime": "28 Oct 2026, 4:45 pm",
+          "previousDutyPin": "8341",
+          "previousEmployee": "Naresh Babu"
+        },
+        {
+          "date": "2026-10-28",
+          "note": "హ్యాండోవర్: Staff One పని ముగించారు, B Parsha ramudu బాధ్యతలు తీసుకున్నారు",
+          "stationId": "S1",
+          "timestamp": "2026-10-28T11:25:51.331Z",
+          "newDutyPin": "8859",
+          "newEmployee": "B Parsha ramudu",
+          "stationName": "S1 (Pump 1)",
+          "formattedTime": "28 Oct 2026, 4:55 pm",
+          "previousDutyPin": "7111",
+          "previousEmployee": "Staff One"
+        },
+        {
+          "date": "2026-10-28",
+          "note": "హ్యాండోవర్: Staff Two పని ముగించారు, Ravi బాధ్యతలు తీసుకున్నారు",
+          "stationId": "S2",
+          "timestamp": "2026-10-28T11:25:51.331Z",
+          "newDutyPin": "9350",
+          "newEmployee": "Ravi",
+          "stationName": "S2 (Pump 1)",
+          "formattedTime": "28 Oct 2026, 4:55 pm",
+          "previousDutyPin": "7222",
+          "previousEmployee": "Staff Two"
+        },
+        {
+          "date": "2026-10-28",
+          "note": "హ్యాండోవర్: Dual Attendant పని ముగించారు, B Narasimhulu బాధ్యతలు తీసుకున్నారు",
+          "stationId": "S3",
+          "timestamp": "2026-10-28T11:25:51.331Z",
+          "newDutyPin": "5321",
+          "newEmployee": "B Narasimhulu",
+          "stationName": "S3 (Pump 2)",
+          "formattedTime": "28 Oct 2026, 4:55 pm",
+          "previousDutyPin": "7333",
+          "previousEmployee": "Dual Attendant"
+        },
+        {
+          "date": "2026-10-28",
+          "note": "హ్యాండోవర్: Dual Attendant పని ముగించారు, B Narasimhulu బాధ్యతలు తీసుకున్నారు",
+          "stationId": "S4",
+          "timestamp": "2026-10-28T11:25:51.331Z",
+          "newDutyPin": "5321",
+          "newEmployee": "B Narasimhulu",
+          "stationName": "S4 (Pump 2)",
+          "formattedTime": "28 Oct 2026, 4:55 pm",
+          "previousDutyPin": "7333",
+          "previousEmployee": "Dual Attendant"
+        },
+        {
+          "date": "2026-10-28",
+          "stationId": "S1",
+          "stationName": "S1 (Pump 1)",
+          "previousEmployee": "B Parsha ramudu",
+          "previousDutyPin": "8859",
+          "newEmployee": "B Mahesh Kumar",
+          "newDutyPin": "4567",
+          "timestamp": "2026-10-28T11:55:55.330Z",
+          "formattedTime": "28 Oct 2026, 5:25 pm",
+          "note": "హ్యాండోవర్: B Parsha ramudu పని ముగించారు, B Mahesh Kumar బాధ్యతలు తీసుకున్నారు"
+        },
+        {
+          "date": "2026-10-28",
+          "stationId": "S4",
+          "stationName": "S4 (Pump 2)",
+          "previousEmployee": "B Narasimhulu",
+          "previousDutyPin": "5321",
+          "newEmployee": "Narendra",
+          "newDutyPin": "8341",
+          "timestamp": "2026-10-28T11:55:55.330Z",
+          "formattedTime": "28 Oct 2026, 5:25 pm",
+          "note": "హ్యాండోవర్: B Narasimhulu పని ముగించారు, Narendra బాధ్యతలు తీసుకున్నారు"
+        },
+        {
+          "date": "2026-10-28",
+          "stationId": "S1",
+          "stationName": "S1 (Pump 1)",
+          "previousEmployee": "B Mahesh Kumar",
+          "previousDutyPin": "4567",
+          "newEmployee": "B Parsha ramudu",
+          "newDutyPin": "4829",
+          "timestamp": "2026-10-28T11:55:55.408Z",
+          "formattedTime": "28 Oct 2026, 5:25 pm",
+          "note": "హ్యాండోవర్: B Mahesh Kumar పని ముగించారు, B Parsha ramudu బాధ్యతలు తీసుకున్నారు"
+        }
+      ],
       "allEmployeesWorked": [
+        "Ramesh Kumar",
+        "Suresh Reddy",
+        "Venkatesh Rao",
+        "Naresh Babu",
+        "Staff One",
+        "Staff Two",
+        "Dual Attendant",
         "B Parsha ramudu",
         "Ravi",
         "B Narasimhulu",
+        "B Mahesh Kumar",
         "Narendra"
       ],
-      "savedAt": "2026-10-28T11:18:50.166Z",
-      "savedAtFormatted": "28 Oct 2026, 4:50 pm",
-      "updatedAt": "2026-10-28T11:18:50.167Z"
+      "savedAt": "2026-10-28T11:55:55.408Z",
+      "savedAtFormatted": "28 Oct 2026, 5:25 pm",
+      "updatedAt": "2026-10-28T11:55:55.408Z"
     }
   }
 }

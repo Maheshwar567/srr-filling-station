@@ -707,12 +707,6 @@ async function handleLoginSubmit(event) {
       date: chosenDate
     };
 
-    if (locationData) {
-      payload.latitude = locationData.latitude;
-      payload.longitude = locationData.longitude;
-      payload.accuracy = locationData.accuracy;
-    }
-
     const res = await fetch(`/api/auth/login?pump=${STATE.activeTenant}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -4123,13 +4117,20 @@ function renderAdminEmployeesTable() {
     return;
   }
 
-  tbody.innerHTML = STATE.employees.map(emp => `
+  tbody.innerHTML = STATE.employees.map(emp => {
+    const primaryUser = emp.username || extractStaffUsername(emp.name);
+    return `
     <tr class="hover:bg-slate-50 transition-all cursor-pointer" onclick="openEmpProfileModal('${emp.id}')">
-      <td class="p-3 font-bold text-slate-900 flex items-center gap-2">
-        <span class="text-base">👤</span>
-        <span class="text-blue-700 hover:underline">${emp.name}</span>
+      <td class="p-3 font-bold text-slate-900">
+        <div class="flex items-center gap-2">
+          <span class="text-base">👤</span>
+          <div>
+            <span class="text-blue-700 hover:underline block font-extrabold">${emp.name}</span>
+            <span class="text-[11px] text-indigo-700 font-mono font-bold">Username: <span class="bg-indigo-50 border border-indigo-200 px-1.5 py-0.5 rounded text-indigo-900">${primaryUser}</span></span>
+          </div>
+        </div>
       </td>
-      <td class="p-3 font-mono text-slate-600">${emp.phone || '-'}</td>
+      <td class="p-3 font-mono text-slate-600 font-bold">${emp.phone || '-'}</td>
       <td class="p-3 font-semibold text-slate-800">${emp.fatherName || '-'}</td>
       <td class="p-3 text-slate-700 font-semibold">${emp.villageName || '-'}</td>
       <td class="p-3 font-mono text-slate-700">${emp.aadhaarNumber || '-'}</td>
@@ -4139,10 +4140,28 @@ function renderAdminEmployeesTable() {
         </button>
       </td>
     </tr>
-  `).join('');
+  `;
+  }).join('');
 
   // Keep salary calculator dropdown updated with directory
   populateSalaryEmployeeSelect();
+}
+
+// User requirement: "if i enter new employee like B mahesh kumar - in this case what would be the staff user name (i need mahesh is the user name should be)"
+function extractStaffUsername(fullName) {
+  if (!fullName) return '';
+  const tokens = fullName.trim().toLowerCase().split(/[\s\.\-]+/).filter(Boolean);
+  if (tokens.length === 0) return '';
+  const isInitialOrPrefix = (t) => t.length === 1 || ['md', 'sk', 'dr', 'mr', 'ms'].includes(t);
+  const core = tokens.find(t => !isInitialOrPrefix(t));
+  return core || tokens[0];
+}
+
+function updateUsernamePreview(input) {
+  const previewEl = document.getElementById('modalEmpUsernamePreview');
+  if (!previewEl) return;
+  const username = extractStaffUsername(input ? input.value : '');
+  previewEl.innerText = username || '-';
 }
 
 function openEmpProfileModal(empId) {
@@ -4284,6 +4303,8 @@ function openAddEmployeeModal() {
   document.getElementById('modalEmpPassword').value = '123';
   document.getElementById('modalEmpAadhaar').value = '';
   document.getElementById('modalEmpEmergency').value = '';
+  const previewEl = document.getElementById('modalEmpUsernamePreview');
+  if (previewEl) previewEl.innerText = '-';
   const errEl = document.getElementById('empFatherError');
   if (errEl) errEl.classList.add('hidden');
   const phoneErrEl = document.getElementById('empPhoneError');
@@ -4336,6 +4357,7 @@ async function saveNewEmployee() {
   const fatherName = toTitleCase(rawFatherName);
   const villageName = toTitleCase(rawVillageName);
   const phone = rawPhone.replace(/\D/g, '').trim();
+  const username = extractStaffUsername(name);
 
   const phoneErrEl = document.getElementById('empPhoneError');
   const fatherErrEl = document.getElementById('empFatherError');
@@ -4391,7 +4413,7 @@ async function saveNewEmployee() {
     return;
   }
 
-  const payload = { name, fatherName, villageName, phone, password, aadhaarNumber, emergencyContact, address, role };
+  const payload = { name, username, fatherName, villageName, phone, password, aadhaarNumber, emergencyContact, address, role };
 
   try {
     const res = await fetch(`/api/employees?pump=${STATE.activeTenant}`, {

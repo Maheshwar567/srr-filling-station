@@ -129,6 +129,35 @@ app.post('/api/auth/verify-pin', (req, res) => {
   res.json({ success: valid, message: valid ? "Authenticated" : "Invalid Admin PIN" });
 });
 
+// User requirement: "if i enter new employee like B mahesh kumar - in this case what would be the staff user name (i need mahesh is the user name should be)"
+function extractStaffUsername(fullName) {
+  if (!fullName) return '';
+  const tokens = fullName.trim().toLowerCase().split(/[\s\.\-]+/).filter(Boolean);
+  if (tokens.length === 0) return '';
+  const isInitialOrPrefix = (t) => t.length === 1 || ['md', 'sk', 'dr', 'mr', 'ms'].includes(t);
+  const core = tokens.find(t => !isInitialOrPrefix(t));
+  return core || tokens[0];
+}
+
+function generateUniqueStaffUsername(fullName, existingEmployees = []) {
+  const base = extractStaffUsername(fullName);
+  if (!base) return `staff_${Date.now().toString().slice(-4)}`;
+  const existingUsernames = new Set((existingEmployees || []).map(e => (e.username || '').toLowerCase()));
+  if (!existingUsernames.has(base)) {
+    return base;
+  }
+  const tokens = fullName.trim().toLowerCase().split(/[\s\.\-]+/).filter(Boolean);
+  if (tokens.length > 1 && tokens[0] !== base) {
+    const prefixed = `${tokens[0]}_${base}`;
+    if (!existingUsernames.has(prefixed)) return prefixed;
+  }
+  let counter = 1;
+  while (existingUsernames.has(`${base}${counter}`)) {
+    counter++;
+  }
+  return `${base}${counter}`;
+}
+
 // Employee & Admin Authentication
 // User requirement: "when even admin owner mgmt username entered thn remove pin. pin only for emp log (remove password option for emp keep only pin/otp given by mgmt/owner)"
 app.post('/api/auth/login', (req, res) => {
@@ -252,20 +281,29 @@ app.post('/api/auth/login', (req, res) => {
   const isDirectStation = ['S1', 'S2', 'S3', 'S4'].includes(upperSt);
   const isGenericEmp = cleanUser === "emp" || cleanUser === "employee" || cleanUser === "staff";
 
-  // Match employee record
+  // Match employee record by: username, primary name (e.g. 'mahesh' for 'B Mahesh Kumar'), phone, or full name
   const emp = (data.employees || []).find(e => {
-    const fn = (e.name || '').trim().toLowerCase().split(/\s+/)[0];
-    return fn === cleanUser ||
-      (e.username && e.username.toLowerCase() === cleanUser) ||
-      (e.phone && e.phone === cleanUser) ||
-      (e.name && e.name.toLowerCase() === cleanUser);
+    if (!e) return false;
+    const cleanEmpName = (e.name || '').trim().toLowerCase();
+    const primaryName = extractStaffUsername(e.name);
+    const empUsername = (e.username || '').trim().toLowerCase();
+    const empPhone = (e.phone || '').trim();
+    const nameParts = cleanEmpName.split(/[\s\.\-]+/).filter(Boolean);
+
+    return empUsername === cleanUser ||
+      empPhone === cleanUser ||
+      primaryName === cleanUser ||
+      cleanEmpName === cleanUser ||
+      nameParts.some(part => part.length > 2 && part === cleanUser);
   });
 
   // Check if assigned in shift directly
   const isAssignedInShift = Object.values(assignments).some(asgn => {
     if (!asgn?.employeeName) return false;
-    const fn = asgn.employeeName.trim().toLowerCase().split(/\s+/)[0];
-    return fn === cleanUser || asgn.employeeName.trim().toLowerCase() === cleanUser;
+    const full = asgn.employeeName.trim().toLowerCase();
+    const primary = extractStaffUsername(asgn.employeeName);
+    const parts = full.split(/[\s\.\-]+/).filter(Boolean);
+    return primary === cleanUser || full === cleanUser || parts.some(p => p.length > 2 && p === cleanUser);
   });
 
   if (isDirectStation || isGenericEmp || emp || isAssignedInShift) {
@@ -279,11 +317,22 @@ app.post('/api/auth/login', (req, res) => {
       for (const stKey of ['S1', 'S2', 'S3', 'S4']) {
         const asgn = assignments[stKey];
         if (asgn && asgn.employeeName) {
-          const asgnFn = asgn.employeeName.trim().toLowerCase().split(/\s+/)[0];
           const asgnFull = asgn.employeeName.trim().toLowerCase();
-          if ((emp && (asgn.employeeName.toLowerCase() === emp.name.toLowerCase() || asgn.employeeId === emp.id)) ||
-              asgnFn === cleanUser ||
-              asgnFull === cleanUser) {
+          const asgnPrimary = extractStaffUsername(asgn.employeeName);
+          const asgnParts = asgnFull.split(/[\s\.\-]+/).filter(Boolean);
+
+          const matchesEmp = emp && (
+            (asgn.employeeName.toLowerCase() === emp.name.toLowerCase()) || 
+            (asgn.employeeId && asgn.employeeId === emp.id) ||
+            (emp.username && asgnParts.includes(emp.username)) ||
+            (extractStaffUsername(asgn.employeeName) === extractStaffUsername(emp.name))
+          );
+
+          const matchesUser = asgnPrimary === cleanUser ||
+            asgnFull === cleanUser ||
+            asgnParts.some(p => p.length > 2 && p === cleanUser);
+
+          if (matchesEmp || matchesUser) {
             matchingStations.push({ stKey, dutyPin: asgn.dutyPin });
           }
         }
@@ -2230,7 +2279,9 @@ app.post('/api/employees', (req, res) => {
     return res.status(400).json({ error: "Employee name and Father's name cannot be the same (ఉద్యోగి పేరు మరియు తండ్రి పేరు ఒకేలా ఉండకూడదు)" });
   }
 
-  const cleanUsername = (username || cleanPhone || cleanName.toLowerCase().replace(/\s+/g, '')).trim();
+  // User requirement: "if i enter new employee like B mahesh kumar - in this case what would be the staff user name (i need mahesh is the user name should be)"
+  const autoUser = generateUniqueStaffUsername(cleanName, data.employees);
+  const cleanUsername = (username && username.trim()) ? username.trim().toLowerCase() : autoUser;
 
   const newEmp = {
     id: `emp-${Date.now()}`,
