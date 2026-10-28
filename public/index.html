@@ -120,6 +120,25 @@
         <!-- Unified Clean Sign In Form (No Staff/Mgmt Toggle Buttons) -->
         <!-- User requirement: "dont show staff / management login options on login screen give just login page like enter username and password screens (duty pin for staff)" -->
         <form id="loginForm" onsubmit="handleLoginSubmit(event)" class="space-y-4">
+          <!-- Shift Date Selection on Login Form (User requirement: historical data testing) -->
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="text-xs font-bold text-slate-700 block" id="lblLoginShiftDate">
+                📅 షిఫ్ట్ తేదీ / టెస్టింగ్ తేదీ (Shift Date):
+              </label>
+              <span class="text-[10px] text-amber-800 font-bold bg-amber-100 px-2 py-0.5 rounded-full border border-amber-200">
+                Any Past Date Allowed
+              </span>
+            </div>
+            <div class="relative">
+              <span class="absolute left-3.5 top-3 text-slate-400">📅</span>
+              <input type="date" id="loginShiftDateInput" onchange="onLoginDateChange(this.value)" class="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl pl-10 pr-3 py-2.5 text-sm font-bold text-slate-900 focus:border-orange-500 focus:outline-none focus:bg-white shadow-sm cursor-pointer">
+            </div>
+            <p class="text-[10px] text-slate-500 mt-1">
+              * పాత తేదీల టెస్టింగ్ కొరకు ఈ తేదీని మార్చుకోవచ్చు (Change to any past date to test historical data)
+            </p>
+          </div>
+
           <div>
             <label class="text-xs font-bold text-slate-700 block mb-1" id="lblLoginUser">
               యూజర్‌నేమ్ / సిబ్బంది పేరు (Username / Name):
@@ -2030,8 +2049,12 @@
                 <p class="text-xs text-slate-500">సిబ్బందికి స్టేషన్లు & డ్యూటీ పిన్‌లు కేటాయించండి (Assign stations & Duty PINs)</p>
               </div>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 flex-wrap">
               <span id="rosterLastSavedBadge" class="hidden text-xs font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200"></span>
+              <button type="button" onclick="generateAllRandomDutyPins()" class="bg-amber-100 hover:bg-amber-200 text-amber-950 font-bold text-xs sm:text-sm px-3.5 py-2 rounded-xl border border-amber-300 shadow-xs flex items-center gap-1.5 active:scale-95 transition-all">
+                <span>🎲</span>
+                <span>అన్ని పిన్‌లు కొత్తవి చేయి (New Random PINs)</span>
+              </button>
               <button onclick="saveDutyRosterAssignments()" class="bg-orange-600 hover:bg-orange-700 text-white font-black text-xs sm:text-sm px-4 py-2 rounded-xl shadow-md flex items-center gap-1.5 active:scale-95 transition-all">
                 <span>💾</span>
                 <span>కేటాయింపును సేవ్ చేయి (Save Allocation)</span>
@@ -2623,6 +2646,6 @@
     </div>
   </footer>
 
-  <script src="app.js?v=14"></script>
+  <script src="app.js?v=15"></script>
 </body>
 </html>

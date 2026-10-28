@@ -1595,22 +1595,22 @@
     "2026-10-27": {
       "S1": {
         "employeeName": "Ramesh Kumar",
-        "dutyPin": "1122",
+        "dutyPin": "5931",
         "previousAttendants": []
       },
       "S2": {
         "employeeName": "Suresh Reddy",
-        "dutyPin": "3344",
+        "dutyPin": "4182",
         "previousAttendants": []
       },
       "S3": {
         "employeeName": "Venkatesh Rao",
-        "dutyPin": "5566",
+        "dutyPin": "6824",
         "previousAttendants": []
       },
       "S4": {
         "employeeName": "Naresh Babu",
-        "dutyPin": "7788",
+        "dutyPin": "3790",
         "previousAttendants": []
       },
       "savedAt": "2026-10-27T07:32:01.867Z",
@@ -1627,22 +1627,22 @@
     "2026-10-28": {
       "S1": {
         "employeeName": "Ramesh Kumar",
-        "dutyPin": "1122",
+        "dutyPin": "4829",
         "previousAttendants": []
       },
       "S2": {
         "employeeName": "Suresh Reddy",
-        "dutyPin": "3344",
+        "dutyPin": "7163",
         "previousAttendants": []
       },
       "S3": {
         "employeeName": "Venkatesh Rao",
-        "dutyPin": "5566",
+        "dutyPin": "2594",
         "previousAttendants": []
       },
       "S4": {
         "employeeName": "Naresh Babu",
-        "dutyPin": "7788",
+        "dutyPin": "8341",
         "previousAttendants": []
       },
       "handoverHistory": [],

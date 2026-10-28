@@ -242,10 +242,11 @@ app.post('/api/auth/login', (req, res) => {
   }
 
   // 5. Check Staff / Employee Logins:
-  // Attendant enters: Username/Name + Duty PIN (or entered password/PIN)
+  // User requirement: "make sure the staff should login with pin (Note the pin will not be same at any cost change it randomly)"
+  // User requirement: "one staff joins to S1 @9AM and works till next 9AM (timing may vary few mins here and there no dependency on timing) - if same person will continue in shift means again mgmt/owner has to allocate the pump again and the pin must be new again"
+  // User requirement: "remove the location tracking for now"
   const targetDate = date || getTodayString();
-  const defaultPins = { S1: "1122", S2: "3344", S3: "5566", S4: "7788" };
-  const assignments = data.shiftAssignments?.[targetDate] || data.shiftAssignments?.["2026-10-23"] || {};
+  const assignments = data.shiftAssignments?.[targetDate] || {};
 
   const upperSt = cleanUser.toUpperCase();
   const isDirectStation = ['S1', 'S2', 'S3', 'S4'].includes(upperSt);
@@ -270,11 +271,11 @@ app.post('/api/auth/login', (req, res) => {
         if (asgn && asgn.employeeName) {
           const asgnFn = asgn.employeeName.trim().toLowerCase().split(/\s+/)[0];
           const asgnFull = asgn.employeeName.trim().toLowerCase();
-          if ((emp && (asgn.employeeName === emp.name || asgn.employeeId === emp.id)) ||
+          if ((emp && (asgn.employeeName.toLowerCase() === emp.name.toLowerCase() || asgn.employeeId === emp.id)) ||
               asgnFn === cleanUser ||
               asgnFull === cleanUser) {
             assignedStation = stKey;
-            stationDutyPin = asgn.dutyPin || defaultPins[stKey];
+            stationDutyPin = asgn.dutyPin;
             break;
           }
         }
@@ -282,55 +283,46 @@ app.post('/api/auth/login', (req, res) => {
     }
 
     if (!assignedStation && isGenericEmp) {
-      assignedStation = 'S1';
-    }
-    if (!assignedStation) {
-      assignedStation = 'S1';
+      // Find first allocated station for test login
+      for (const stKey of ['S1', 'S2', 'S3', 'S4']) {
+        if (assignments[stKey]?.dutyPin) {
+          assignedStation = stKey;
+          stationDutyPin = assignments[stKey].dutyPin;
+          break;
+        }
+      }
+      if (!assignedStation) assignedStation = 'S1';
     }
 
-    stationDutyPin = assignments[assignedStation]?.dutyPin || defaultPins[assignedStation] || '1122';
+    // If staff is NOT allocated to any pump for this target date, reject
+    if (!assignedStation || (!assignments[assignedStation]?.employeeName && !isDirectStation && !isGenericEmp)) {
+      return res.status(403).json({
+        error: `ఈ తేదీన (${targetDate}) ${emp?.name || username} కు పంపు కేటాయింపు జరగలేదు! మేనేజ్‌మెంట్ లేదా ఓనర్ ద్వారా పంపు కేటాయించి కొత్త డ్యూటీ పిన్ పొందండి (No pump allocated to ${emp?.name || username} for date ${targetDate}. Management must allocate the pump and generate a new random PIN).`
+      });
+    }
 
-    // Staff authentication: Duty PIN / OTP entered in password or PIN input
+    stationDutyPin = assignments[assignedStation]?.dutyPin || stationDutyPin;
+    if (!stationDutyPin) {
+      return res.status(403).json({
+        error: `స్టేషన్ ${assignedStation} కొరకు డ్యూటీ పిన్ సెట్ కాలేదు. దయచేసి మేనేజ్‌మెంట్ లేదా ఓనర్‌ను సంప్రదించండి (No duty PIN generated for station ${assignedStation}).`
+      });
+    }
+
+    // Staff authentication: Duty PIN strictly checked (no universal bypass)
     const enteredPin = cleanDutyPin || cleanPass;
     if (!enteredPin) {
       return res.status(401).json({
-        error: `Duty PIN is required for staff login! (డ్యూటీ పిన్ నమోదు చేయండి - e.g. ${stationDutyPin})`
+        error: `డ్యూటీ పిన్ తప్పనిసరి! (${assignedStation} కొరకు మేనేజ్‌మెంట్ కేటాయించిన డ్యూటీ పిన్ నమోదు చేయండి. Duty PIN required for station ${assignedStation}).`
       });
     }
 
-    const isPinMatch = enteredPin === String(stationDutyPin) || enteredPin === "123" || enteredPin === "1122" || (emp?.dutyPin && enteredPin === String(emp.dutyPin));
-    if (!isPinMatch) {
+    if (enteredPin !== String(stationDutyPin)) {
       return res.status(401).json({
-        error: `Invalid Duty PIN for station ${assignedStation}. Please enter the correct PIN assigned by Management/Owner (డ్యూటీ పిన్ తప్పుగా ఉంది: e.g. ${stationDutyPin}).`
+        error: `డ్యూటీ పిన్ తప్పుగా ఉంది! (${assignedStation} కొరకు మేనేజ్‌మెంట్ కేటాయించిన సరైన డ్యూటీ పిన్ నమోదు చేయండి. Invalid Duty PIN for station ${assignedStation}).`
       });
     }
 
-    // Geofencing verification strictly for Employee/Attendant logins
-    // User requirement: "lets do this for secutiry, the empoyee should not access the app outside the pump (lets make readius)"
-    const geofence = data.config?.geofence;
-    if (geofence && geofence.enabled && geofence.latitude && geofence.longitude) {
-      const userLat = parseFloat(req.body.latitude);
-      const userLon = parseFloat(req.body.longitude);
-
-      if (isNaN(userLat) || isNaN(userLon)) {
-        return res.status(403).json({
-          error: "లొకేషన్ (GPS) అనుమతి అవసరం! బంక్ భద్రత కొరకు సిబ్బంది మొబైల్ లో లొకేషన్ ఆన్ చేసి లాగిన్ అవ్వాలి (GPS Location access is required for staff duty login. Please turn on Location in your phone browser).",
-          locationRequired: true
-        });
-      }
-
-      const distance = calculateDistanceMeters(userLat, userLon, parseFloat(geofence.latitude), parseFloat(geofence.longitude));
-      const allowedRadius = parseFloat(geofence.radiusMeters) || 200;
-
-      if (distance > allowedRadius) {
-        return res.status(403).json({
-          error: `మీరు బంక్ పరిధి వెలుపల ఉన్నారు (${distance} మీటర్ల దూరం). డ్యూటీ లాగిన్ కేవలం బంక్ వద్ద (${allowedRadius} మీటర్ల లోపు) మాత్రమే సాధ్యమవుతుంది (You are outside bunk premises: ${distance}m away. Allowed radius: ${allowedRadius}m).`,
-          outsideGeofence: true,
-          distance,
-          allowedRadius
-        });
-      }
-    }
+    // Location tracking removed for now per user requirement: "remove the location tracking for now"
 
     const empName = emp ? emp.name : (assignments[assignedStation]?.employeeName || (isGenericEmp ? "Rajesh Varma" : username));
 
@@ -772,30 +764,50 @@ app.post('/api/rates', (req, res) => {
   res.json({ success: true, record });
 });
 
+// Helper to generate a unique random 4-digit PIN (Note: PIN will not be same at any cost, changes randomly)
+function generateRandomDutyPin(excludeList = []) {
+  let pin;
+  do {
+    pin = String(Math.floor(1000 + Math.random() * 9000));
+  } while (excludeList.includes(pin) || pin === "1122" || pin === "1234" || pin === "123" || pin === "0000");
+  return pin;
+}
+
 // Duty Assignments (Admin Assigns Pump & Station with Duty Login PIN; Employee only has Read-Only view)
+// User requirement: "make sure the staff should login with pin (Note the pin will not be same at any cost change it randomly)"
 app.get('/api/duty-assignments', (req, res) => {
   const tenantId = getTenantId(req);
   const data = storage.load(tenantId);
   const date = req.query.date || getTodayString();
-  const defaultPins = { S1: "1122", S2: "3344", S3: "5566", S4: "7788" };
 
   if (!data.shiftAssignments) data.shiftAssignments = {};
   if (!data.shiftAssignments[date]) {
+    const used = [];
+    const p1 = generateRandomDutyPin(used); used.push(p1);
+    const p2 = generateRandomDutyPin(used); used.push(p2);
+    const p3 = generateRandomDutyPin(used); used.push(p3);
+    const p4 = generateRandomDutyPin(used); used.push(p4);
+
     data.shiftAssignments[date] = {
-      S1: { employeeName: "Ramesh Kumar", dutyPin: "1122" },
-      S2: { employeeName: "Suresh Reddy", dutyPin: "3344" },
-      S3: { employeeName: "Venkatesh Rao", dutyPin: "5566" },
-      S4: { employeeName: "Naresh Babu", dutyPin: "7788" }
+      S1: { employeeName: "", dutyPin: p1 },
+      S2: { employeeName: "", dutyPin: p2 },
+      S3: { employeeName: "", dutyPin: p3 },
+      S4: { employeeName: "", dutyPin: p4 }
     };
     storage.save(tenantId, data);
   } else {
     let changed = false;
+    const existingPins = Object.values(data.shiftAssignments[date]).map(s => s?.dutyPin).filter(Boolean);
     ['S1', 'S2', 'S3', 'S4'].forEach(stKey => {
       if (!data.shiftAssignments[date][stKey]) {
-        data.shiftAssignments[date][stKey] = { employeeName: "", dutyPin: defaultPins[stKey] };
+        const newP = generateRandomDutyPin(existingPins);
+        existingPins.push(newP);
+        data.shiftAssignments[date][stKey] = { employeeName: "", dutyPin: newP };
         changed = true;
       } else if (!data.shiftAssignments[date][stKey].dutyPin) {
-        data.shiftAssignments[date][stKey].dutyPin = defaultPins[stKey] || String(Math.floor(1000 + Math.random() * 9000));
+        const newP = generateRandomDutyPin(existingPins);
+        existingPins.push(newP);
+        data.shiftAssignments[date][stKey].dutyPin = newP;
         changed = true;
       }
     });
@@ -814,7 +826,6 @@ app.post('/api/duty-assignments', (req, res) => {
 
   const data = storage.load(tenantId);
   if (!data.shiftAssignments) data.shiftAssignments = {};
-  const defaultPins = { S1: "1122", S2: "3344", S3: "5566", S4: "7788" };
 
   // User requirement: "S2 and S3 allowed duplicate staff - it should not allow - who assign to S1 cannot be allowed to any other pump .."
   const assignedMap = {};
@@ -843,8 +854,8 @@ app.post('/api/duty-assignments', (req, res) => {
     ['S1', 'S2', 'S3', 'S4'].forEach(stKey => {
       const incomingName = (assignments[stKey]?.employeeName || "").trim();
       const existingName = (existing[stKey]?.employeeName || "").trim();
-      const incomingPin = (assignments[stKey]?.dutyPin || defaultPins[stKey] || "").trim();
-      const existingPin = (existing[stKey]?.dutyPin || defaultPins[stKey] || "").trim();
+      const incomingPin = (assignments[stKey]?.dutyPin || "").trim();
+      const existingPin = (existing[stKey]?.dutyPin || "").trim();
 
       if (incomingName !== existingName) hasChanges = true;
       if (incomingPin !== existingPin) hasChanges = true;
@@ -858,11 +869,13 @@ app.post('/api/duty-assignments', (req, res) => {
     }
   }
 
+  const usedPins = [];
   ['S1', 'S2', 'S3', 'S4'].forEach(stKey => {
     if (assignments[stKey]) {
-      if (!assignments[stKey].dutyPin) {
-        assignments[stKey].dutyPin = data.shiftAssignments[date]?.[stKey]?.dutyPin || defaultPins[stKey] || String(Math.floor(1000 + Math.random() * 9000));
+      if (!assignments[stKey].dutyPin || assignments[stKey].dutyPin.trim() === "") {
+        assignments[stKey].dutyPin = data.shiftAssignments[date]?.[stKey]?.dutyPin || generateRandomDutyPin(usedPins);
       }
+      usedPins.push(assignments[stKey].dutyPin);
     }
   });
 

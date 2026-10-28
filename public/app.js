@@ -71,14 +71,24 @@ document.addEventListener('DOMContentLoaded', () => {
     console.error("Session restore error", e);
   }
 
-  // Set date picker
+  // Set date pickers (User requirement: allow everyone to change date to enter historical data)
   const dateInput = document.getElementById('headerShiftDate');
+  const loginDateInput = document.getElementById('loginShiftDateInput');
+
   if (dateInput) {
     dateInput.value = STATE.selectedDate;
-    dateInput.addEventListener('change', (e) => {
+    dateInput.disabled = false; // Always enabled for everyone
+    dateInput.addEventListener('change', async (e) => {
       STATE.selectedDate = e.target.value;
-      loadAllData();
+      const lInput = document.getElementById('loginShiftDateInput');
+      if (lInput) lInput.value = e.target.value;
+      await loadAllData();
+      routeUserView();
     });
+  }
+
+  if (loginDateInput) {
+    loginDateInput.value = STATE.selectedDate;
   }
 
   const rateDateInput = document.getElementById('rateSetDate');
@@ -90,6 +100,15 @@ document.addEventListener('DOMContentLoaded', () => {
   // Load Tenants & Data
   loadTenantsAndData();
 });
+
+// User requirement: "now i am enter the historical data to this app (for testing purpose) so the default date i can change to old allow this for every one"
+function onLoginDateChange(newDate) {
+  if (!newDate) return;
+  STATE.selectedDate = newDate;
+  const hDate = document.getElementById('headerShiftDate');
+  if (hDate) hDate.value = newDate;
+  loadAllData();
+}
 
 // Toast notification helper
 function showToast(message, type = 'success') {
@@ -450,6 +469,12 @@ function routeUserView() {
     if (navLogged) navLogged.classList.add('hidden');
     if (navGuest) navGuest.classList.remove('hidden');
     if (pdbDropdown) pdbDropdown.classList.add('hidden');
+    if (headerDateInput) {
+      headerDateInput.value = STATE.selectedDate || getTodayDateString();
+      headerDateInput.disabled = false;
+    }
+    const loginDateInput = document.getElementById('loginShiftDateInput');
+    if (loginDateInput) loginDateInput.value = STATE.selectedDate || getTodayDateString();
     return;
   }
 
@@ -457,6 +482,10 @@ function routeUserView() {
   if (navGuest) navGuest.classList.add('hidden');
   if (navLogged) navLogged.classList.remove('hidden');
   if (navUser) navUser.innerText = STATE.currentUser.name || 'User';
+  if (headerDateInput) {
+    headerDateInput.value = STATE.selectedDate || getTodayDateString();
+    headerDateInput.disabled = false; // Enabled for all users to test historical dates
+  }
 
   const userRole = STATE.currentUser.role;
   const isStaff = userRole !== 'owner' && userRole !== 'mgmt' && userRole !== 'developer' && userRole !== 'admin';
@@ -511,17 +540,8 @@ function routeUserView() {
       if (!mgmtAllowedTabs.includes(STATE.adminTab)) {
         STATE.adminTab = 'summary';
       }
-
-      // Lock shift date to active shift for mgmt
-      if (headerDateInput) {
-        headerDateInput.value = STATE.shift?.date || STATE.selectedDate || getTodayDateString();
-        headerDateInput.disabled = true;
-      }
     } else if (userRole === 'owner') {
-      if (headerDateInput) headerDateInput.disabled = false;
       if (STATE.adminTab === 'pdbs') STATE.adminTab = 'summary';
-    } else {
-      if (headerDateInput) headerDateInput.disabled = false;
     }
 
     renderAdminDashboard();
@@ -592,44 +612,31 @@ function resolveEmployeePumpLock() {
   if (hoBadge) hoBadge.innerText = assignedStation || 'S1';
 }
 
-// Helper to get GPS location with timeout
-function getBrowserLocationAsync(timeoutMs = 4000) {
-  return new Promise((resolve) => {
-    if (!navigator.geolocation) {
-      resolve(null);
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        resolve({
-          latitude: pos.coords.latitude,
-          longitude: pos.coords.longitude,
-          accuracy: pos.coords.accuracy
-        });
-      },
-      (err) => {
-        console.warn('Geolocation lookup:', err.message);
-        resolve(null);
-      },
-      { enableHighAccuracy: true, timeout: timeoutMs, maximumAge: 60000 }
-    );
-  });
+// Helper to get GPS location (Location tracking removed for now per user requirement)
+function getBrowserLocationAsync() {
+  return Promise.resolve(null);
 }
 
 // --- AUTHENTICATION (UNIFIED CLEAN SIGN IN & PERSISTENT SESSION) ---
 // User requirement: "dont show staff / management login options on login screen give just login page like enter username and password screens (duty pin for staff)"
 // User requirement: "for staff login should be there till shift ends (not imediate logout - think he has to do all his caluculations and all all ok thn ok)"
-// User requirement: "lets do this for secutiry, the empoyee should not access the app outside the pump (lets make readius)"
+// User requirement: "remove the location tracking for now"
+// User requirement: "now i am enter the historical data to this app (for testing purpose) so the default date i can change to old allow this for every one"
 async function handleLoginSubmit(event) {
   event.preventDefault();
 
   const userField = document.getElementById('loginUsernameInput');
   const passField = document.getElementById('loginPasswordInput');
+  const dateField = document.getElementById('loginShiftDateInput');
   const errEl = document.getElementById('loginErrorMessage');
   const submitBtn = document.getElementById('btnLoginSubmit');
 
   const username = userField ? userField.value.trim() : '';
   const credential = passField ? passField.value.trim() : '';
+  const chosenDate = (dateField && dateField.value) ? dateField.value : (STATE.selectedDate || getTodayDateString());
+  STATE.selectedDate = chosenDate;
+  const hDate = document.getElementById('headerShiftDate');
+  if (hDate) hDate.value = chosenDate;
 
   if (!username) {
     if (errEl) {
@@ -649,21 +656,9 @@ async function handleLoginSubmit(event) {
 
   if (submitBtn) {
     submitBtn.disabled = true;
-    submitBtn.innerHTML = `<span>⏳ పరిశీలిస్తోంది (Verifying & GPS)...</span>`;
+    submitBtn.innerHTML = `<span>⏳ పరిశీలిస్తోంది (Verifying)...</span>`;
   }
   if (errEl) errEl.classList.add('hidden');
-
-  let locationData = null;
-  const isPrivilegedUser = ['developer', 'dev', 'owner', 'mgmt', 'manager', 'admin'].includes(username.toLowerCase());
-
-  // If not privileged user (i.e. potential staff/attendant), fetch current device GPS location
-  if (!isPrivilegedUser && navigator.geolocation) {
-    try {
-      locationData = await getBrowserLocationAsync(4000);
-    } catch (e) {
-      console.warn('GPS query error:', e);
-    }
-  }
 
   try {
     const payload = {
@@ -671,7 +666,7 @@ async function handleLoginSubmit(event) {
       password: credential,
       dutyPin: credential,
       pin: credential,
-      date: STATE.selectedDate
+      date: chosenDate
     };
 
     if (locationData) {
@@ -4246,12 +4241,18 @@ function renderAdminDutyRoster() {
 
   const assignments = STATE.dutyAssignments || {};
   const stations = ['S1', 'S2', 'S3', 'S4'];
-  const defaultPins = { S1: "1122", S2: "3344", S3: "5566", S4: "7788" };
+  const usedPins = [];
 
   container.innerHTML = stations.map(stKey => {
     const cfg = STATION_CONFIG[stKey];
     const assignedName = assignments[stKey]?.employeeName || STATE.shift?.stations?.[stKey]?.employeeName || "";
-    const dutyPin = assignments[stKey]?.dutyPin || defaultPins[stKey] || "1122";
+    let dutyPin = assignments[stKey]?.dutyPin;
+    if (!dutyPin || dutyPin === '1122' || dutyPin === '3344' || dutyPin === '5566' || dutyPin === '7788') {
+      do {
+        dutyPin = Math.floor(1000 + Math.random() * 9000).toString();
+      } while (usedPins.includes(dutyPin));
+    }
+    usedPins.push(dutyPin);
 
     return `
       <div data-station="${stKey}" class="bg-white rounded-2xl shadow-md border-2 border-slate-200 p-4 space-y-3.5 hover:border-orange-300 transition-all">
@@ -4290,7 +4291,7 @@ function renderAdminDutyRoster() {
           </div>
           <p class="text-[10px] text-amber-900 font-semibold leading-tight">
             * సిబ్బంది లాగిన్: యూజర్‌నేమ్ + <strong>ఈ డ్యూటీ PIN (${dutyPin})</strong> మాత్రమే (పాస్‌వర్డ్ అవసరం లేదు)<br>
-            (Staff logs in with Username + this Duty PIN only; no password needed)
+            (Staff logs in with Username + this Duty PIN only; PIN is randomly generated for this shift)
           </p>
         </div>
       </div>
@@ -4373,6 +4374,9 @@ function onRosterAttendantSelect(changedStationKey) {
       return;
     }
   }
+
+  // User requirement: "if same person will continue in shift means again mgmt/owner has to allocate the pump again and the pin must be new again"
+  generateRandomDutyPin(changedStationKey);
 }
 
 function generateRandomDutyPin(stKey) {
@@ -4383,15 +4387,39 @@ function generateRandomDutyPin(stKey) {
   }
 }
 
+// User requirement: "make sure the staff should login with pin (Note the pin will not be same at any cost change it randomly)"
+function generateAllRandomDutyPins() {
+  const stations = ['S1', 'S2', 'S3', 'S4'];
+  const used = [];
+  stations.forEach(st => {
+    const pinInput = document.getElementById(`rosterPin-${st}`);
+    if (pinInput) {
+      let p;
+      do {
+        p = Math.floor(1000 + Math.random() * 9000).toString();
+      } while (used.includes(p));
+      used.push(p);
+      pinInput.value = p;
+    }
+  });
+  showToast(
+    STATE.lang === 'te'
+      ? 'అన్ని స్టేషన్లకు కొత్త ర్యాండమ్ డ్యూటీ పిన్‌లు జనరేట్ చేయబడ్డాయి! సేవ్ చేయడం మర్చిపోకండి.'
+      : 'Generated fresh random PINs for all stations! Click Save Allocation to apply.'
+  );
+}
+
 // User requirement: "once click on save allocation -> then if again click on save allocation without changing anything on same day not allow to save say data already save (onlve save allow if any changes in fields, atleast one field has to change and that also to be saved with date when saved and all)"
 // User requirement: "S2 and S3 allowed duplicate staff - it should not allow - who assign to S1 cannot be allowed to any other pump .."
 async function saveDutyRosterAssignments() {
   const assignments = {};
-  const defaultPins = { S1: "1122", S2: "3344", S3: "5566", S4: "7788" };
   ['S1', 'S2', 'S3', 'S4'].forEach(stKey => {
     const empName = document.getElementById(`rosterAssign-${stKey}`)?.value || "";
-    const dutyPin = document.getElementById(`rosterPin-${stKey}`)?.value || defaultPins[stKey] || "1122";
-    assignments[stKey] = { employeeName: empName, dutyPin };
+    let dutyPin = document.getElementById(`rosterPin-${stKey}`)?.value || "";
+    if (!dutyPin || dutyPin.trim() === "") {
+      dutyPin = Math.floor(1000 + Math.random() * 9000).toString();
+    }
+    assignments[stKey] = { employeeName: empName, dutyPin: dutyPin.trim() };
   });
 
   // Client check: Ensure no duplicate employee assignments across S1, S2, S3, S4
@@ -4426,8 +4454,8 @@ async function saveDutyRosterAssignments() {
     ['S1', 'S2', 'S3', 'S4'].forEach(stKey => {
       const currentName = (assignments[stKey].employeeName || "").trim();
       const prevName = (STATE.dutyAssignments[stKey]?.employeeName || "").trim();
-      const currentPin = (assignments[stKey].dutyPin || defaultPins[stKey] || "").trim();
-      const prevPin = (STATE.dutyAssignments[stKey]?.dutyPin || defaultPins[stKey] || "").trim();
+      const currentPin = (assignments[stKey].dutyPin || "").trim();
+      const prevPin = (STATE.dutyAssignments[stKey]?.dutyPin || "").trim();
       if (currentName !== prevName || currentPin !== prevPin) {
         hasChanges = true;
       }
@@ -4840,38 +4868,9 @@ async function captureCurrentLocationAsBunk() {
 
 function checkDeviceDistanceToBunk() {
   const distEl = document.getElementById('geofenceDistanceIndicator');
-  if (!distEl || !navigator.geolocation) return;
-
-  const lat = parseFloat(document.getElementById('geofenceLatInput')?.value);
-  const lon = parseFloat(document.getElementById('geofenceLonInput')?.value);
-  const radius = parseFloat(document.getElementById('geofenceRadiusSlider')?.value) || 200;
-
-  if (isNaN(lat) || isNaN(lon)) return;
-
-  navigator.geolocation.getCurrentPosition(
-    (pos) => {
-      const R = 6371e3;
-      const phi1 = (pos.coords.latitude * Math.PI) / 180;
-      const phi2 = (lat * Math.PI) / 180;
-      const deltaPhi = ((lat - pos.coords.latitude) * Math.PI) / 180;
-      const deltaLambda = ((lon - pos.coords.longitude) * Math.PI) / 180;
-      const a = Math.sin(deltaPhi / 2) * Math.sin(deltaPhi / 2) +
-                Math.cos(phi1) * Math.cos(phi2) *
-                Math.sin(deltaLambda / 2) * Math.sin(deltaLambda / 2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      const dist = Math.round(R * c);
-
-      if (dist <= radius) {
-        distEl.innerHTML = `<span class="text-emerald-700 font-black">📍 దూరం: ${dist}m (బంక్ లోపల ఉన్నారు ✅)</span>`;
-      } else {
-        distEl.innerHTML = `<span class="text-rose-700 font-black">📍 దూరం: ${dist}m (బంక్ వెలుపల ఉన్నారు ⚠️)</span>`;
-      }
-    },
-    (err) => {
-      distEl.innerText = '--';
-    },
-    { enableHighAccuracy: true, timeout: 5000, maximumAge: 30000 }
-  );
+  if (distEl) {
+    distEl.innerHTML = `<span class="text-slate-400 font-bold">⏸️ లొకేషన్ ట్రాకింగ్ తాత్కాలికంగా ఆపబడింది (Tracking Disabled)</span>`;
+  }
 }
 
 async function saveGeofenceSettings() {
