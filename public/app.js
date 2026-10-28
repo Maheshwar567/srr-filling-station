@@ -4127,6 +4127,68 @@ function closeEmpProfileModal() {
   document.getElementById('modalEmpProfile').classList.add('hidden');
 }
 
+function formatTitleCaseInput(input) {
+  if (!input || typeof input.value !== 'string') return;
+  const start = input.selectionStart;
+  const end = input.selectionEnd;
+  const formatted = input.value.replace(/(^|[\s\.\-\/])([a-z])/g, (m, p, c) => p + c.toUpperCase());
+  if (input.value !== formatted) {
+    input.value = formatted;
+    try {
+      input.setSelectionRange(start, end);
+    } catch (e) {}
+  }
+}
+
+function formatMobileInput(input) {
+  if (!input) return;
+  const start = input.selectionStart;
+  const origLen = input.value.length;
+  let val = input.value.replace(/\D/g, '').slice(0, 10);
+  if (input.value !== val) {
+    input.value = val;
+    const newPos = Math.max(0, start - (origLen - val.length));
+    try { input.setSelectionRange(newPos, newPos); } catch (e) {}
+  }
+
+  const errEl = document.getElementById('empPhoneError');
+  if (!errEl) return;
+
+  if (!val) {
+    errEl.innerText = '';
+    errEl.classList.add('hidden');
+    return;
+  }
+
+  if (!['6', '7', '8', '9'].includes(val[0])) {
+    errEl.innerText = STATE.lang === 'te'
+      ? '⚠️ మొబైల్ నంబర్ 6, 7, 8 లేదా 9 తో మాత్రమే ప్రారంభం కావాలి (Must start with 6/7/8/9)'
+      : '⚠️ Mobile number must start with 6, 7, 8, or 9';
+    errEl.classList.remove('hidden');
+    return;
+  }
+
+  if (val.length < 10) {
+    errEl.innerText = STATE.lang === 'te'
+      ? `⚠️ 10 అంకెలు నమోదు చేయండి (${val.length}/10)`
+      : `⚠️ Enter 10 digits (${val.length}/10 digits entered)`;
+    errEl.classList.remove('hidden');
+    return;
+  }
+
+  const duplicate = (STATE.employees || []).find(e => (e.phone || '').replace(/\D/g, '') === val);
+  if (duplicate) {
+    errEl.innerText = STATE.lang === 'te'
+      ? `⚠️ ఈ మొబైల్ (${val}) ఇప్పటికే "${duplicate.name}" కి కేటాయించబడింది!`
+      : `⚠️ Mobile ${val} is already assigned to "${duplicate.name}"!`;
+    errEl.classList.remove('hidden');
+    return;
+  }
+
+  errEl.innerText = '';
+  errEl.classList.add('hidden');
+}
+
 function openAddEmployeeModal() {
   document.getElementById('modalEmpName').value = '';
   document.getElementById('modalEmpFatherName').value = '';
@@ -4137,12 +4199,22 @@ function openAddEmployeeModal() {
   document.getElementById('modalEmpEmergency').value = '';
   const errEl = document.getElementById('empFatherError');
   if (errEl) errEl.classList.add('hidden');
+  const phoneErrEl = document.getElementById('empPhoneError');
+  if (phoneErrEl) {
+    phoneErrEl.innerText = '';
+    phoneErrEl.classList.add('hidden');
+  }
   document.getElementById('modalAddEmployee').classList.remove('hidden');
 }
 
 function closeAddEmployeeModal() {
   const errEl = document.getElementById('empFatherError');
   if (errEl) errEl.classList.add('hidden');
+  const phoneErrEl = document.getElementById('empPhoneError');
+  if (phoneErrEl) {
+    phoneErrEl.innerText = '';
+    phoneErrEl.classList.add('hidden');
+  }
   document.getElementById('modalAddEmployee').classList.add('hidden');
 }
 
@@ -4160,18 +4232,66 @@ function checkFatherNameDifferent() {
 }
 
 async function saveNewEmployee() {
-  const name = document.getElementById('modalEmpName').value.trim();
-  const fatherName = document.getElementById('modalEmpFatherName').value.trim();
-  const villageName = document.getElementById('modalEmpVillage').value.trim();
-  const phone = document.getElementById('modalEmpPhone').value.trim();
-  const password = document.getElementById('modalEmpPassword').value.trim() || '123';
-  const aadhaarNumber = document.getElementById('modalEmpAadhaar').value.trim();
-  const emergencyContact = document.getElementById('modalEmpEmergency').value.trim();
-  const address = document.getElementById('modalEmpAddress').value.trim();
+  const rawName = document.getElementById('modalEmpName')?.value || '';
+  const rawFatherName = document.getElementById('modalEmpFatherName')?.value || '';
+  const rawVillageName = document.getElementById('modalEmpVillage')?.value || '';
+  const rawPhone = document.getElementById('modalEmpPhone')?.value || '';
+  const password = (document.getElementById('modalEmpPassword')?.value || '').trim() || '123';
+  const aadhaarNumber = (document.getElementById('modalEmpAadhaar')?.value || '').trim();
+  const emergencyContact = (document.getElementById('modalEmpEmergency')?.value || '').trim();
+  const address = (document.getElementById('modalEmpAddress')?.value || '').trim();
   const role = document.getElementById('modalEmpRole')?.value || 'Attendant';
 
-  if (!name || !phone) {
-    showToast('Name and Phone are required', 'error');
+  // Capitalize first letters of each word
+  const toTitleCase = (str) => (str || '').replace(/(^|[\s\.\-\/])([a-z])/g, (m, p, c) => p + c.toUpperCase()).trim();
+
+  const name = toTitleCase(rawName);
+  const fatherName = toTitleCase(rawFatherName);
+  const villageName = toTitleCase(rawVillageName);
+  const phone = rawPhone.replace(/\D/g, '').trim();
+
+  const phoneErrEl = document.getElementById('empPhoneError');
+  const fatherErrEl = document.getElementById('empFatherError');
+
+  if (!name) {
+    showToast(STATE.lang === 'te' ? 'సిబ్బంది పేరు నమోదు చేయండి' : 'Employee name is required', 'error');
+    return;
+  }
+
+  if (!phone) {
+    const msg = STATE.lang === 'te' ? 'మొబైల్ నంబర్ నమోదు చేయండి' : 'Mobile number is required';
+    if (phoneErrEl) {
+      phoneErrEl.innerText = '⚠️ ' + msg;
+      phoneErrEl.classList.remove('hidden');
+    }
+    showToast(msg, 'error');
+    return;
+  }
+
+  // User requirement: "Mobile number only 10 digits must start with 6/7/8/9"
+  if (!/^[6-9]\d{9}$/.test(phone)) {
+    const msg = phone.length !== 10
+      ? (STATE.lang === 'te' ? 'మొబైల్ నంబర్ తప్పనిసరిగా 10 అంకెలు ఉండాలి' : 'Mobile number must be exactly 10 digits')
+      : (STATE.lang === 'te' ? 'మొబైల్ నంబర్ 6, 7, 8 లేదా 9 తో మొదలు కావాలి' : 'Mobile number must start with 6, 7, 8, or 9');
+    if (phoneErrEl) {
+      phoneErrEl.innerText = '⚠️ ' + msg;
+      phoneErrEl.classList.remove('hidden');
+    }
+    showToast(msg, 'error');
+    return;
+  }
+
+  // User requirement: "same mobile number on different staff cannot be allowed during add employee"
+  const duplicateEmp = (STATE.employees || []).find(e => (e.phone || '').replace(/\D/g, '') === phone);
+  if (duplicateEmp) {
+    const msg = STATE.lang === 'te'
+      ? `ఈ మొబైల్ నంబర్ (${phone}) ఇప్పటికే "${duplicateEmp.name}" అనే సిబ్బందికి కేటాయించబడింది! వేరే నంబర్ ఇవ్వండి.`
+      : `Mobile number ${phone} is already assigned to "${duplicateEmp.name}". Duplicate mobile numbers are not allowed!`;
+    if (phoneErrEl) {
+      phoneErrEl.innerText = '⚠️ ' + msg;
+      phoneErrEl.classList.remove('hidden');
+    }
+    showToast(msg, 'error');
     return;
   }
 
@@ -4180,8 +4300,7 @@ async function saveNewEmployee() {
     showToast(STATE.lang === 'te' 
       ? 'ఉద్యోగి పేరు మరియు తండ్రి పేరు ఒకేలా ఉండకూడదు!' 
       : "Employee Name and Father's Name cannot be the same!", 'error');
-    const errEl = document.getElementById('empFatherError');
-    if (errEl) errEl.classList.remove('hidden');
+    if (fatherErrEl) fatherErrEl.classList.remove('hidden');
     return;
   }
 

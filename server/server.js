@@ -2183,16 +2183,40 @@ app.post('/api/employees', (req, res) => {
   const tenantId = getTenantId(req);
   const { name, phone, fatherName, villageName, aadhaarNumber, emergencyContact, address, role, username, password } = req.body;
   if (!name || !name.trim()) {
-    return res.status(400).json({ error: "Employee name is required" });
+    return res.status(400).json({ error: "Employee name is required (సిబ్బంది పేరు తప్పనిసరి)" });
+  }
+
+  // Capitalize first letter of each word (even if entered in lowercase)
+  const toTitleCase = (str) => (str || '').replace(/(^|[\s\.\-\/])([a-z])/g, (m, p, c) => p + c.toUpperCase()).trim();
+
+  const cleanName = toTitleCase(name);
+  const cleanFather = toTitleCase(fatherName);
+  const cleanVillage = toTitleCase(villageName);
+  const cleanPhone = (phone || "").replace(/\D/g, '').trim();
+
+  // User requirement: "Mobile number only 10 digits must start with 6/7/8/9"
+  if (!cleanPhone) {
+    return res.status(400).json({ error: "Mobile number is required (మొబైల్ నంబర్ తప్పనిసరి)" });
+  }
+  if (!/^[6-9]\d{9}$/.test(cleanPhone)) {
+    if (cleanPhone.length !== 10) {
+      return res.status(400).json({ error: "Mobile number must be exactly 10 digits (మొబైల్ నంబర్ సరిగ్గా 10 అంకెలు ఉండాలి)" });
+    }
+    return res.status(400).json({ error: "Mobile number must start with 6, 7, 8, or 9 (మొబైల్ నంబర్ 6, 7, 8 లేదా 9 తో మాత్రమే ప్రారంభం కావాలి)" });
   }
 
   const data = storage.load(tenantId);
   if (!data.employees) data.employees = [];
 
-  const cleanPhone = (phone || "").trim();
-  const cleanName = name.trim();
-  const cleanFather = (fatherName || "").trim();
+  // User requirement: "same mobile number on different staff cannot be allowed during add employee"
+  const existingPhoneEmp = data.employees.find(e => (e.phone || '').replace(/\D/g, '') === cleanPhone);
+  if (existingPhoneEmp) {
+    return res.status(400).json({
+      error: `Mobile number ${cleanPhone} is already assigned to employee "${existingPhoneEmp.name}". Duplicate mobile numbers are not allowed (ఈ మొబైల్ నంబర్ ఇప్పటికే "${existingPhoneEmp.name}" కి ఉంది).`
+    });
+  }
 
+  // User requirement: "Employee name and father name should not be same during emp kyc"
   if (cleanFather && cleanName.toLowerCase() === cleanFather.toLowerCase()) {
     return res.status(400).json({ error: "Employee name and Father's name cannot be the same (ఉద్యోగి పేరు మరియు తండ్రి పేరు ఒకేలా ఉండకూడదు)" });
   }
@@ -2206,7 +2230,7 @@ app.post('/api/employees', (req, res) => {
     password: (password || "123").trim(),
     phone: cleanPhone,
     fatherName: cleanFather,
-    villageName: (villageName || "").trim(),
+    villageName: cleanVillage,
     aadhaarNumber: (aadhaarNumber || "").trim(),
     emergencyContact: (emergencyContact || "").trim(),
     address: (address || "").trim(),

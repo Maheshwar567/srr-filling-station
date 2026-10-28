@@ -2405,12 +2405,13 @@
       <div class="space-y-2.5 text-xs">
         <div>
           <label class="font-bold text-slate-700 block mb-0.5">పూర్తి పేరు (Full Name) *:</label>
-          <input type="text" id="modalEmpName" oninput="checkFatherNameDifferent()" placeholder="e.g. Ramesh Kumar" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 font-bold text-slate-900">
+          <input type="text" id="modalEmpName" oninput="formatTitleCaseInput(this); checkFatherNameDifferent();" placeholder="e.g. Ramesh Kumar" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 font-bold text-slate-900 focus:bg-white focus:outline-none focus:border-orange-500">
         </div>
         <div class="grid grid-cols-2 gap-2">
           <div>
-            <label class="font-bold text-slate-700 block mb-0.5">మొబైల్ / లాగిన్ యూజర్ *:</label>
-            <input type="tel" id="modalEmpPhone" placeholder="98480xxxxx" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 font-mono font-bold">
+            <label class="font-bold text-slate-700 block mb-0.5">మొబైల్ (10 అంకెలు - 6/7/8/9 తో మొదలు) *:</label>
+            <input type="tel" id="modalEmpPhone" maxlength="10" oninput="formatMobileInput(this)" placeholder="e.g. 9848011223" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 font-mono font-bold focus:bg-white focus:outline-none focus:border-orange-500">
+            <p id="empPhoneError" class="text-rose-600 font-bold text-[10px] hidden mt-0.5"></p>
           </div>
           <div>
             <label class="font-bold text-slate-700 block mb-0.5">పాస్‌వర్డ్ (Default: 123):</label>
@@ -2420,12 +2421,12 @@
         <div class="grid grid-cols-2 gap-2">
           <div>
             <label class="font-bold text-slate-700 block mb-0.5">తండ్రి పేరు (Father's Name):</label>
-            <input type="text" id="modalEmpFatherName" oninput="checkFatherNameDifferent()" placeholder="Father's name" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5">
+            <input type="text" id="modalEmpFatherName" oninput="formatTitleCaseInput(this); checkFatherNameDifferent();" placeholder="Father's name" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 focus:bg-white focus:outline-none focus:border-orange-500">
             <p id="empFatherError" class="text-rose-600 font-bold text-[10px] hidden mt-0.5">⚠️ పేరు మరియు తండ్రి పేరు ఒకేలా ఉండకూడదు (Cannot be same)</p>
           </div>
           <div>
             <label class="font-bold text-slate-700 block mb-0.5">సొంత గ్రామం (Village):</label>
-            <input type="text" id="modalEmpVillage" placeholder="Native village" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5">
+            <input type="text" id="modalEmpVillage" oninput="formatTitleCaseInput(this)" placeholder="Native village" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 focus:bg-white focus:outline-none focus:border-orange-500">
           </div>
         </div>
         <div>
@@ -2646,6 +2647,6 @@
     </div>
   </footer>
 
-  <script src="app.js?v=15"></script>
+  <script src="app.js?v=16"></script>
 </body>
 </html>
