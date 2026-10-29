@@ -163,9 +163,9 @@
               "saleLitres": 100
             }
           },
-          "status": "readings-entered",
-          "shortage": 1000,
-          "grossSale": 19014,
+          "status": "verified",
+          "shortage": 2735,
+          "grossSale": 20125,
           "stationId": "S1",
           "cardSwipes": [
             {
@@ -179,20 +179,50 @@
             }
           ],
           "collections": {
-            "upi": 0,
+            "cash": 7235,
+            "upi": 500,
             "card": 0,
-            "cash": 7659,
-            "notes": "Handover shortage test",
-            "expenses": 0,
-            "expenseReason": ""
+            "expenses": 50,
+            "expenseReason": "☕ టీ / భోజనం (Tea / Food)",
+            "notes": "Verified notes bundles",
+            "denominations": {
+              "c500": 10,
+              "c200": 5,
+              "c100": 8,
+              "c50": 4,
+              "c20": 5,
+              "c10": 10,
+              "others": 35,
+              "totalNotes": 42,
+              "totalAmount": 7235
+            }
           },
           "submittedAt": "2026-10-24T09:05:00.000Z",
           "upiPayments": [],
           "employeeName": "Ramesh Kumar",
-          "expectedCash": 8659,
+          "expectedCash": 9970,
           "expensesList": [],
           "testingRecords": [],
-          "totalDeductions": 10355
+          "totalDeductions": 10155,
+          "adminVerification": {
+            "verified": true,
+            "verifiedBy": "Management",
+            "verifiedAt": "2026-10-29T03:58:36.533Z",
+            "adminCash": 7235,
+            "adminUpi": 500,
+            "notes": "Verified notes bundles",
+            "adminDenominations": {
+              "c500": 10,
+              "c200": 5,
+              "c100": 8,
+              "c50": 4,
+              "c20": 5,
+              "c10": 10,
+              "others": 35,
+              "totalNotes": 42,
+              "totalAmount": 7235
+            }
+          }
         },
         "S2": {
           "pump": "Pump 1",
@@ -1130,7 +1160,11 @@
               "replacedAtFormatted": "28 Oct 2026, 5:25 pm",
               "replacedBy": "B Parsha ramudu"
             }
-          ]
+          ],
+          "testingRecords": [],
+          "cardSwipes": [],
+          "expensesList": [],
+          "upiPayments": []
         },
         "S2": {
           "pump": "Pump 1",
@@ -1177,7 +1211,11 @@
               "employeeName": "Staff Two",
               "replacedAtFormatted": "28 Oct 2026, 4:55 pm"
             }
-          ]
+          ],
+          "testingRecords": [],
+          "cardSwipes": [],
+          "expensesList": [],
+          "upiPayments": []
         },
         "S3": {
           "pump": "Pump 2",
@@ -1224,7 +1262,11 @@
               "employeeName": "Dual Attendant",
               "replacedAtFormatted": "28 Oct 2026, 4:55 pm"
             }
-          ]
+          ],
+          "testingRecords": [],
+          "cardSwipes": [],
+          "expensesList": [],
+          "upiPayments": []
         },
         "S4": {
           "pump": "Pump 2",
@@ -1278,7 +1320,11 @@
               "replacedAtFormatted": "28 Oct 2026, 5:25 pm",
               "replacedBy": "Narendra"
             }
-          ]
+          ],
+          "testingRecords": [],
+          "cardSwipes": [],
+          "expensesList": [],
+          "upiPayments": []
         }
       },
       "dieselRate": 105.23,
@@ -1453,7 +1499,11 @@
           },
           "employeeName": "B Parsha ramudu",
           "readingsHistory": [],
-          "previousAttendants": []
+          "previousAttendants": [],
+          "testingRecords": [],
+          "cardSwipes": [],
+          "expensesList": [],
+          "upiPayments": []
         },
         "S2": {
           "pump": "Pump 1",
@@ -1485,7 +1535,11 @@
           },
           "employeeName": "Ravi",
           "readingsHistory": [],
-          "previousAttendants": []
+          "previousAttendants": [],
+          "testingRecords": [],
+          "cardSwipes": [],
+          "expensesList": [],
+          "upiPayments": []
         },
         "S3": {
           "pump": "Pump 2",
@@ -1517,7 +1571,11 @@
           },
           "employeeName": "B Narasimhulu",
           "readingsHistory": [],
-          "previousAttendants": []
+          "previousAttendants": [],
+          "testingRecords": [],
+          "cardSwipes": [],
+          "expensesList": [],
+          "upiPayments": []
         },
         "S4": {
           "pump": "Pump 2",
@@ -1549,7 +1607,11 @@
           },
           "employeeName": "B Narasimhulu",
           "readingsHistory": [],
-          "previousAttendants": []
+          "previousAttendants": [],
+          "testingRecords": [],
+          "cardSwipes": [],
+          "expensesList": [],
+          "upiPayments": []
         }
       },
       "dieselRate": 105.23,
@@ -1823,19 +1885,19 @@
     {
       "id": "due-1792836604426",
       "date": "2026-10-23",
-      "notes": "Handover shortage test",
+      "stationId": "S1",
+      "employeeName": "Ramesh Kumar",
+      "grossAmount": 20125,
+      "totalDeductions": 10155,
+      "expectedCash": 9970,
+      "actualCash": 7235,
+      "shortageAmount": 2735,
       "status": "settled",
+      "notes": "Test handover with denominations",
       "createdAt": "2026-10-24T10:10:04.426Z",
       "settledAt": "2026-10-24T10:10:04.445Z",
-      "stationId": "S1",
-      "actualCash": 7659,
-      "grossAmount": 19014,
       "settledMode": "Cash Recovery",
-      "employeeName": "Ramesh Kumar",
-      "expectedCash": 8659,
-      "settledNotes": "Recovered next morning from Ramesh",
-      "shortageAmount": 1000,
-      "totalDeductions": 10355
+      "settledNotes": "Recovered next morning from Ramesh"
     }
   ],
   "salaryRecords": [

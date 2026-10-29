@@ -943,6 +943,24 @@ function renderEmployeeView() {
   if (upiInput) upiInput.value = stData.collections?.upi || '';
   if (notesInput) notesInput.value = stData.collections?.notes || '';
 
+  // Pre-fill collections denominations
+  const denom = stData.collections?.denominations;
+  if (denom) {
+    if (document.getElementById('denom-500')) document.getElementById('denom-500').value = denom.c500 || '';
+    if (document.getElementById('denom-200')) document.getElementById('denom-200').value = denom.c200 || '';
+    if (document.getElementById('denom-100')) document.getElementById('denom-100').value = denom.c100 || '';
+    if (document.getElementById('denom-50')) document.getElementById('denom-50').value = denom.c50 || '';
+    if (document.getElementById('denom-20')) document.getElementById('denom-20').value = denom.c20 || '';
+    if (document.getElementById('denom-10')) document.getElementById('denom-10').value = denom.c10 || '';
+    if (document.getElementById('denom-others')) document.getElementById('denom-others').value = denom.others || '';
+  } else {
+    ['denom-500', 'denom-200', 'denom-100', 'denom-50', 'denom-20', 'denom-10', 'denom-others'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+  }
+  calculateStaffDenominations(false);
+
   // Badges
   const pendingReminders = STATE.reminders.filter(r => r.stationId === stId && r.status === 'pending');
   const badgeRem = document.getElementById('empReminderBadgeCount');
@@ -1917,6 +1935,91 @@ function calculateLiveHandoverTally() {
   }
 }
 
+// --- CURRENCY DENOMINATIONS (కరెన్సీ నోట్ల లెక్క / DENOMINATOR) ---
+// User requirement: "500 notes * no'of notes, 200, 100,50,10, others(others only sum like 5 ruprees, 2 rupees etc.., staff will enter this sum manually)"
+function calculateStaffDenominations(syncToCash = true) {
+  const c500 = parseInt(document.getElementById('denom-500')?.value) || 0;
+  const c200 = parseInt(document.getElementById('denom-200')?.value) || 0;
+  const c100 = parseInt(document.getElementById('denom-100')?.value) || 0;
+  const c50 = parseInt(document.getElementById('denom-50')?.value) || 0;
+  const c20 = parseInt(document.getElementById('denom-20')?.value) || 0;
+  const c10 = parseInt(document.getElementById('denom-10')?.value) || 0;
+  const others = parseFloat(document.getElementById('denom-others')?.value) || 0;
+
+  const sub500 = c500 * 500;
+  const sub200 = c200 * 200;
+  const sub100 = c100 * 100;
+  const sub50 = c50 * 50;
+  const sub20 = c20 * 20;
+  const sub10 = c10 * 10;
+  const totalNotes = c500 + c200 + c100 + c50 + c20 + c10;
+  const grandTotal = sub500 + sub200 + sub100 + sub50 + sub20 + sub10 + others;
+
+  // Update subtotal labels
+  const s500El = document.getElementById('subtotal-500');
+  const s200El = document.getElementById('subtotal-200');
+  const s100El = document.getElementById('subtotal-100');
+  const s50El = document.getElementById('subtotal-50');
+  const s20El = document.getElementById('subtotal-20');
+  const s10El = document.getElementById('subtotal-10');
+  const sOthEl = document.getElementById('subtotal-others');
+
+  if (s500El) s500El.innerText = `= ₹${sub500.toLocaleString('en-IN')}`;
+  if (s200El) s200El.innerText = `= ₹${sub200.toLocaleString('en-IN')}`;
+  if (s100El) s100El.innerText = `= ₹${sub100.toLocaleString('en-IN')}`;
+  if (s50El) s50El.innerText = `= ₹${sub50.toLocaleString('en-IN')}`;
+  if (s20El) s20El.innerText = `= ₹${sub20.toLocaleString('en-IN')}`;
+  if (s10El) s10El.innerText = `= ₹${sub10.toLocaleString('en-IN')}`;
+  if (sOthEl) sOthEl.innerText = `= ₹${others.toLocaleString('en-IN')}`;
+
+  const notesBadge = document.getElementById('hoDenomTotalNotesBadge');
+  const othersBadge = document.getElementById('hoDenomOthersBadge');
+  const totalDisplay = document.getElementById('hoDenomTotalDisplay');
+
+  if (notesBadge) notesBadge.innerText = `${totalNotes} Note${totalNotes === 1 ? '' : 's'}`;
+  if (othersBadge) othersBadge.innerText = `₹${others.toLocaleString('en-IN')}`;
+  if (totalDisplay) totalDisplay.innerText = `₹${grandTotal.toLocaleString('en-IN')}`;
+
+  // Automatically update the Physical Cash input and calculate reconciliation tally
+  if (syncToCash && (totalNotes > 0 || others > 0)) {
+    const cashInput = document.getElementById('empHandoverCash');
+    if (cashInput) {
+      cashInput.value = grandTotal;
+      calculateLiveHandoverTally();
+    }
+  }
+}
+
+function clearStaffDenominations() {
+  ['denom-500', 'denom-200', 'denom-100', 'denom-50', 'denom-20', 'denom-10', 'denom-others'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  calculateStaffDenominations(true);
+  const cashInput = document.getElementById('empHandoverCash');
+  if (cashInput) {
+    cashInput.value = '';
+    calculateLiveHandoverTally();
+  }
+}
+
+function getStaffDenominationsObject() {
+  const c500 = parseInt(document.getElementById('denom-500')?.value) || 0;
+  const c200 = parseInt(document.getElementById('denom-200')?.value) || 0;
+  const c100 = parseInt(document.getElementById('denom-100')?.value) || 0;
+  const c50 = parseInt(document.getElementById('denom-50')?.value) || 0;
+  const c20 = parseInt(document.getElementById('denom-20')?.value) || 0;
+  const c10 = parseInt(document.getElementById('denom-10')?.value) || 0;
+  const others = parseFloat(document.getElementById('denom-others')?.value) || 0;
+  const totalNotes = c500 + c200 + c100 + c50 + c20 + c10;
+  const totalAmount = (c500 * 500) + (c200 * 200) + (c100 * 100) + (c50 * 50) + (c20 * 20) + (c10 * 10) + others;
+
+  if (totalNotes > 0 || others > 0) {
+    return { c500, c200, c100, c50, c20, c10, others, totalNotes, totalAmount };
+  }
+  return null;
+}
+
 async function submitShiftHandover() {
   const cash = parseFloat(document.getElementById('empHandoverCash')?.value) || 0;
   const stData = STATE.shift?.stations?.[STATE.selectedStation] || {};
@@ -1927,11 +2030,12 @@ async function submitShiftHandover() {
   const card = (stData.cardSwipes || []).reduce((s, c) => s + (c.amount || 0), 0);
   const expenses = (stData.expensesList || []).reduce((s, e) => s + (e.amount || 0), 0);
   const expenseReason = stData.collections?.expenseReason || "";
+  const denominations = getStaffDenominationsObject();
 
   const payload = {
     date: STATE.selectedDate,
     stationId: STATE.selectedStation,
-    collections: { cash, upi, card, expenses, expenseReason, notes }
+    collections: { cash, upi, card, expenses, expenseReason, notes, denominations }
   };
 
   try {
@@ -2210,7 +2314,8 @@ function getStationHandoverMetrics(stId) {
     staffShortage,
     staffExcess,
     status: stData.status || 'in_progress',
-    adminVerification: stData.adminVerification || null
+    adminVerification: stData.adminVerification || null,
+    denominations: stData.collections?.denominations || null
   };
 }
 
@@ -2318,6 +2423,29 @@ function renderAdminHandoverDashboard() {
 
   if (staffNotesEl) staffNotesEl.innerText = metrics.staffNotes || (isTe ? 'ఎలాంటి రిమార్క్స్ లేవు' : 'No remarks');
 
+  // Populate Staff Submitted Denominations
+  const staffDenomList = document.getElementById('admHoStaffDenominationsList');
+  const staffTotalNotesBadge = document.getElementById('admHoStaffTotalNotesBadge');
+  const d = metrics.denominations;
+  if (staffDenomList) {
+    if (d && (d.totalNotes > 0 || d.others > 0)) {
+      if (staffTotalNotesBadge) staffTotalNotesBadge.innerText = `${d.totalNotes || 0} Notes`;
+      const lines = [];
+      if (d.c500) lines.push(`<div class="flex justify-between py-0.5 border-b border-slate-100"><span>₹500 × ${d.c500}</span><span class="font-bold text-slate-800">₹${(d.c500 * 500).toLocaleString('en-IN')}</span></div>`);
+      if (d.c200) lines.push(`<div class="flex justify-between py-0.5 border-b border-slate-100"><span>₹200 × ${d.c200}</span><span class="font-bold text-slate-800">₹${(d.c200 * 200).toLocaleString('en-IN')}</span></div>`);
+      if (d.c100) lines.push(`<div class="flex justify-between py-0.5 border-b border-slate-100"><span>₹100 × ${d.c100}</span><span class="font-bold text-slate-800">₹${(d.c100 * 100).toLocaleString('en-IN')}</span></div>`);
+      if (d.c50) lines.push(`<div class="flex justify-between py-0.5 border-b border-slate-100"><span>₹50 × ${d.c50}</span><span class="font-bold text-slate-800">₹${(d.c50 * 50).toLocaleString('en-IN')}</span></div>`);
+      if (d.c20) lines.push(`<div class="flex justify-between py-0.5 border-b border-slate-100"><span>₹20 × ${d.c20}</span><span class="font-bold text-slate-800">₹${(d.c20 * 20).toLocaleString('en-IN')}</span></div>`);
+      if (d.c10) lines.push(`<div class="flex justify-between py-0.5 border-b border-slate-100"><span>₹10 × ${d.c10}</span><span class="font-bold text-slate-800">₹${(d.c10 * 10).toLocaleString('en-IN')}</span></div>`);
+      if (d.others) lines.push(`<div class="flex justify-between py-0.5 border-b border-slate-100 text-purple-700"><span>🪙 చిల్లర / నాణేలు</span><span class="font-bold">₹${d.others.toLocaleString('en-IN')}</span></div>`);
+      lines.push(`<div class="flex justify-between pt-1 font-bold text-emerald-800 border-t border-slate-200"><span>మొత్తం లెక్క:</span><span>₹${(d.totalAmount || 0).toLocaleString('en-IN')}</span></div>`);
+      staffDenomList.innerHTML = lines.join('');
+    } else {
+      if (staffTotalNotesBadge) staffTotalNotesBadge.innerText = '0 Notes';
+      staffDenomList.innerHTML = `<span class="text-slate-400 italic text-[11px]">${isTe ? 'నోట్ల వివరాలు నమోదు చేయలేదు' : 'No denomination details entered'}</span>`;
+    }
+  }
+
   if (staffStatusBadge) {
     if (metrics.status === 'verified') {
       staffStatusBadge.className = 'text-[10px] font-black px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300';
@@ -2373,6 +2501,24 @@ function renderAdminHandoverDashboard() {
   if (notesInput) {
     notesInput.value = metrics.adminVerification?.notes || '';
   }
+
+  // Pre-fill Management Denominations if saved
+  const admD = metrics.adminVerification?.adminDenominations;
+  if (admD) {
+    if (document.getElementById('admDenom-500')) document.getElementById('admDenom-500').value = admD.c500 || '';
+    if (document.getElementById('admDenom-200')) document.getElementById('admDenom-200').value = admD.c200 || '';
+    if (document.getElementById('admDenom-100')) document.getElementById('admDenom-100').value = admD.c100 || '';
+    if (document.getElementById('admDenom-50')) document.getElementById('admDenom-50').value = admD.c50 || '';
+    if (document.getElementById('admDenom-20')) document.getElementById('admDenom-20').value = admD.c20 || '';
+    if (document.getElementById('admDenom-10')) document.getElementById('admDenom-10').value = admD.c10 || '';
+    if (document.getElementById('admDenom-others')) document.getElementById('admDenom-others').value = admD.others || '';
+  } else {
+    ['admDenom-500', 'admDenom-200', 'admDenom-100', 'admDenom-50', 'admDenom-20', 'admDenom-10', 'admDenom-others'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+  }
+  calculateAdminDenominations(false);
 
   // 5. Calculate live tally badge
   calculateAdminHandoverTally();
@@ -2436,11 +2582,103 @@ function switchAdminHandoverStation(stKey) {
   renderAdminHandoverDashboard();
 }
 
+function toggleAdminDenominations() {
+  const container = document.getElementById('admDenominationsContainer');
+  const icon = document.getElementById('admDenomToggleIcon');
+  if (!container) return;
+  const isHidden = container.classList.contains('hidden');
+  if (isHidden) {
+    container.classList.remove('hidden');
+    if (icon) icon.innerText = '▲';
+  } else {
+    container.classList.add('hidden');
+    if (icon) icon.innerText = '▼';
+  }
+}
+
+function calculateAdminDenominations(syncToCash = true) {
+  const c500 = parseInt(document.getElementById('admDenom-500')?.value) || 0;
+  const c200 = parseInt(document.getElementById('admDenom-200')?.value) || 0;
+  const c100 = parseInt(document.getElementById('admDenom-100')?.value) || 0;
+  const c50 = parseInt(document.getElementById('admDenom-50')?.value) || 0;
+  const c20 = parseInt(document.getElementById('admDenom-20')?.value) || 0;
+  const c10 = parseInt(document.getElementById('admDenom-10')?.value) || 0;
+  const others = parseFloat(document.getElementById('admDenom-others')?.value) || 0;
+
+  const sub500 = c500 * 500;
+  const sub200 = c200 * 200;
+  const sub100 = c100 * 100;
+  const sub50 = c50 * 50;
+  const sub20 = c20 * 20;
+  const sub10 = c10 * 10;
+  const totalNotes = c500 + c200 + c100 + c50 + c20 + c10;
+  const grandTotal = sub500 + sub200 + sub100 + sub50 + sub20 + sub10 + others;
+
+  const s500 = document.getElementById('admSubtotal-500');
+  const s200 = document.getElementById('admSubtotal-200');
+  const s100 = document.getElementById('admSubtotal-100');
+  const s50 = document.getElementById('admSubtotal-50');
+  const s20 = document.getElementById('admSubtotal-20');
+  const s10 = document.getElementById('admSubtotal-10');
+
+  if (s500) s500.innerText = `= ₹${sub500.toLocaleString('en-IN')}`;
+  if (s200) s200.innerText = `= ₹${sub200.toLocaleString('en-IN')}`;
+  if (s100) s100.innerText = `= ₹${sub100.toLocaleString('en-IN')}`;
+  if (s50) s50.innerText = `= ₹${sub50.toLocaleString('en-IN')}`;
+  if (s20) s20.innerText = `= ₹${sub20.toLocaleString('en-IN')}`;
+  if (s10) s10.innerText = `= ₹${sub10.toLocaleString('en-IN')}`;
+
+  const summaryBadge = document.getElementById('admDenomSummaryBadge');
+  const grandTotalText = document.getElementById('admDenomGrandTotalText');
+
+  if (summaryBadge) summaryBadge.innerText = `${totalNotes} Note${totalNotes === 1 ? '' : 's'} • ₹${grandTotal.toLocaleString('en-IN')}`;
+  if (grandTotalText) grandTotalText.innerText = `మొత్తం: ₹${grandTotal.toLocaleString('en-IN')}`;
+
+  if (syncToCash && (totalNotes > 0 || others > 0)) {
+    const cashInput = document.getElementById('admHandoverCashInput');
+    if (cashInput) {
+      cashInput.value = grandTotal;
+      calculateAdminHandoverTally();
+    }
+  }
+}
+
+function clearAdminDenominations() {
+  ['admDenom-500', 'admDenom-200', 'admDenom-100', 'admDenom-50', 'admDenom-20', 'admDenom-10', 'admDenom-others'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  calculateAdminDenominations(true);
+  const cashInput = document.getElementById('admHandoverCashInput');
+  if (cashInput) {
+    cashInput.value = '';
+    calculateAdminHandoverTally();
+  }
+}
+
+function getAdminDenominationsObject() {
+  const c500 = parseInt(document.getElementById('admDenom-500')?.value) || 0;
+  const c200 = parseInt(document.getElementById('admDenom-200')?.value) || 0;
+  const c100 = parseInt(document.getElementById('admDenom-100')?.value) || 0;
+  const c50 = parseInt(document.getElementById('admDenom-50')?.value) || 0;
+  const c20 = parseInt(document.getElementById('admDenom-20')?.value) || 0;
+  const c10 = parseInt(document.getElementById('admDenom-10')?.value) || 0;
+  const others = parseFloat(document.getElementById('admDenom-others')?.value) || 0;
+  const totalNotes = c500 + c200 + c100 + c50 + c20 + c10;
+  const totalAmount = (c500 * 500) + (c200 * 200) + (c100 * 100) + (c50 * 50) + (c20 * 20) + (c10 * 10) + others;
+
+  if (totalNotes > 0 || others > 0) {
+    return { c500, c200, c100, c50, c20, c10, others, totalNotes, totalAmount };
+  }
+  return null;
+}
+
 async function saveAdminHandoverCount(silent = false) {
   const activeSt = STATE.adminSelectedStation || 'S1';
   const cash = parseFloat(document.getElementById('admHandoverCashInput')?.value) || 0;
   const upi = parseFloat(document.getElementById('admHandoverUpiInput')?.value) || 0;
   const notes = document.getElementById('admHandoverNotesInput')?.value.trim() || '';
+  const adminDenominations = getAdminDenominationsObject();
 
   const payload = {
     date: STATE.selectedDate,
@@ -2449,6 +2687,7 @@ async function saveAdminHandoverCount(silent = false) {
     adminUpi: upi,
     verifiedBy: STATE.currentUser?.name || (STATE.currentUser?.role === 'owner' ? 'Bunk Owner' : 'Management'),
     notes,
+    adminDenominations,
     updateCollections: false
   };
 
@@ -2478,6 +2717,7 @@ async function confirmAndVerifyStaffHandover() {
   const cash = parseFloat(document.getElementById('admHandoverCashInput')?.value) || 0;
   const upi = parseFloat(document.getElementById('admHandoverUpiInput')?.value) || 0;
   const notes = document.getElementById('admHandoverNotesInput')?.value.trim() || '';
+  const adminDenominations = getAdminDenominationsObject();
 
   const payload = {
     date: STATE.selectedDate,
@@ -2486,6 +2726,7 @@ async function confirmAndVerifyStaffHandover() {
     adminUpi: upi,
     verifiedBy: STATE.currentUser?.name || (STATE.currentUser?.role === 'owner' ? 'Bunk Owner' : 'Management'),
     notes: notes || 'Verified and approved by management/owner',
+    adminDenominations,
     updateCollections: true
   };
 
@@ -5459,12 +5700,26 @@ function getWhatsAppReportMessage(mode = 'full') {
     const exp = Number(st.collections?.expenses || 0);
     const expReason = st.collections?.expenseReason ? ` (${st.collections.expenseReason})` : '';
 
+    const denom = st.collections?.denominations;
+    let denomStr = '';
+    if (denom && (denom.totalNotes > 0 || denom.others > 0)) {
+      const parts = [];
+      if (denom.c500) parts.push(`500×${denom.c500}`);
+      if (denom.c200) parts.push(`200×${denom.c200}`);
+      if (denom.c100) parts.push(`100×${denom.c100}`);
+      if (denom.c50) parts.push(`50×${denom.c50}`);
+      if (denom.c20) parts.push(`20×${denom.c20}`);
+      if (denom.c10) parts.push(`10×${denom.c10}`);
+      if (denom.others) parts.push(`చిల్లర ₹${denom.others}`);
+      denomStr = `\n• నోట్ల లెక్క: ${parts.join(', ')} (${denom.totalNotes} నోట్లు)`;
+    }
+
     stationLines += `
 *▶ ${key} (${st.pump || (key === 'S1' || key === 'S2' ? 'Pump 1' : 'Pump 2')}) - ${emp}*
 • పెట్రోల్ (Petrol): ${pLitres.toFixed(2)} L = ₹${pAmt.toLocaleString('en-IN')}
 • డీజిల్ (Diesel): ${dLitres.toFixed(2)} L = ₹${dAmt.toLocaleString('en-IN')}
 • స్టేషన్ సేల్: *₹${stTotal.toLocaleString('en-IN')}*
-• కలెక్షన్: క్యాష్ ₹${cash.toLocaleString('en-IN')} | UPI ₹${upi.toLocaleString('en-IN')} | కార్డ్ ₹${card.toLocaleString('en-IN')}${exp > 0 ? ` | ఖర్చు ₹${exp.toLocaleString('en-IN')}${expReason}` : ''}
+• కలెక్షన్: క్యాష్ ₹${cash.toLocaleString('en-IN')} | UPI ₹${upi.toLocaleString('en-IN')} | కార్డ్ ₹${card.toLocaleString('en-IN')}${exp > 0 ? ` | ఖర్చు ₹${exp.toLocaleString('en-IN')}${expReason}` : ''}${denomStr}
 `;
   });
 

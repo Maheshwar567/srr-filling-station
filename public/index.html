@@ -811,12 +811,164 @@
 
             <!-- 2. PHYSICAL CASH INPUT & LIVE TALLY STATUS -->
             <div class="bg-slate-50 p-4 sm:p-5 rounded-2xl border-2 border-slate-200 space-y-4">
-              <h4 class="font-bold text-slate-900 text-xs sm:text-sm uppercase tracking-wide flex items-center gap-1.5">
-                <span>💵</span>
-                <span>వాస్తవంగా లెక్కించిన చేతి నగదు (Actual Physical Cash Handed Over)</span>
-              </h4>
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <h4 class="font-bold text-slate-900 text-xs sm:text-sm uppercase tracking-wide flex items-center gap-1.5">
+                  <span>💵</span>
+                  <span>వాస్తవంగా లెక్కించిన చేతి నగదు (Actual Physical Cash Handed Over)</span>
+                </h4>
+                <span class="text-[11px] font-bold text-slate-500 bg-white border border-slate-200 px-2.5 py-1 rounded-lg">కరెన్సీ నోట్ల లెక్క & చేతి నగదు</span>
+              </div>
 
-              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+              <!-- CURRENCY DENOMINATIONS CALCULATOR (కరెన్సీ నోట్ల లెక్క / DENOMINATOR) -->
+              <div class="bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 text-white p-4 sm:p-5 rounded-2xl shadow-md border border-slate-700 space-y-3.5">
+                <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-700/80 pb-2.5">
+                  <div class="flex items-center gap-2">
+                    <span class="text-2xl">🔢</span>
+                    <div>
+                      <h4 class="font-extrabold text-white text-sm sm:text-base flex items-center gap-2">
+                        <span>కరెన్సీ నోట్ల లెక్క (Currency Denominations)</span>
+                        <span class="bg-amber-400 text-slate-900 text-[10px] font-black px-2 py-0.5 rounded-full uppercase">Denominator</span>
+                      </h4>
+                      <p class="text-[11px] text-slate-300">నోట్ల సంఖ్య నమోదు చేయండి - మొత్తం చేతి నగదు ఆటోమేటిక్‌గా లెక్కించబడుతుంది</p>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <button type="button" onclick="clearStaffDenominations()" class="bg-slate-700/80 hover:bg-slate-700 text-rose-300 hover:text-rose-200 border border-slate-600 font-bold text-xs px-3 py-1.5 rounded-xl transition-all flex items-center gap-1 active:scale-95">
+                      <span>🗑️</span>
+                      <span>క్లియర్ (Clear)</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Denominations Grid (500, 200, 100, 50, 20, 10, Others) -->
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5">
+                  <!-- 500 -->
+                  <div class="bg-slate-800/90 border border-slate-700 rounded-xl p-2.5 space-y-1.5">
+                    <div class="flex items-center justify-between text-xs">
+                      <span class="bg-emerald-500/20 text-emerald-300 font-black px-2 py-0.5 rounded-md font-mono border border-emerald-500/30">₹500</span>
+                      <span class="text-[10px] text-slate-400 font-semibold">నోట్ల సంఖ్య</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-xs text-slate-400 font-bold">×</span>
+                      <input type="number" min="0" id="denom-500" oninput="calculateStaffDenominations()" placeholder="0" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-2 py-1.5 text-center font-mono font-black text-amber-300 text-sm focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400">
+                    </div>
+                    <div class="text-right text-[11px] font-mono font-bold text-emerald-400" id="subtotal-500">
+                      = ₹0
+                    </div>
+                  </div>
+
+                  <!-- 200 -->
+                  <div class="bg-slate-800/90 border border-slate-700 rounded-xl p-2.5 space-y-1.5">
+                    <div class="flex items-center justify-between text-xs">
+                      <span class="bg-amber-500/20 text-amber-300 font-black px-2 py-0.5 rounded-md font-mono border border-amber-500/30">₹200</span>
+                      <span class="text-[10px] text-slate-400 font-semibold">నోట్ల సంఖ్య</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-xs text-slate-400 font-bold">×</span>
+                      <input type="number" min="0" id="denom-200" oninput="calculateStaffDenominations()" placeholder="0" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-2 py-1.5 text-center font-mono font-black text-amber-300 text-sm focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400">
+                    </div>
+                    <div class="text-right text-[11px] font-mono font-bold text-emerald-400" id="subtotal-200">
+                      = ₹0
+                    </div>
+                  </div>
+
+                  <!-- 100 -->
+                  <div class="bg-slate-800/90 border border-slate-700 rounded-xl p-2.5 space-y-1.5">
+                    <div class="flex items-center justify-between text-xs">
+                      <span class="bg-blue-500/20 text-blue-300 font-black px-2 py-0.5 rounded-md font-mono border border-blue-500/30">₹100</span>
+                      <span class="text-[10px] text-slate-400 font-semibold">నోట్ల సంఖ్య</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-xs text-slate-400 font-bold">×</span>
+                      <input type="number" min="0" id="denom-100" oninput="calculateStaffDenominations()" placeholder="0" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-2 py-1.5 text-center font-mono font-black text-amber-300 text-sm focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400">
+                    </div>
+                    <div class="text-right text-[11px] font-mono font-bold text-emerald-400" id="subtotal-100">
+                      = ₹0
+                    </div>
+                  </div>
+
+                  <!-- 50 -->
+                  <div class="bg-slate-800/90 border border-slate-700 rounded-xl p-2.5 space-y-1.5">
+                    <div class="flex items-center justify-between text-xs">
+                      <span class="bg-cyan-500/20 text-cyan-300 font-black px-2 py-0.5 rounded-md font-mono border border-cyan-500/30">₹50</span>
+                      <span class="text-[10px] text-slate-400 font-semibold">నోట్ల సంఖ్య</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-xs text-slate-400 font-bold">×</span>
+                      <input type="number" min="0" id="denom-50" oninput="calculateStaffDenominations()" placeholder="0" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-2 py-1.5 text-center font-mono font-black text-amber-300 text-sm focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400">
+                    </div>
+                    <div class="text-right text-[11px] font-mono font-bold text-emerald-400" id="subtotal-50">
+                      = ₹0
+                    </div>
+                  </div>
+
+                  <!-- 20 -->
+                  <div class="bg-slate-800/90 border border-slate-700 rounded-xl p-2.5 space-y-1.5">
+                    <div class="flex items-center justify-between text-xs">
+                      <span class="bg-orange-500/20 text-orange-300 font-black px-2 py-0.5 rounded-md font-mono border border-orange-500/30">₹20</span>
+                      <span class="text-[10px] text-slate-400 font-semibold">నోట్ల సంఖ్య</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-xs text-slate-400 font-bold">×</span>
+                      <input type="number" min="0" id="denom-20" oninput="calculateStaffDenominations()" placeholder="0" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-2 py-1.5 text-center font-mono font-black text-amber-300 text-sm focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400">
+                    </div>
+                    <div class="text-right text-[11px] font-mono font-bold text-emerald-400" id="subtotal-20">
+                      = ₹0
+                    </div>
+                  </div>
+
+                  <!-- 10 -->
+                  <div class="bg-slate-800/90 border border-slate-700 rounded-xl p-2.5 space-y-1.5">
+                    <div class="flex items-center justify-between text-xs">
+                      <span class="bg-indigo-500/20 text-indigo-300 font-black px-2 py-0.5 rounded-md font-mono border border-indigo-500/30">₹10</span>
+                      <span class="text-[10px] text-slate-400 font-semibold">నోట్ల సంఖ్య</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-xs text-slate-400 font-bold">×</span>
+                      <input type="number" min="0" id="denom-10" oninput="calculateStaffDenominations()" placeholder="0" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-2 py-1.5 text-center font-mono font-black text-amber-300 text-sm focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400">
+                    </div>
+                    <div class="text-right text-[11px] font-mono font-bold text-emerald-400" id="subtotal-10">
+                      = ₹0
+                    </div>
+                  </div>
+
+                  <!-- Others (Direct sum for coins: ₹5, ₹2, ₹1 etc.) -->
+                  <div class="col-span-2 sm:col-span-3 lg:col-span-2 bg-slate-800/90 border border-slate-700 rounded-xl p-2.5 space-y-1.5">
+                    <div class="flex items-center justify-between text-xs">
+                      <span class="bg-purple-500/20 text-purple-300 font-black px-2 py-0.5 rounded-md border border-purple-500/30">🪙 ఇతరులు / చిల్లర (Others / Coins)</span>
+                      <span class="text-[10px] text-slate-400 font-semibold">₹5, ₹2, ₹1 నాణేల మొత్తం</span>
+                    </div>
+                    <div class="relative">
+                      <span class="absolute left-2.5 top-2 text-slate-400 font-bold text-xs">₹</span>
+                      <input type="number" min="0" id="denom-others" oninput="calculateStaffDenominations()" placeholder="చిల్లర మొత్తం నమోదు చేయండి" class="w-full bg-slate-900 border border-slate-600 rounded-lg pl-7 pr-2 py-1.5 font-mono font-black text-purple-300 text-sm focus:border-purple-400 focus:outline-none focus:ring-1 focus:ring-purple-400">
+                    </div>
+                    <div class="text-right text-[11px] font-mono font-bold text-purple-400" id="subtotal-others">
+                      = ₹0
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Denominations Total Summary Bar -->
+                <div class="bg-slate-900/95 rounded-xl p-3 border border-slate-700 flex flex-wrap items-center justify-between gap-3">
+                  <div class="flex flex-wrap items-center gap-3">
+                    <div class="text-xs text-slate-300 flex items-center gap-1.5">
+                      <span>మొత్తం నోట్లు:</span>
+                      <span id="hoDenomTotalNotesBadge" class="bg-slate-800 text-amber-300 font-mono font-black px-2.5 py-0.5 rounded-lg border border-slate-700 text-xs">0 Notes</span>
+                    </div>
+                    <div class="text-xs text-slate-300 flex items-center gap-1.5">
+                      <span>చిల్లర:</span>
+                      <span id="hoDenomOthersBadge" class="bg-slate-800 text-purple-300 font-mono font-black px-2.5 py-0.5 rounded-lg border border-slate-700 text-xs">₹0</span>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-slate-300">నోట్ల మొత్తం (Total Cash):</span>
+                    <span id="hoDenomTotalDisplay" class="text-lg sm:text-xl font-mono font-black text-emerald-400 tracking-tight">₹0</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Physical Cash Inputs & Live Tally -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 pt-1">
                 <!-- Actual Cash Counted -->
                 <div>
                   <label class="text-xs font-extrabold text-slate-800 block mb-1">
@@ -826,6 +978,7 @@
                     <span class="absolute left-3 top-2.5 text-slate-400 font-bold text-sm">₹</span>
                     <input type="number" id="empHandoverCash" oninput="calculateLiveHandoverTally()" placeholder="0" class="w-full bg-white border-2 border-emerald-500 rounded-xl pl-8 pr-3 py-2 text-xl font-mono font-black text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-400">
                   </div>
+                  <span class="text-[10px] text-slate-500 mt-1 block">💡 నోట్ల వివరాల ఆధారంగా ఆటోమేటిక్‌గా వస్తుంది</span>
                 </div>
 
                 <!-- UPI / PhonePe Received -->
@@ -1374,6 +1527,68 @@
               </div>
             </div>
 
+            <!-- Management Denominations Toggle & Calculator -->
+            <div class="border border-emerald-200 rounded-xl bg-emerald-50/50 p-2.5 space-y-2">
+              <div class="flex items-center justify-between cursor-pointer" onclick="toggleAdminDenominations()">
+                <div class="flex items-center gap-1.5 text-xs font-black text-emerald-950">
+                  <span>🔢</span>
+                  <span>మేనేజ్‌మెంట్ నోట్ల లెక్క (Denominations Calculator)</span>
+                </div>
+                <div class="flex items-center gap-1.5 text-[11px] font-bold text-emerald-700">
+                  <span id="admDenomSummaryBadge" class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-mono text-[10px]">0 Notes • ₹0</span>
+                  <span id="admDenomToggleIcon" class="text-xs">▼</span>
+                </div>
+              </div>
+
+              <div id="admDenominationsContainer" class="hidden space-y-2 pt-2 border-t border-emerald-200/60">
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  <div class="bg-white rounded-lg p-1.5 border border-slate-200 text-center">
+                    <span class="text-[10px] font-black text-slate-600 block">₹500 ×</span>
+                    <input type="number" min="0" id="admDenom-500" oninput="calculateAdminDenominations()" placeholder="0" class="w-full text-center font-mono font-bold text-xs bg-slate-50 rounded border border-slate-300 py-1">
+                    <span id="admSubtotal-500" class="text-[10px] font-mono text-emerald-700 block font-bold mt-0.5">= ₹0</span>
+                  </div>
+                  <div class="bg-white rounded-lg p-1.5 border border-slate-200 text-center">
+                    <span class="text-[10px] font-black text-slate-600 block">₹200 ×</span>
+                    <input type="number" min="0" id="admDenom-200" oninput="calculateAdminDenominations()" placeholder="0" class="w-full text-center font-mono font-bold text-xs bg-slate-50 rounded border border-slate-300 py-1">
+                    <span id="admSubtotal-200" class="text-[10px] font-mono text-emerald-700 block font-bold mt-0.5">= ₹0</span>
+                  </div>
+                  <div class="bg-white rounded-lg p-1.5 border border-slate-200 text-center">
+                    <span class="text-[10px] font-black text-slate-600 block">₹100 ×</span>
+                    <input type="number" min="0" id="admDenom-100" oninput="calculateAdminDenominations()" placeholder="0" class="w-full text-center font-mono font-bold text-xs bg-slate-50 rounded border border-slate-300 py-1">
+                    <span id="admSubtotal-100" class="text-[10px] font-mono text-emerald-700 block font-bold mt-0.5">= ₹0</span>
+                  </div>
+                  <div class="bg-white rounded-lg p-1.5 border border-slate-200 text-center">
+                    <span class="text-[10px] font-black text-slate-600 block">₹50 ×</span>
+                    <input type="number" min="0" id="admDenom-50" oninput="calculateAdminDenominations()" placeholder="0" class="w-full text-center font-mono font-bold text-xs bg-slate-50 rounded border border-slate-300 py-1">
+                    <span id="admSubtotal-50" class="text-[10px] font-mono text-emerald-700 block font-bold mt-0.5">= ₹0</span>
+                  </div>
+                  <div class="bg-white rounded-lg p-1.5 border border-slate-200 text-center">
+                    <span class="text-[10px] font-black text-slate-600 block">₹20 ×</span>
+                    <input type="number" min="0" id="admDenom-20" oninput="calculateAdminDenominations()" placeholder="0" class="w-full text-center font-mono font-bold text-xs bg-slate-50 rounded border border-slate-300 py-1">
+                    <span id="admSubtotal-20" class="text-[10px] font-mono text-emerald-700 block font-bold mt-0.5">= ₹0</span>
+                  </div>
+                  <div class="bg-white rounded-lg p-1.5 border border-slate-200 text-center">
+                    <span class="text-[10px] font-black text-slate-600 block">₹10 ×</span>
+                    <input type="number" min="0" id="admDenom-10" oninput="calculateAdminDenominations()" placeholder="0" class="w-full text-center font-mono font-bold text-xs bg-slate-50 rounded border border-slate-300 py-1">
+                    <span id="admSubtotal-10" class="text-[10px] font-mono text-emerald-700 block font-bold mt-0.5">= ₹0</span>
+                  </div>
+                  <div class="col-span-2 sm:col-span-3 bg-white rounded-lg p-1.5 border border-slate-200 flex items-center justify-between gap-2 px-2.5">
+                    <span class="text-[10px] font-black text-purple-700 whitespace-nowrap">🪙 చిల్లర / నాణేలు (Others):</span>
+                    <div class="relative flex-1">
+                      <span class="absolute left-2 top-1 text-slate-400 font-bold text-xs">₹</span>
+                      <input type="number" min="0" id="admDenom-others" oninput="calculateAdminDenominations()" placeholder="మొత్తం నమోదు చేయండి" class="w-full pl-6 pr-2 py-0.5 text-xs font-mono font-bold text-purple-800 bg-slate-50 rounded border border-slate-300">
+                    </div>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between pt-1">
+                  <button type="button" onclick="clearAdminDenominations()" class="text-[11px] font-bold text-rose-600 hover:text-rose-800 underline">
+                    క్లియర్ చేయి (Clear)
+                  </button>
+                  <span id="admDenomGrandTotalText" class="text-xs font-mono font-black text-emerald-800">మొత్తం: ₹0</span>
+                </div>
+              </div>
+            </div>
+
             <!-- Management Live Tally Badge -->
             <div>
               <span class="text-xs font-bold text-slate-600 block mb-1">స్వంత లెక్క సరిపోలిక (Management Tally Match):</span>
@@ -1417,6 +1632,21 @@
                   <span class="text-slate-500 font-bold">సిబ్బంది ఇచ్చిన నగదు (Staff Reported Cash):</span>
                   <span class="font-mono font-black text-emerald-700 text-sm" id="admHoStaffCash">₹0</span>
                 </div>
+
+                <!-- Staff Submitted Denominations Breakdown Card -->
+                <div id="admHoStaffDenominationsContainer" class="bg-slate-50 rounded-xl p-2.5 border border-slate-200 space-y-1.5">
+                  <div class="flex items-center justify-between border-b border-slate-200 pb-1 font-bold text-slate-700 text-[11px]">
+                    <span class="flex items-center gap-1">
+                      <span>🔢</span>
+                      <span>నోట్ల వివరాలు (Denominations):</span>
+                    </span>
+                    <span id="admHoStaffTotalNotesBadge" class="bg-slate-200 text-slate-800 font-mono text-[10px] px-1.5 py-0.2 rounded font-bold">0 Notes</span>
+                  </div>
+                  <div id="admHoStaffDenominationsList" class="space-y-1 pt-0.5 font-mono text-[11px]">
+                    <!-- Populated dynamically -->
+                  </div>
+                </div>
+
                 <div class="flex justify-between items-center py-1 border-b border-slate-100">
                   <span class="text-slate-500 font-bold">సిబ్బంది చెప్పిన యూపీఐ (Staff Reported UPI):</span>
                   <span class="font-mono font-black text-blue-700 text-sm" id="admHoStaffUpi">₹0</span>
@@ -2651,6 +2881,6 @@
     </div>
   </footer>
 
-  <script src="app.js?v=18"></script>
+  <script src="app.js?v=19"></script>
 </body>
 </html>

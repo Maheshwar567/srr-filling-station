@@ -1382,7 +1382,8 @@ app.post('/api/shifts/station-handover', (req, res) => {
     card: Number(collections.card || 0),
     expenses: Number(collections.expenses || 0),
     expenseReason: collections.expenseReason || "",
-    notes: collections.notes || ""
+    notes: collections.notes || "",
+    denominations: collections.denominations || null
   };
   st.status = "submitted";
 
@@ -1467,7 +1468,7 @@ app.post('/api/shifts/station-handover', (req, res) => {
 // Allows management or owner to inspect, verify, and approve cash handover
 app.post('/api/shifts/admin-verify-handover', (req, res) => {
   const tenantId = getTenantId(req);
-  const { date, stationId, adminCash, adminUpi, verifiedBy, notes, updateCollections } = req.body;
+  const { date, stationId, adminCash, adminUpi, verifiedBy, notes, updateCollections, adminDenominations } = req.body;
   const data = storage.load(tenantId);
   const shift = data.shifts.find(s => s.date === date);
   if (!shift || !shift.stations[stationId]) {
@@ -1481,7 +1482,8 @@ app.post('/api/shifts/admin-verify-handover', (req, res) => {
     verifiedAt: new Date().toISOString(),
     adminCash: Number(adminCash || 0),
     adminUpi: Number(adminUpi || 0),
-    notes: notes || ""
+    notes: notes || "",
+    adminDenominations: adminDenominations || null
   };
   st.status = "verified";
 
@@ -1490,6 +1492,7 @@ app.post('/api/shifts/admin-verify-handover', (req, res) => {
     st.collections.cash = Number(adminCash || 0);
     if (adminUpi !== undefined && adminUpi !== null) st.collections.upi = Number(adminUpi);
     if (notes) st.collections.notes = notes;
+    if (adminDenominations) st.collections.denominations = adminDenominations;
   }
 
   storage.save(tenantId, data);
